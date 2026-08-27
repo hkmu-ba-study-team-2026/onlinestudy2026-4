@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DineReserve - 全球精选餐厅与米其林预订平台</title>
+
+  <!-- Firebase SDK (模拟) -->
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
+
+  <script>
+    // Firebase 初始化 (模拟环境)
+    const firebaseConfig = {
+      apiKey: "AIzaSyCUVqZIgK8YKNAQkZLyA7mHq0qHbPE4RQk",
+      authDomain: "online-study-3a.firebaseapp.com",
+      databaseURL: "https://online-study-3a-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "online-study-3a",
+      storageBucket: "online-study-3a.firebasestorage.app",
+      messagingSenderId: "641152608367",
+      appId: "1:641152608367:web:c6a1a0920d1988d156c59a"
+    };
+    try {
+      firebase.initializeApp(firebaseConfig);
+    } catch(e) {}
+  </script>
+
+  <!-- 模拟餐厅数据集 -->
+  <script>
+    const restaurantsData = [
+      {
+        id: 42,
+        name: "Caprice (香港四季酒店)",
+        district: "中环",
+        location: "香港中环金融街8号四季酒店6楼",
+        distance: "距香港站步行约3分钟",
+        images: ["https://images.unsplash.com/photo-1550966871-3ed3cdb5ed0c?auto=format&fit=crop&w=800&q=80"],
+        stars: 5, // 5代表米其林三星级别或顶级
+        rating: 9.8,
+        reviewCount: 3420,
+        verdict: "传奇极佳",
+        originalPrice: 3200,
+        price: 2880,
+        hasPrivateRoom: true,
+        hasWindowSeat: true,
+        hasParking: true,
+        hasVegan: false,
+        hasCancel: true,
+        menus: [
+          {
+            id: "m1",
+            name: "主厨品鉴 6 道菜晚市套餐",
+            image: "https://images.unsplash.com/photo-1514326640560-7d063ef2aed5?auto=format&fit=crop&w=400&q=80",
+            style: "经典法式",
+            drinks: "包含餐酒搭配",
+            seating: "维港海景散座",
+            cancel: "提前24小时免费取消",
+            origPrice: 3200,
+            price: 2880
+          }
+        ]
+      },
+      {
+        id: 1,
+        name: "天龙轩 (香港丽思卡尔顿)",
+        district: "西九龙",
+        location: "九龙柯士甸道西1号环球贸易广场102楼",
+        distance: "距九龙站步行约2分钟",
+        images: ["https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=800&q=80"],
+        stars: 4,
+        rating: 9.5,
+        reviewCount: 2150,
+        verdict: "极高品质",
+        originalPrice: 2000,
+        price: 1680,
+        hasPrivateRoom: true,
+        hasWindowSeat: true,
+        hasParking: true,
+        hasVegan: true,
+        hasCancel: true,
+        menus: [
+          {
+            id: "m2",
+            name: "米其林二星 粤式招牌点心与海鲜套餐",
+            image: "https://images.unsplash.com/photo-1496116218417-1a781b1c416c?auto=format&fit=crop&w=400&q=80",
+            style: "精致粤菜",
+            drinks: "甄选茗茶",
+            seating: "高空城景大厅",
+            cancel: "提前48小时免费取消",
+            origPrice: 2000,
+            price: 1680
+          }
+        ]
+      }
+    ];
+  </script>
+
+  <!-- Google Fonts & Font Awesome -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Noto+Sans+SC:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <style>
+    /* CSS 核心变量保持一致 */
+    :root {
+      --primary: #e11d48; /* 调整为餐饮更常用的暖红色系 */
+      --primary-dark: #be123c;
+      --primary-light: #fff1f2;
+      --accent: #f59e0b;
+      --accent-hover: #d97706;
+      --secondary: #0d9488;
+      --bg: #f8fafc;
+      --surface: #ffffff;
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+      --text-light: #94a3b8;
+      --border: #e2e8f0;
+      --star: #f59e0b;
+      --success: #10b981;
+      --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
+      --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.1);
+      --radius-sm: 6px;
+      --radius-md: 10px;
+      --radius-lg: 16px;
+      --radius-full: 9999px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', 'Noto Sans SC', sans-serif; }
+    body { background-color: var(--bg); color: var(--text-main); line-height: 1.5; min-height: 100vh; }
+
+    /* 顶部导航与Hero区域 */
+    header { background-color: var(--surface); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 50; }
+    .navbar { max-width: 1280px; margin: 0 auto; padding: 0.75rem 1.5rem; display: flex; align-items: center; justify-content: space-between; }
+    .logo { font-size: 1.4rem; font-weight: 800; color: var(--primary); text-decoration: none; }
+    .logo span { color: var(--text-main); }
+    .nav-links { display: flex; align-items: center; gap: 1.25rem; }
+    .user-profile { display: flex; align-items: center; gap: 0.6rem; padding: 0.35rem 0.8rem; background: #f1f5f9; border-radius: var(--radius-full); font-size: 0.88rem; font-weight: 600; }
+    .user-avatar { width: 28px; height: 28px; border-radius: 50%; background: var(--primary); color: white; display: flex; align-items: center; justify-content: center; }
+
+    .hero-search-wrapper { background: linear-gradient(135deg, #be123c 0%, #e11d48 60%, #f43f5e 100%); padding: 2.2rem 1.5rem 3rem 1.5rem; color: white; }
+    .search-container { max-width: 1200px; margin: 0 auto; }
+    .hero-title { font-size: 1.75rem; font-weight: 800; margin-bottom: 0.4rem; }
+    .hero-subtitle { font-size: 0.95rem; opacity: 0.9; margin-bottom: 1.5rem; }
+    .search-box { background: white; padding: 0.75rem; border-radius: var(--radius-lg); box-shadow: 0 12px 28px rgba(0,0,0,0.18); display: grid; grid-template-columns: 2fr 1.6fr 1.6fr 1fr; gap: 0.6rem; align-items: center; }
+    .search-field { display: flex; align-items: center; gap: 0.75rem; padding: 0.6rem 0.9rem; border: 1.5px solid var(--border); border-radius: var(--radius-md); background: #fff; }
+    .search-field i { color: var(--primary); font-size: 1.15rem; min-width: 20px; text-align: center; }
+    .search-field-content { display: flex; flex-direction: column; flex: 1; }
+    .search-label { font-size: 0.72rem; font-weight: 700; color: var(--text-muted); }
+    .search-input { border: none; outline: none; font-size: 0.92rem; font-weight: 600; color: var(--text-main); width: 100%; padding-top: 2px; }
+    .btn-search { background: var(--accent); color: white; border: none; font-size: 1.05rem; font-weight: 700; padding: 0.95rem 1.5rem; border-radius: var(--radius-md); cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.5rem; height: 100%; }
+
+    /* 布局与侧边栏 */
+    .main-layout { max-width: 1280px; margin: -1.5rem auto 3rem auto; padding: 0 1.5rem; display: grid; grid-template-columns: 280px 1fr; gap: 1.75rem; }
+    .filters-sidebar { background: var(--surface); border-radius: var(--radius-lg); padding: 1.25rem; border: 1px solid var(--border); position: sticky; top: 5rem; }
+    .filter-header { display: flex; justify-content: space-between; align-items: center; padding-bottom: 0.75rem; border-bottom: 1px solid var(--border); margin-bottom: 1rem; }
+    .btn-reset-filters { background: none; border: none; color: var(--primary); font-size: 0.82rem; font-weight: 600; cursor: pointer; }
+    .filter-group { margin-bottom: 1.25rem; padding-bottom: 1.1rem; border-bottom: 1px solid #f1f5f9; }
+    .filter-title { font-size: 0.88rem; font-weight: 700; margin-bottom: 0.65rem; display: flex; justify-content: space-between; }
+    .filter-checkbox { display: flex; align-items: center; gap: 0.6rem; margin-bottom: 0.5rem; font-size: 0.85rem; cursor: pointer; }
+    .filter-checkbox .count { margin-left: auto; color: var(--text-light); font-size: 0.75rem; }
+    .price-range-slider { width: 100%; margin: 0.5rem 0; accent-color: var(--primary); }
+
+    /* 列表与卡片 */
+    .results-section { display: flex; flex-direction: column; gap: 1rem; }
+    .sort-bar { background: var(--surface); border-radius: var(--radius-md); padding: 0.75rem 1rem; display: flex; justify-content: space-between; border: 1px solid var(--border); font-size: 0.88rem; }
+    .sort-options { display: flex; gap: 0.5rem; }
+    .sort-btn { border: 1px solid var(--border); background: white; padding: 0.4rem 0.8rem; border-radius: var(--radius-full); font-size: 0.82rem; cursor: pointer; }
+    .sort-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
+
+    .restaurant-card { background: var(--surface); border-radius: var(--radius-lg); border: 1px solid var(--border); overflow: hidden; display: grid; grid-template-columns: 300px 1fr 220px; transition: transform 0.2s, box-shadow 0.2s; position: relative; }
+    .restaurant-card:hover { box-shadow: 0 8px 24px rgba(0,0,0,0.08); }
+    .restaurant-card.featured { border: 2.5px solid #d97706; background: linear-gradient(180deg, #fffdfa 0%, #ffffff 100%); }
+    .top-recommend-banner { grid-column: 1 / -1; background: linear-gradient(90deg, #b45309 0%, #d97706 50%, #f59e0b 100%); color: white; padding: 0.35rem 1rem; font-size: 0.82rem; font-weight: 700; display: flex; justify-content: space-between; }
+
+    .rest-image-col img { width: 100%; height: 100%; object-fit: cover; min-height: 210px; }
+    .rest-info-col { padding: 1.25rem; display: flex; flex-direction: column; justify-content: space-between; border-right: 1px dashed var(--border); }
+    .rest-title { font-size: 1.15rem; font-weight: 800; line-height: 1.3; }
+    .rest-location { font-size: 0.82rem; color: var(--text-muted); margin-top: 4px; }
+    .badge-pill { font-size: 0.74rem; padding: 0.2rem 0.5rem; border-radius: 4px; font-weight: 600; background: #f1f5f9; color: #475569; display: inline-flex; align-items: center; gap: 0.3rem; margin-right: 4px; margin-bottom: 4px; }
+    .badge-pill.gold { background: #fef3c7; color: #92400e; border: 1px solid #fde68a; }
+
+    .rest-pricing-col { padding: 1.25rem; display: flex; flex-direction: column; justify-content: space-between; background: #fcfdfe; text-align: right; }
+    .score-badge { background: var(--primary); color: white; font-weight: 800; font-size: 1.05rem; padding: 0.35rem 0.6rem; border-radius: 8px 8px 8px 0; }
+    .main-price { font-size: 1.55rem; font-weight: 800; color: var(--accent); }
+    .btn-select { background: var(--primary); color: white; border: none; padding: 0.7rem 1rem; border-radius: var(--radius-md); font-weight: 700; cursor: pointer; width: 100%; margin-top: 10px; }
+    .btn-select.gold-btn { background: linear-gradient(135deg, #d97706 0%, #b45309 100%); }
+
+    /* 模态框通用 */
+    .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(15,23,42,0.75); backdrop-filter: blur(4px); z-index: 100; display: none; align-items: center; justify-content: center; padding: 1.5rem; }
+    .modal-overlay.active { display: flex; }
+    .modal-container { background: white; border-radius: var(--radius-lg); width: 100%; max-width: 980px; max-height: 90vh; display: flex; flex-direction: column; overflow: hidden; }
+    .modal-header { padding: 1.25rem 1.75rem; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; background: #f8fafc; }
+    .modal-body { padding: 1.5rem 1.75rem; overflow-y: auto; display: flex; flex-direction: column; gap: 1.5rem; }
+    .btn-close-modal { background: none; border: none; font-size: 1.3rem; cursor: pointer; }
+
+    /* 悬浮推荐 & 入口推荐 */
+    .recommend-modal-card { background: white; border-radius: var(--radius-lg); max-width: 600px; overflow: hidden; border: 2px solid #f59e0b; }
+    .floating-recommend-popup { position: fixed; bottom: 24px; right: 24px; width: 400px; background: white; border-radius: var(--radius-lg); border: 2px solid #f59e0b; z-index: 90; display: none; }
+    .floating-recommend-popup.active { display: block; }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="navbar">
+    <a href="#" class="logo">
+      <i class="fa-solid fa-utensils"></i> DineReserve<span>.com</span>
+    </a>
+    <div class="nav-links">
+      <button class="nav-btn" style="border:none;background:none;font-weight:600;"><i class="fa-solid fa-earth-americas"></i> HKD (港币 HK$)</button>
+      <div class="user-profile">
+        <div class="user-avatar"><i class="fa-solid fa-user"></i></div>
+        <span>Alex Wong (测试用户)</span>
+      </div>
+    </div>
+  </div>
+</header>
+
+<div class="hero-search-wrapper">
+  <div class="search-container">
+    <h1 class="hero-title">探索中国香港顶级餐厅与米其林寻味之旅</h1>
+    <p class="hero-subtitle">覆盖中环、尖沙咀等核心商圈，提前锁定稀缺景观位与主厨限定菜单</p>
+
+    <div class="search-box">
+      <div class="search-field">
+        <i class="fa-solid fa-location-dot"></i>
+        <div class="search-field-content">
+          <span class="search-label">商圈 / 餐厅名称</span>
+          <input type="text" class="search-input" value="中国香港 (Hong Kong)" placeholder="输入商圈或餐厅名">
+        </div>
+      </div>
+      <div class="search-field">
+        <i class="fa-regular fa-clock"></i>
+        <div class="search-field-content">
+          <span class="search-label">就餐日期与时间</span>
+          <input type="text" class="search-input" value="2026年8月20日 19:30">
+        </div>
+      </div>
+      <div class="search-field">
+        <i class="fa-solid fa-user-group"></i>
+        <div class="search-field-content">
+          <span class="search-label">就餐人数</span>
+          <input type="text" class="search-input" value="2 位成人, 0 位儿童">
+        </div>
+      </div>
+      <button class="btn-search" onclick="filterRestaurants()">
+        <i class="fa-solid fa-magnifying-glass"></i> 搜索餐厅
+      </button>
+    </div>
+  </div>
+</div>
+
+<main class="main-layout">
+  <aside class="filters-sidebar">
+    <div class="filter-header">
+      <h3><i class="fa-solid fa-sliders"></i> 条件筛选</h3>
+      <button class="btn-reset-filters" onclick="resetFilters()">重置所有</button>
+    </div>
+
+    <div class="filter-group">
+      <div class="filter-title">
+        <span>人均预算上限</span>
+        <span id="priceRangeLabel">最高 HK$ 5,000</span>
+      </div>
+      <input type="range" id="priceRange" class="price-range-slider" min="200" max="5000" step="100" value="5000" oninput="updatePriceFilter(this.value)">
+    </div>
+
+    <div class="filter-group">
+      <div class="filter-title">餐厅评级 (指南/星级)</div>
+      <label class="filter-checkbox"><input type="checkbox" name="star" value="5" onchange="filterRestaurants()"><span>⭐⭐⭐ 米其林三星/黑珍珠三钻</span></label>
+      <label class="filter-checkbox"><input type="checkbox" name="star" value="4" onchange="filterRestaurants()"><span>⭐⭐ 米其林二星/黑珍珠二钻</span></label>
+      <label class="filter-checkbox"><input type="checkbox" name="star" value="3" onchange="filterRestaurants()"><span>⭐ 米其林一星/推荐餐厅</span></label>
+    </div>
+
+    <div class="filter-group">
+      <div class="filter-title">餐厅特色与服务</div>
+      <label class="filter-checkbox"><input type="checkbox" id="filterPrivateRoom" onchange="filterRestaurants()"><span>私密独立包厢</span></label>
+      <label class="filter-checkbox"><input type="checkbox" id="filterWindowSeat" onchange="filterRestaurants()"><span>靠窗景观 / 露台座位</span></label>
+      <label class="filter-checkbox"><input type="checkbox" id="filterParking" onchange="filterRestaurants()"><span>提供代客泊车/免费停车</span></label>
+      <label class="filter-checkbox"><input type="checkbox" id="filterVegan" onchange="filterRestaurants()"><span>提供素食/Vegan菜单</span></label>
+    </div>
+  </aside>
+
+  <section class="results-section">
+    <div class="sort-bar">
+      <div>搜索结果：<span style="font-weight:700;" id="restaurantCount">0 间香港精选餐厅</span></div>
+      <div class="sort-options">
+        <span style="color:var(--text-muted); font-size: 0.82rem; font-weight:600;">排序：</span>
+        <button class="sort-btn active" onclick="sortData('popular', this)">热门推荐</button>
+        <button class="sort-btn" onclick="sortData('priceAsc', this)">人均：低至高</button>
+        <button class="sort-btn" onclick="sortData('rating', this)">评分最高</button>
+      </div>
+    </div>
+    <div id="restaurantListContainer" style="display: flex; flex-direction: column; gap: 1.25rem;"></div>
+  </section>
+</main>
+
+<!-- 预订座位/套餐弹窗 -->
+<div class="modal-overlay" id="menuModal">
+  <div class="modal-container">
+    <div class="modal-header">
+      <div>
+        <h2 style="font-size:1.25rem; font-weight:800;" id="modalRestTitle">餐厅名称</h2>
+        <p style="font-size:0.8rem; color:var(--text-muted);" id="modalRestSubtitle">地址信息</p>
+      </div>
+      <button class="btn-close-modal" onclick="closeMenuModal()"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="modal-body">
+      <h3 style="font-size:1.15rem; font-weight:800;"><i class="fa-solid fa-bell-concierge"></i> 选择座位类型与专属套餐</h3>
+      <div id="modalMenuList" style="display:flex; flex-direction:column; gap:1rem;"></div>
+    </div>
+  </div>
+</div>
+
+<!-- 结账确认弹窗 -->
+<div class="modal-overlay" id="checkoutModal">
+  <div class="modal-container" style="max-width: 800px;">
+    <div class="modal-header">
+      <h2 style="font-size:1.25rem; font-weight:800;"><i class="fa-solid fa-shield-halved" style="color:var(--primary);"></i> 锁定座位与订单确认</h2>
+      <button class="btn-close-modal" onclick="closeCheckoutModal()"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="modal-body">
+      <div style="display:grid; grid-template-columns: 1.4fr 1fr; gap:1.5rem;">
+        <div>
+          <h4 style="font-weight:700; margin-bottom:0.9rem;">主要就餐人信息</h4>
+          <div style="margin-bottom:0.9rem;"><label style="font-size:0.82rem;font-weight:700;">姓名</label><input type="text" id="guestName" value="Alex Wong" style="width:100%;padding:0.65rem;border:1px solid #e2e8f0;border-radius:6px;"></div>
+          <div style="margin-bottom:0.9rem;"><label style="font-size:0.82rem;font-weight:700;">联系电话</label><input type="text" id="guestPhone" value="+852 9123 4567" style="width:100%;padding:0.65rem;border:1px solid #e2e8f0;border-radius:6px;"></div>
+          <div style="margin-bottom:0.9rem;"><label style="font-size:0.82rem;font-weight:700;">特殊要求 (忌口/纪念日等)</label><input type="text" placeholder="例如：对花生过敏，庆祝结婚纪念日" style="width:100%;padding:0.65rem;border:1px solid #e2e8f0;border-radius:6px;"></div>
+        </div>
+        <div style="background:#f8fafc; border:1px solid var(--border); border-radius:10px; padding:1.25rem;">
+          <h4 id="checkoutRestName" style="font-weight:700; border-bottom:1px solid #e2e8f0; padding-bottom:0.5rem;">餐厅名</h4>
+          <p id="checkoutMenuName" style="font-size:0.85rem; color:var(--text-muted); margin-top:0.5rem;">套餐/座位名</p>
+          <p style="font-size:0.8rem; color:var(--text-light); margin-bottom:1rem;"><i class="fa-regular fa-clock"></i> 2026年8月20日 19:30 (2位)</p>
+
+          <div style="display:flex; justify-content:space-between; font-size:0.88rem; margin-bottom:0.5rem;"><span>套餐总额 (2位)</span><span id="checkoutBasePrice">HK$ 0</span></div>
+          <div style="display:flex; justify-content:space-between; font-size:0.88rem; margin-bottom:0.5rem;"><span>服务费 (10%)</span><span id="checkoutTaxPrice">HK$ 0</span></div>
+          <div style="display:flex; justify-content:space-between; font-size:1.15rem; font-weight:800; border-top:1px solid #e2e8f0; padding-top:0.8rem; margin-top:0.5rem;">
+            <span>实付总额</span><span style="color:var(--accent);" id="checkoutTotalPrice">HK$ 0</span>
+          </div>
+          <button class="btn-search" style="width:100%; margin-top:1rem;" onclick="confirmBooking()">确认并模拟支付</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  let currentList = [...restaurantsData];
+  let selectedRest = null;
+  let selectedMenu = null;
+  const RECOMMENDED_ID = 42;
+
+  function renderRestaurantList(data) {
+    const container = document.getElementById("restaurantListContainer");
+    document.getElementById("restaurantCount").innerText = `${data.length} 间香港精选餐厅`;
+
+    const sorted = [...data].sort((a, b) => a.id === RECOMMENDED_ID ? -1 : b.id === RECOMMENDED_ID ? 1 : 0);
+
+    container.innerHTML = sorted.map(rest => {
+      const isTop = (rest.id === RECOMMENDED_ID);
+      return `
+        <div class="restaurant-card ${isTop ? 'featured' : ''}">
+          ${isTop ? `<div class="top-recommend-banner"><span><i class="fa-solid fa-crown"></i> 平台今日独家主推 • 极佳景观</span><span><i class="fa-solid fa-fire"></i> 必吃榜推荐</span></div>` : ''}
+          <div class="rest-image-col" style="position:relative;">
+            <img src="${rest.images[0]}" alt="${rest.name}">
+            ${isTop ? `<div style="position:absolute;top:10px;left:10px;background:#dc2626;color:white;font-size:0.7rem;padding:2px 6px;border-radius:4px;font-weight:bold;">⭐ 主推餐厅</div>` : ''}
+          </div>
+          <div class="rest-info-col">
+            <div>
+              <div style="color:var(--star);font-size:0.8rem;margin-bottom:4px;">${'⭐'.repeat(rest.stars)} <span style="color:#64748b;font-weight:600;">${rest.district}</span></div>
+              <h2 class="rest-title">${rest.name}</h2>
+              <div class="rest-location"><i class="fa-solid fa-location-dot"></i> ${rest.location}</div>
+            </div>
+            <div style="margin: 10px 0;">
+              ${isTop ? '<span class="badge-pill gold"><i class="fa-solid fa-crown"></i> 官方主推</span>' : ''}
+              ${rest.hasPrivateRoom ? '<span class="badge-pill"><i class="fa-solid fa-door-closed"></i> 独立包厢</span>' : ''}
+              ${rest.hasWindowSeat ? '<span class="badge-pill"><i class="fa-solid fa-city"></i> 景观位</span>' : ''}
+              ${rest.hasParking ? '<span class="badge-pill"><i class="fa-solid fa-car"></i> 免费停车</span>' : ''}
+            </div>
+          </div>
+          <div class="rest-pricing-col">
+            <div style="display:flex; justify-content:flex-end; gap:0.6rem; align-items:center;">
+              <div style="text-align:right;">
+                <div style="font-weight:700; color:var(--primary);">${rest.verdict}</div>
+                <div style="font-size:0.72rem; color:#94a3b8;">${rest.reviewCount} 条食客评价</div>
+              </div>
+              <div class="score-badge">${rest.rating}</div>
+            </div>
+            <div style="margin-top:auto;">
+              <div style="text-decoration:line-through; font-size:0.8rem; color:#94a3b8;">HK$ ${rest.originalPrice}</div>
+              <div><span style="font-weight:700; color:var(--accent);">HK$ </span><span class="main-price">${rest.price}</span><span style="font-size:0.8rem;color:#64748b;"> /人均起</span></div>
+            </div>
+            <button class="btn-select ${isTop ? 'gold-btn' : ''}" onclick="openMenuModal(${rest.id})">查看菜单及预订</button>
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  function openMenuModal(id) {
+    selectedRest = restaurantsData.find(r => r.id === id);
+    document.getElementById("modalRestTitle").innerText = selectedRest.name;
+    document.getElementById("modalRestSubtitle").innerText = selectedRest.location;
+
+    document.getElementById("modalMenuList").innerHTML = selectedRest.menus.map(menu => `
+      <div style="border:1px solid #e2e8f0; border-radius:8px; display:flex; overflow:hidden;">
+        <img src="${menu.image}" style="width:200px; object-fit:cover;">
+        <div style="padding:1rem; flex:1; display:flex; flex-direction:column; justify-content:space-between;">
+          <div>
+            <h4 style="font-size:1.1rem; font-weight:700;">${menu.name}</h4>
+            <div style="font-size:0.82rem; color:#64748b; margin-top:8px; display:grid; grid-template-columns: 1fr 1fr; gap:6px;">
+              <span><i class="fa-solid fa-utensils"></i> 菜系：${menu.style}</span>
+              <span><i class="fa-solid fa-wine-glass"></i> 酒水：${menu.drinks}</span>
+              <span><i class="fa-solid fa-chair"></i> 座位：${menu.seating}</span>
+              <span style="color:var(--success);"><i class="fa-solid fa-circle-check"></i> ${menu.cancel}</span>
+            </div>
+          </div>
+          <div style="display:flex; justify-content:space-between; align-items:flex-end; margin-top:1rem;">
+            <div><span style="font-size:1.25rem; font-weight:800; color:var(--accent);">HK$ ${menu.price}</span><span style="font-size:0.75rem; color:#94a3b8;"> /每位</span></div>
+            <button class="btn-search" style="padding:0.5rem 1rem; font-size:0.9rem;" onclick="openCheckoutModal('${menu.id}')">锁定此套餐</button>
+          </div>
+        </div>
+      </div>
+    `).join('');
+    document.getElementById("menuModal").classList.add("active");
+  }
+
+  function closeMenuModal() { document.getElementById("menuModal").classList.remove("active"); }
+
+  function openCheckoutModal(menuId) {
+    selectedMenu = selectedRest.menus.find(m => m.id === menuId);
+    closeMenuModal();
+    document.getElementById("checkoutRestName").innerText = selectedRest.name;
+    document.getElementById("checkoutMenuName").innerText = selectedMenu.name;
+
+    const baseTotal = selectedMenu.price * 2; // 默认2人
+    const tax = Math.round(baseTotal * 0.1);
+
+    document.getElementById("checkoutBasePrice").innerText = `HK$ ${baseTotal}`;
+    document.getElementById("checkoutTaxPrice").innerText = `HK$ ${tax}`;
+    document.getElementById("checkoutTotalPrice").innerText = `HK$ ${baseTotal + tax}`;
+
+    document.getElementById("checkoutModal").classList.add("active");
+  }
+
+  function closeCheckoutModal() { document.getElementById("checkoutModal").classList.remove("active"); }
+
+  function confirmBooking() {
+    alert(`预订成功！您已成功锁定 ${selectedRest.name} 的座位。电子凭证已发送至您的手机。`);
+    closeCheckoutModal();
+  }
+
+  function updatePriceFilter(val) {
+    document.getElementById("priceRangeLabel").innerText = `最高 HK$ ${val}`;
+    filterRestaurants();
+  }
+
+  function filterRestaurants() {
+    const max = parseInt(document.getElementById("priceRange").value);
+    const pRoom = document.getElementById("filterPrivateRoom").checked;
+    const wSeat = document.getElementById("filterWindowSeat").checked;
+    const pKing = document.getElementById("filterParking").checked;
+    const vegan = document.getElementById("filterVegan").checked;
+
+    currentList = restaurantsData.filter(r => {
+      if (r.price > max) return false;
+      if (pRoom && !r.hasPrivateRoom) return false;
+      if (wSeat && !r.hasWindowSeat) return false;
+      if (pKing && !r.hasParking) return false;
+      if (vegan && !r.hasVegan) return false;
+      return true;
+    });
+    renderRestaurantList(currentList);
+  }
+
+  function resetFilters() {
+    document.getElementById("priceRange").value = 5000;
+    document.getElementById("priceRangeLabel").innerText = "最高 HK$ 5,000";
+    document.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
+    filterRestaurants();
+  }
+
+  function sortData(type, btn) {
+    document.querySelectorAll(".sort-btn").forEach(b => b.classList.remove("active"));
+    btn.classList.add("active");
+    if (type === 'priceAsc') currentList.sort((a,b) => a.price - b.price);
+    else if (type === 'rating') currentList.sort((a,b) => b.rating - a.rating);
+    else currentList.sort((a,b) => a.id - b.id);
+    renderRestaurantList(currentList);
+  }
+
+  window.onload = () => renderRestaurantList(restaurantsData);
+</script>
+</body>
+</html>

@@ -1,0 +1,346 @@
+// ==================== Firebase & 頁面追蹤初始化 ====================
+const pageStartTime = Date.now();
+const NEXT_PAGE_URL = "https://next-page-url.com";
+
+let selectionSequence = [];
+let cart = [];
+let currentPID = "";
+
+// 商品清單：更新為 30 個 ID (1 ~ 30)
+const ALL_ITEMS = Array.from({ length: 30 }, (_, i) => i + 1);
+
+function getPID() {
+    let pid = localStorage.getItem("participantID");
+    if (!pid || pid.trim() === "") {
+        pid = "Anonymous";
+        localStorage.setItem("participantID", pid);
+    }
+    return pid.trim();
+}
+
+document.addEventListener('DOMContentLoaded', function(){
+    const modal = document.getElementById('welcomeModal');
+    const closeBtn = document.getElementById('closeModalBtn');
+    currentPID = getPID();
+
+    if (closeBtn && modal) {
+        closeBtn.addEventListener('click', function() {
+            modal.style.display = 'none';
+        });
+    }
+});
+
+function trackAddToCart(product, quantity = 1) {
+    const sequenceItem = {
+        step: selectionSequence.length + 1,
+        productId: product.id,
+        productName: product.name,
+        quantity: quantity,
+        timestamp: new Date().toISOString()
+    };
+    selectionSequence.push(sequenceItem);
+}
+
+function generateItemSequenceMap(seqArray) {
+    const itemFirstOrder = {};
+    if (Array.isArray(seqArray)) {
+        seqArray.forEach((record) => {
+            const pId = record.productId || record.id;
+            const stepNum = record.step;
+            if (pId && !itemFirstOrder.hasOwnProperty(pId)) {
+                itemFirstOrder[pId] = stepNum;
+            }
+        });
+    }
+
+    const resultMap = {};
+    ALL_ITEMS.forEach(itemId => {
+        resultMap[`Seq_Item_${itemId}`] = itemFirstOrder.hasOwnProperty(itemId)
+            ? itemFirstOrder[itemId]
+            : "";
+    });
+    return resultMap;
+}
+
+// ==================== 更新後 30 項商品資料庫 ====================
+const products = [
+    // 1. Featured items (ID: 1 ~ 5)
+    { id: 1, name: "Red Apple", price: 1.47, isFeatured: true },
+    { id: 2, name: "Whole Milk", price: 4.99, isFeatured: true },
+    { id: 3, name: "Sourdough Bread", price: 5.49, isFeatured: true },
+    { id: 4, name: "Chicken Drumsticks", price: 1.77, isFeatured: true },
+    { id: 5, name: "Avocado", price: 2.59, isFeatured: true },
+
+    // 2. Fresh Fruits (ID: 6 ~ 10)
+    { id: 6, name: "Strawberries", price: 2.38, isFeatured: false },
+    { id: 7, name: "Blueberries", price: 2.99, isFeatured: false },
+    { id: 8, name: "Banana Bunch", price: 0.99, isFeatured: false },
+    { id: 9, name: "Oranges", price: 4.99, isFeatured: false },
+    { id: 10, name: "Lemon", price: 0.74, isFeatured: false },
+
+    // 3. Fresh Vegetables (ID: 11 ~ 15)
+    { id: 11, name: "Tomato Cherry", price: 2.97, isFeatured: false },
+    { id: 12, name: "Sweet Potato", price: 1.95, isFeatured: false },
+    { id: 13, name: "Cucumber", price: 2.08, isFeatured: false },
+    { id: 14, name: "Bi-Color Corn", price: 0.50, isFeatured: false },
+    { id: 15, name: "Peeled Baby Carrots", price: 1.32, isFeatured: false },
+
+    // 4. Fresh Meat (ID: 16 ~ 20)
+    { id: 16, name: "Grounded Beef", price: 6.99, isFeatured: false },
+    { id: 17, name: "Chicken Breasts Fillets", price: 2.79, isFeatured: false },
+    { id: 18, name: "Beef Sirloin Steaks", price: 15.24, isFeatured: false },
+    { id: 19, name: "Pork Loin Chops", price: 7.38, isFeatured: false },
+    { id: 20, name: "Ground Turkey Meat", price: 5.46, isFeatured: false },
+
+    // 5. Seafood Market (ID: 21 ~ 25)
+    { id: 21, name: "Smoked Salmon", price: 8.98, isFeatured: false },
+    { id: 22, name: "Raw Shrimp Pack", price: 7.64, isFeatured: false },
+    { id: 23, name: "Cod Fillets", price: 13.78, isFeatured: false },
+    { id: 24, name: "Breaded Fish Fillets", price: 7.99, isFeatured: false },
+    { id: 25, name: "Tilapia Fillets", price: 5.99, isFeatured: false },
+
+    // 6. Dairy, Cheese & Eggs (ID: 26 ~ 30)
+    { id: 26, name: "Greek Yogurt", price: 4.99, isFeatured: false },
+    { id: 27, name: "Cheddar Cheese", price: 1.65, isFeatured: false },
+    { id: 28, name: "Large Brown Eggs", price: 7.49, isFeatured: false },
+    { id: 29, name: "Unsalted Butter", price: 2.99, isFeatured: false },
+    { id: 30, name: "Four Cheese Blend", price: 1.90, isFeatured: false }
+];
+
+let clickCount = parseInt(localStorage.getItem('siteClickCount')) || 0;
+document.addEventListener('click', function () {
+    clickCount++;
+    localStorage.setItem('siteClickCount', clickCount);
+});
+
+const visitStart = new Date();
+window.addEventListener('beforeunload', function () {
+    const end = new Date();
+    const ms = end - visitStart;
+    const sec = Math.floor(ms / 1000);
+    const min = Math.floor(sec / 60);
+    const s = sec % 60;
+    const duration = `${min} 分 ${s} 秒`;
+
+    const logObj = {
+        participantID: currentPID || getPID(),
+        enter: visitStart.toLocaleString(),
+        leave: end.toLocaleString(),
+        totalSecond: sec,
+        showTime: duration
+    };
+
+    if (typeof db !== 'undefined') {
+        db.ref('visit_logs').push(logObj);
+    }
+});
+
+document.querySelectorAll('.cate-filter').forEach(item => {
+    item.addEventListener('click', function () {
+        const type = this.dataset.type;
+        document.querySelectorAll('.product-card').forEach(card => {
+            if (type === 'all' || card.dataset.type === type) {
+                card.style.display = 'block';
+            } else {
+                card.style.display = 'none';
+            }
+        });
+    });
+});
+
+function addToCart(product) {
+    const existingItem = cart.find(item => item.id === product.id);
+    if (existingItem) {
+        existingItem.quantity += 1;
+    } else {
+        cart.push({
+            id: product.id,
+            name: product.name,
+            price: product.price,
+            quantity: 1
+        });
+    }
+    updateCart();
+}
+
+document.querySelectorAll('.add-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+        const productId = parseInt(this.getAttribute('data-id'));
+        const product = products.find(p => p.id === productId);
+
+        if (product) {
+            addToCart(product);
+            trackAddToCart(product, 1);
+        } else {
+            console.error(`找不到 ID 為 ${productId} 的商品`);
+        }
+    });
+});
+
+function updateCart() {
+    const cartCountEl = document.getElementById('cart-count');
+    const cartItemsEl = document.getElementById('cart-items');
+    const subTotalEl = document.getElementById('subtotal');
+    const totalEl = document.getElementById('total');
+
+    let totalNum = 0;
+    cart.forEach(i => totalNum += i.quantity);
+    if (cartCountEl) cartCountEl.textContent = totalNum;
+
+    if (!cartItemsEl) return;
+
+    if (cart.length === 0) {
+        cartItemsEl.innerHTML = '<p class="empty-cart">Your cart is empty.</p>';
+    } else {
+        cartItemsEl.innerHTML = '';
+        cart.forEach(item => {
+            const div = document.createElement('div');
+            div.className = 'cart-item';
+            div.innerHTML = `
+                <span>${item.name}</span>
+                <span>$${(item.price * item.quantity).toFixed(2)}</span>
+                <div class="item-controls">
+                    <button onclick="changeQty(${item.id},-1)">-</button>
+                    <span>${item.quantity}</span>
+                    <button onclick="changeQty(${item.id},1)">+</button>
+                    <button onclick="removeItem(${item.id})">Remove</button>
+                </div>
+            `;
+            cartItemsEl.appendChild(div);
+        });
+    }
+
+    let sum = 0;
+    cart.forEach(i => sum += i.price * i.quantity);
+    if (subTotalEl) subTotalEl.textContent = `$${sum.toFixed(2)}`;
+    if (totalEl) totalEl.textContent = `$${sum.toFixed(2)}`;
+}
+
+function changeQty(id, delta) {
+    const item = cart.find(i => i.id === id);
+    if (!item) return;
+
+    item.quantity += delta;
+    if (delta > 0) {
+        const product = products.find(p => p.id === id);
+        if (product) trackAddToCart(product, 1);
+    }
+
+    if (item.quantity <= 0) {
+        removeItem(id);
+    } else {
+        updateCart();
+    }
+}
+
+function removeItem(id) {
+    const tempCart = [...cart];
+    cart = cart.filter(i => i.id !== id);
+    if (cart.length === 0 && tempCart.length > 0) {
+        recordAbandon(tempCart);
+    }
+    updateCart();
+}
+
+function recordAbandon(cartData) {
+    let sum = 0;
+    cartData.forEach(i => sum += i.price * i.quantity);
+    const items = cartData.map(i => ({ id: i.id, name: i.name, quantity: i.quantity, price: i.price }));
+    const log = {
+        participantID: currentPID || getPID(),
+        abandonTime: new Date().toLocaleString(),
+        cartItems: items,
+        cartTotal: sum
+    };
+
+    if (typeof db !== 'undefined') {
+        db.ref('abandon_carts').push(log);
+    }
+}
+
+document.getElementById('clear-cart')?.addEventListener('click', function () {
+    if (cart.length > 0) recordAbandon([...cart]);
+    cart = [];
+    updateCart();
+});
+
+document.getElementById('checkout-btn')?.addEventListener('click', async function () {
+    if (cart.length === 0) {
+        alert("Your cart is empty, cannot checkout");
+        return;
+    }
+
+    const checkoutBtn = this;
+    checkoutBtn.disabled = true;
+    checkoutBtn.innerText = "Processing Checkout...";
+
+    const pageEndTime = Date.now();
+    const durationInSeconds = Math.floor((pageEndTime - pageStartTime) / 1000);
+    const minutes = Math.floor(durationInSeconds / 60);
+    const seconds = durationInSeconds % 60;
+    const formattedDuration = `${minutes}m ${seconds}s (${durationInSeconds} seconds)`;
+
+    let total = 0;
+    let featuredCnt = 0;
+
+    const itemsArr = cart.map(item => {
+        total += item.price * item.quantity;
+        const prod = products.find(p => p.id === item.id);
+        if (prod && prod.isFeatured) featuredCnt += item.quantity;
+
+        return {
+            id: item.id,
+            name: item.name,
+            quantity: item.quantity,
+            price: item.price
+        };
+    });
+
+    const itemSequenceMap = generateItemSequenceMap(selectionSequence);
+
+    const checkoutFirebaseData = {
+        participantID: currentPID || getPID(),
+        checkoutTime: new Date().toLocaleString(),
+        aiNudgeText: localStorage.getItem('ai_nudge_text') || "",
+        durationSeconds: durationInSeconds,
+        formattedDuration: formattedDuration,
+        finalCartItems: itemsArr,
+        selectionSequence: selectionSequence,
+        itemSequenceMap: itemSequenceMap,
+        featuredProductCount: featuredCnt,
+        orderTotal: total
+    };
+
+    try {
+        if (typeof db !== 'undefined') {
+            await db.ref('checkout_records').push(checkoutFirebaseData);
+        }
+    } catch (error) {
+        console.error("Failed to save checkout to Firebase:", error);
+    }
+
+    cart = [];
+    selectionSequence = [];
+    updateCart();
+
+    checkoutBtn.disabled = false;
+    checkoutBtn.innerText = "Checkout";
+
+    const completionModal = document.getElementById("checkoutCompletionModal");
+    if (completionModal) {
+        completionModal.style.display = "flex";
+    }
+});
+
+function handleCheckoutModalConfirm() {
+    window.location.href = NEXT_PAGE_URL;
+}
+
+document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', function () {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        this.classList.add('active');
+    });
+});
+
+updateCart();
