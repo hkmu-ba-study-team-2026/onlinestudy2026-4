@@ -32,7 +32,7 @@ Output MUST be in the following JSON format:
         contents: [
             {
                 parts: [
-                    { text: promptText }
+                    { text: prompt }
                 ]
             }
         ]
