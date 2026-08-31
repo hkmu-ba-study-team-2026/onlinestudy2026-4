@@ -167,6 +167,7 @@
 
             if (response.ok) {
                 const resData = await response.json();
+                console.log(resData);
                 if (resData.recommend_hotel_id) recommendedRestaurantId = resData.recommend_hotel_id;
                 if (resData.nudge_text) nudgeText = resData.nudge_text;
             }
