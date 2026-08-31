@@ -1,58 +1,91 @@
-const { InferenceClient } = require("@huggingface/inference");
+const GEMINI_API_KEY = (process.env.GEMINI_API_KEY || "").trim();
+const MODEL_NAME = "gemini-3.5-flash";
 
-const HF_TOKEN = process.env.HF_TOKEN;
-const MODEL_NAME = "Qwen/Qwen2.5-7B-Instruct";
-
-const client = HF_TOKEN ? new InferenceClient(HF_TOKEN) : null;
-
-async function getAiRecommendationsFromHf(products, preferences) {
-    if (!client) {
-        throw new Error("Missing HF_TOKEN");
+async function getAiRecommendationsFromGemini(products, preferences) {
+    if (!GEMINI_API_KEY) {
+        throw new Error("Missing GEMINI_API_KEY in environment variables.");
     }
 
-    const simplifiedProducts = products.map(p => ({
-        name: p.name,
-    }));
+    const simplifiedProducts = Array.isArray(products)
+        ? products.map(p => (typeof p === 'string' ? p : (p.name || String(p))))
+        : [];
 
     const prompt = `
-You are an AI recommender system. Based on user preferences, write a short, engaging recommendation sentence (under 30 words) for the following 5 products:
+You are an AI recommender system. Based on user preferences, recommend a hotel from the products list and write a short, engaging sentence as a nudge:
 User preferences: ${JSON.stringify(preferences)},
 Products: ${JSON.stringify(simplifiedProducts)}.
 
-The recommendation focus on 1-3 major aspects based on the user preferences, and includes promotion of the idea of eco-sustainability of the products, but without explicitly mentioning or indicating about the extraction from user preferences.
+The recommendation focus on 1-3 major aspects based on the user preferences, and includes promotion of the idea of eco-sustainability of the products.
+The recommendation text MUST NOT explicitly mentioning or indicating about the extraction from user preferences.
 
-Output MUST be plain text only, exactly one short sentence, starting with "These items". Do not wrap into JSON or quotes.
+Output MUST be in the following JSON format:
+{
+    "recommend_hotel_id": Int,
+    "nudge_text": String (Simplified Chinese),
+}
 `;
 
-    const timeoutPromise = new Promise((_, reject) =>
-        setTimeout(() => reject(new Error("Model Request Timeout (7s)")), 7000)
-    );
+    // 官方標準端點：URL 不帶 key
+    const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL_NAME}:generateContent`;
 
-    const apiPromise = client.chatCompletion({
-        model: MODEL_NAME,
-        messages: [
-            { role: "system", content: "You are a helpful and concise shopping assistant." },
-            { role: "user", content: prompt }
-        ],
-        max_tokens: 100,
-        temperature: 0.3
+    const requestBody = {
+        contents: [
+            {
+                parts: [
+                    { text: promptText }
+                ]
+            }
+        ]
+    };
+
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 25000);
+
+    const response = await fetch(endpoint, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "X-goog-api-key": GEMINI_API_KEY
+        },
+        body: JSON.stringify(requestBody),
+        signal: controller.signal
     });
 
-    const response = await Promise.race([apiPromise, timeoutPromise]);
+    clearTimeout(timeoutId);
 
-    let content = response.choices[0].message.content.trim();
+    const rawResponseText = await response.text();
 
-    if (content.startsWith("```")) {
-        content = content.replace(/^```[a-zA-Z]*\n?/, "").replace(/\n?```$/, "").trim();
+    if (!response.ok) {
+        throw new Error(`Google Gemini API Error (${response.status}): ${rawResponseText}`);
     }
+
+    let data;
+    try {
+        data = JSON.parse(rawResponseText);
+    } catch (e) {
+        throw new Error(`Failed to parse Gemini response: ${rawResponseText}`);
+    }
+
+    let content = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || "";
+
+    if (!content) {
+        throw new Error(`Empty text returned from Gemini API: ${rawResponseText}`);
+    }
+
+    // 清理 markdown 語法與多餘引號
+    content = content.replace(/^```[a-zA-Z]*\n?/, "").replace(/\n?```$/, "").trim();
     content = content.replace(/^["']|["']$/g, '');
+
+    if (!content.startsWith("These items")) {
+        content = "These items " + content;
+    }
 
     return content;
 }
 
 module.exports = async (req, res) => {
     res.setHeader("Access-Control-Allow-Origin", "*");
-    res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Requested-With");
+    res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Requested-With, X-goog-api-key");
     res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
 
     if (req.method === "OPTIONS") {
@@ -62,8 +95,11 @@ module.exports = async (req, res) => {
     if (req.method === "GET") {
         return res.status(200).json({
             status: "ok",
-            message: "Vercel AI Function Active",
-            has_token: Boolean(HF_TOKEN)
+            message: "Gemini Handler Ready",
+            has_key: Boolean(GEMINI_API_KEY),
+            key_preview: GEMINI_API_KEY ? `${GEMINI_API_KEY.substring(0, 6)}...${GEMINI_API_KEY.slice(-4)}` : "None",
+            key_length: GEMINI_API_KEY.length,
+            model: MODEL_NAME
         });
     }
 
@@ -72,24 +108,24 @@ module.exports = async (req, res) => {
             const { products = [], preferences = {} } = req.body || {};
 
             if (!products || products.length < 3) {
-                return res.status(400).json({ detail: "Products list must contain at least 3 items." });
+                return res.status(400).json({ error: "Products list must contain at least 3 items." });
             }
 
-            let result;
-            try {
-                result = await getAiRecommendationsFromHf(products, preferences);
-            } catch (aiErr) {
-                console.log(`[AI Model Error/Timeout]: ${aiErr.message}. Switching to Fallback system.`);
-                result = 'Results generated based on your preference.';
-            }
+            const recommendation = await getAiRecommendationsFromGemini(products, preferences);
 
-            return res.status(200).json({ recommendation: result });
+            return res.status(200).json({
+                recommendation: recommendation,
+                source: "Gemini_API_Live"
+            });
 
-        } catch (e) {
-            console.log(`[Handler Exception]: ${e.message}`);
-            return res.status(500).json({ detail: e.message });
+        } catch (err) {
+            console.error("[Backend Gemini Call Failed]:", err.message);
+            return res.status(500).json({
+                error: err.message,
+                source: "Fallback_Due_To_Error"
+            });
         }
     }
 
-    return res.status(405).json({ detail: `Method ${req.method} Not Allowed` });
+    return res.status(405).json({ error: `Method ${req.method} Not Allowed` });
 };
