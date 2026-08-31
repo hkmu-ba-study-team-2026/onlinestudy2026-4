@@ -167,8 +167,8 @@
 
             if (response.ok) {
                 const resData = await response.json();
-                if (resData.recommendedRestaurantId) recommendedRestaurantId = resData.recommendedRestaurantId;
-                if (resData.recommendation) nudgeText = resData.recommendation;
+                if (resData.recommend_hotel_id) recommendedRestaurantId = resData.recommend_hotel_id;
+                if (resData.nudge_text) nudgeText = resData.nudge_text;
             }
         } catch (error) {
             console.warn("Using default AI recommendation logic:", error);
