@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+    <meta charset="UTF-8">
+    <title>DineReserve Data Exporter (Standalone Tool)</title>
+    <!-- SheetJS 與 Firebase SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
+
+    <script>
+        // 與本專案保持完全一致的 Firebase 配置 (online-study-4)
+        const firebaseConfig = {
+            apiKey: "AIzaSyB5OysrS98cHA7WXbObSGtUvfazPJStkRE",
+            authDomain: "online-study-4.firebaseapp.com",
+            databaseURL: "https://online-study-4-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "online-study-4",
+            storageBucket: "online-study-4.firebasestorage.app",
+            messagingSenderId: "597103940431",
+            appId: "1:597103940431:web:d854df1b51a7f76f2aeb3a"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+    </script>
+
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: #f1f5f9;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .export-card {
+            background: #ffffff;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+            text-align: center;
+            max-width: 520px;
+            width: 90%;
+        }
+        h2 { color: #0f172a; margin-bottom: 8px; }
+        p { color: #64748b; font-size: 14px; margin-bottom: 24px; line-height: 1.5; }
+        .export-btn {
+            background: #e11d48;
+            color: #ffffff;
+            border: none;
+            padding: 14px 28px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            width: 100%;
+            transition: all 0.2s ease;
+        }
+        .export-btn:hover { background: #be123c; }
+        .export-btn:disabled { background: #94a3b8; cursor: not-allowed; }
+        #statusMsg { margin-top: 16px; font-size: 14px; font-weight: 600; color: #334155; }
+    </style>
+</head>
+<body>
+
+<div class="export-card">
+    <h2>📊 DineReserve Master Data Exporter</h2>
+    <p>點擊下方按鈕直接自 Firebase 擷取最新餐廳研究資料，並整合匯出包含 AI 推薦決策、預訂數據與問卷之 Master Excel 檔案。</p>
+    <button id="exportBtn" class="export-btn" onclick="exportData()">下載研究數據總表 (.xlsx)</button>
+    <div id="statusMsg"></div>
+</div>
+
+<script>
+    // 定義 Pre-Survey 偏好題項 (Q1 ~ Q8)
+    const PRE_SURVEY_QUESTIONS = [
+        { key: "q01_sensory_experience", header: "Pre_Q01_SensoryExperience" },
+        { key: "q02_fresh",              header: "Pre_Q02_Fresh" },
+        { key: "q03_familiar",           header: "Pre_Q03_FamiliarCuisine" },
+        { key: "q04_high_quality",       header: "Pre_Q04_HighQualityMenu" },
+        { key: "q05_healthy",            header: "Pre_Q05_PrivateRoomView" },
+        { key: "q06_safe_to_consume",    header: "Pre_Q06_HygieneWinePairing" },
+        { key: "q07_price_within_budget",header: "Pre_Q07_PriceJustified" },
+        { key: "q08_price_justified",    header: "Pre_Q08_SustainableSourcing" }
+    ];
+
+    // 定義 Post-Survey 18 題量表題項 (Likert 1~7)
+    const POST_SURVEY_QUESTIONS = [
+        { key: "q_scenario_realistic",   header: "Post_Q01_Scenario_Realistic" },
+        { key: "q_scenario_project",     header: "Post_Q02_Scenario_ProjectSelf" },
+        { key: "q_scenario_imagine",     header: "Post_Q03_Scenario_ImagineReal" },
+        { key: "q_mc_onesize",           header: "Post_Q04_Rec_OneSizeFitAll" },
+        { key: "q_mc_identical",         header: "Post_Q05_Rec_IdenticalToAll" },
+        { key: "q_wtp_tomato",           header: "Post_Q06_WTP_Item1" },
+        { key: "q_wtp_chicken",          header: "Post_Q07_WTP_Item2" },
+        { key: "q_wtp_salmon",           header: "Post_Q08_WTP_Item3" },
+        { key: "q_wtp_strawberries",     header: "Post_Q09_WTP_Item4" },
+        { key: "q_sus_tomato",           header: "Post_Q10_Sus_Item1" },
+        { key: "q_sus_chicken",          header: "Post_Q11_Sus_Item2" },
+        { key: "q_sus_salmon",           header: "Post_Q12_Sus_Item3" },
+        { key: "q_sus_strawberries",     header: "Post_Q13_Sus_Item4" },
+        { key: "q_pers_tailored",        header: "Post_Q14_Pers_TailoredInterests" },
+        { key: "q_pers_understood",      header: "Post_Q15_Pers_NeedsUnderstood" },
+        { key: "q_pers_account",         header: "Post_Q16_Pers_PrefTakenAccount" },
+        { key: "q_ai_familiar",          header: "Post_Q17_AI_Familiar" },
+        { key: "q_ai_like",              header: "Post_Q18_AI_LikeGeneral" }
+    ];
+
+    async function exportData() {
+        const btn = document.getElementById("exportBtn");
+        const status = document.getElementById("statusMsg");
+        btn.disabled = true;
+        status.innerText = "⏳ 正在自 Firebase 讀取所有資料庫節點...";
+
+        try {
+            // 平行抓取所有相關節點
+            const [usersSnap, preSurveySnap, bookingsSnap, postSurveySnap, visitsSnap] = await Promise.all([
+                db.ref('users').once('value'),
+                db.ref('survey_responses').once('value'),
+                db.ref('restaurant_bookings').once('value'),
+                db.ref('post_survey_records').once('value'),
+                db.ref('visit_logs').once('value')
+            ]);
+
+            const users = usersSnap.val() ? Object.values(usersSnap.val()) : [];
+            const preSurveys = preSurveySnap.val() ? Object.values(preSurveySnap.val()) : [];
+            const bookings = bookingsSnap.val() ? Object.values(bookingsSnap.val()) : [];
+            const postSurveys = postSurveySnap.val() ? Object.values(postSurveySnap.val()) : [];
+            const visits = visitsSnap.val() ? Object.values(visitsSnap.val()) : [];
+
+            // 匯總所有不重複的 32 位 Participant ID
+            const allPIDs = new Set([
+                ...users.map(u => u.participantID),
+                ...preSurveys.map(s => s.participantID),
+                ...bookings.map(b => b.participantID),
+                ...postSurveys.map(p => p.participantID),
+                ...visits.map(v => v.participantID)
+            ].filter(pid => pid && pid.trim() !== ""));
+
+            const masterDataMap = {};
+
+            allPIDs.forEach(pid => {
+                const row = {};
+
+                // 1. 基本用戶身份資訊
+                row["Participant_ID"] = pid;
+                row["User_Registered_Time"] = "";
+
+                // 2. Pre-Survey 與 AI 推薦紀錄
+                row["PreSurvey_Submitted_Time"] = "";
+                row["AI_Recommended_Rest_ID"] = "";
+                row["AI_Nudge_Text"] = "";
+                PRE_SURVEY_QUESTIONS.forEach(q => {
+                    row[q.header] = "";
+                });
+
+                // 3. 餐廳預訂行為指標
+                row["Has_Completed_Booking"] = "No";
+                row["Booking_Ref"] = "";
+                row["Booking_Time"] = "";
+                row["Selected_Rest_ID"] = "";
+                row["Selected_Rest_Name"] = "";
+                row["Selected_Menu_Name"] = "";
+                row["Booking_Total_Amount"] = "";
+                row["Is_AI_Recommendation_Adopted"] = "No";
+
+                // 4. Post-Survey 量表回應
+                row["PostSurvey_Submitted_Time"] = "";
+                POST_SURVEY_QUESTIONS.forEach(q => {
+                    row[q.header] = "";
+                });
+
+                // 5. 人口學統計資料
+                row["Demo_Gender"] = "";
+                row["Demo_Age"] = "";
+                row["Demo_Country"] = "";
+                row["Demo_Income"] = "";
+                row["Demo_Ethnicity"] = "";
+                row["Demo_MaritalStatus"] = "";
+                row["Demo_Education"] = "";
+                row["Demo_Occupation"] = "";
+
+                // 6. 質性反饋問題
+                row["Open_Survey_Purpose_Thoughts"] = "";
+                row["Open_Study_Feedback"] = "";
+
+                masterDataMap[pid] = row;
+            });
+
+            // 填充 1: Users (32 位 ID 註冊紀錄)
+            users.forEach(u => {
+                const pid = u.participantID;
+                if (masterDataMap[pid]) {
+                    masterDataMap[pid]["User_Registered_Time"] = u.createdAt || "";
+                }
+            });
+
+            // 填充 2: Pre-Survey & AI 推薦
+            preSurveys.forEach(s => {
+                const pid = s.participantID;
+                if (masterDataMap[pid]) {
+                    masterDataMap[pid]["PreSurvey_Submitted_Time"] = s.submittedAt || "";
+                    masterDataMap[pid]["AI_Recommended_Rest_ID"] = s.aiRecommendedRestaurantId || "";
+                    masterDataMap[pid]["AI_Nudge_Text"] = s.nudgeContent || "";
+                    if (s.responses) {
+                        PRE_SURVEY_QUESTIONS.forEach(q => {
+                            if (s.responses[q.key] !== undefined) {
+                                masterDataMap[pid][q.header] = s.responses[q.key];
+                            }
+                        });
+                    }
+                }
+            });
+
+            // 填充 3: Restaurant Bookings
+            bookings.forEach(b => {
+                const pid = b.participantID;
+                if (masterDataMap[pid]) {
+                    masterDataMap[pid]["Has_Completed_Booking"] = "Yes";
+                    masterDataMap[pid]["Booking_Ref"] = b.bookingRef || "";
+                    masterDataMap[pid]["Booking_Time"] = b.bookingTime || "";
+                    masterDataMap[pid]["Selected_Rest_ID"] = b.selectedRestaurantId || "";
+                    masterDataMap[pid]["Selected_Rest_Name"] = b.selectedRestaurantName || "";
+                    masterDataMap[pid]["Selected_Menu_Name"] = b.menuName || "";
+                    masterDataMap[pid]["Booking_Total_Amount"] = b.totalAmount || "";
+                    masterDataMap[pid]["Is_AI_Recommendation_Adopted"] = b.isAiRecommendedSelected ? "Yes" : "No";
+                }
+            });
+
+            // 填充 4: Post-Survey & Demographics
+            postSurveys.forEach(p => {
+                const pid = p.participantID;
+                if (masterDataMap[pid]) {
+                    masterDataMap[pid]["PostSurvey_Submitted_Time"] = p.submittedAt || "";
+
+                    if (p.postSurveyLikert) {
+                        POST_SURVEY_QUESTIONS.forEach(q => {
+                            if (p.postSurveyLikert[q.key] !== undefined) {
+                                masterDataMap[pid][q.header] = p.postSurveyLikert[q.key];
+                            }
+                        });
+                    }
+
+                    if (p.demographics) {
+                        masterDataMap[pid]["Demo_Gender"] = p.demographics.gender || "";
+                        masterDataMap[pid]["Demo_Age"] = p.demographics.age || "";
+                        masterDataMap[pid]["Demo_Country"] = p.demographics.country || "";
+                        masterDataMap[pid]["Demo_Income"] = p.demographics.income || "";
+                        masterDataMap[pid]["Demo_Ethnicity"] = p.demographics.ethnicity || "";
+                        masterDataMap[pid]["Demo_MaritalStatus"] = p.demographics.maritalStatus || "";
+                        masterDataMap[pid]["Demo_Education"] = p.demographics.education || "";
+                        masterDataMap[pid]["Demo_Occupation"] = p.demographics.occupation || "";
+                    }
+
+                    if (p.openResponses) {
+                        masterDataMap[pid]["Open_Survey_Purpose_Thoughts"] = p.openResponses.surveyPurposeThoughts || "";
+                        masterDataMap[pid]["Open_Study_Feedback"] = p.openResponses.generalFeedback || "";
+                    }
+                }
+            });
+
+            // 產生 Excel 工作表
+            const wb = XLSX.utils.book_new();
+
+            // 工作表 1: 整合總表 (Master Data)
+            const wsMaster = XLSX.utils.json_to_sheet(Object.values(masterDataMap));
+            XLSX.utils.book_append_sheet(wb, wsMaster, "All_Research_Data");
+
+            // 工作表 2: 純預訂紀錄表 (Bookings Only)
+            const bookingRows = bookings.map(b => ({
+                "Participant_ID": b.participantID || "",
+                "Booking_Ref": b.bookingRef || "",
+                "Booking_Time": b.bookingTime || "",
+                "AI_Recommended_ID": b.aiRecommendedRestaurantId || "",
+                "Selected_Restaurant_ID": b.selectedRestaurantId || "",
+                "Selected_Restaurant_Name": b.selectedRestaurantName || "",
+                "Menu_Name": b.menuName || "",
+                "Is_AI_Adopted": b.isAiRecommendedSelected ? "Yes" : "No",
+                "Total_Amount": b.totalAmount || ""
+            }));
+            const wsBookings = XLSX.utils.json_to_sheet(bookingRows);
+            XLSX.utils.book_append_sheet(wb, wsBookings, "Bookings_Detail");
+
+            const dateStr = new Date().toISOString().split('T')[0];
+            XLSX.writeFile(wb, `DineReserve_Master_Research_Data_${dateStr}.xlsx`);
+
+            status.innerText = `✅ 匯出成功！已彙整匯出 ${Object.keys(masterDataMap).length} 筆受試者資料。`;
+        } catch (err) {
+            console.error("Export error:", err);
+            status.innerText = "❌ 匯出失敗，請打開瀏覽器 Console 檢視錯誤細節。";
+        } finally {
+            btn.disabled = false;
+        }
+    }
+</script>
+</body>
+</html>
