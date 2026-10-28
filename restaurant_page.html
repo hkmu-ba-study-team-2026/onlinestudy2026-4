@@ -20,8 +20,10 @@
     };
     try {
       firebase.initializeApp(firebaseConfig);
-      const db = firebase.database();
-    } catch(e) {}
+      var db = firebase.database();
+    } catch(e) {
+      console.warn("Firebase 初始化跳过或在离线模式:", e);
+    }
   </script>
 
   <!-- 引入 80 间独立餐厅数据集 -->
@@ -78,7 +80,6 @@
     .filter-title { font-size: 0.88rem; font-weight: 700; margin-bottom: 0.65rem; display: flex; justify-content: space-between; }
     .filter-checkbox { display: flex; align-items: center; gap: 0.6rem; margin-bottom: 0.45rem; font-size: 0.84rem; cursor: pointer; }
     .filter-checkbox .count { margin-left: auto; color: var(--text-light); font-size: 0.75rem; }
-    .district-scroll-box { max-height: 190px; overflow-y: auto; padding-right: 6px; border: 1px solid #f1f5f9; border-radius: 6px; padding: 8px; background: #fafbfc; }
     .price-range-slider { width: 100%; margin: 0.5rem 0; accent-color: var(--primary); }
 
     .results-section { display: flex; flex-direction: column; gap: 1rem; }
@@ -136,7 +137,7 @@
 <div class="hero-search-wrapper">
   <div class="search-container">
     <h1 class="hero-title">探索中国香港 80 间米其林与精选餐厅</h1>
-    <p class="hero-subtitle">覆盖全港 18 区星级美馔与可持续环保认证餐厅，智能锁定专属席位</p>
+    <p class="hero-subtitle">覆盖香港三大区域星级美馔与可持续环保认证餐厅，智能锁定专属席位</p>
     <div class="search-box">
       <div class="search-field">
         <i class="fa-solid fa-location-dot"></i>
@@ -173,8 +174,8 @@
 
     <!-- 人均预算滑块 -->
     <div class="filter-group">
-      <div class="filter-title"><span>人均预算上限</span><span id="priceRangeLabel">最高 HK$ 3,500</span></div>
-      <input type="range" id="priceRange" class="price-range-slider" min="1000" max="3500" step="100" value="3500" oninput="updatePriceFilter(this.value)">
+      <div class="filter-title"><span>人均预算上限</span><span id="priceRangeLabel">最高 HK$ 5,000</span></div>
+      <input type="range" id="priceRange" class="price-range-slider" min="500" max="5000" step="100" value="5000" oninput="updatePriceFilter(this.value)">
     </div>
 
     <!-- 餐厅星级筛选（4 种类类别各 20 间） -->
@@ -186,15 +187,26 @@
       <label class="filter-checkbox"><input type="checkbox" name="star" value="2" onchange="filterRestaurants()"><span>🏅 其它精选</span><span class="count" id="count-star-2"></span></label>
     </div>
 
-    <!-- 香港 18 区分区筛选 -->
+    <!-- 大区筛选（仅保留香港岛、九龙、新界） -->
     <div class="filter-group">
-      <div class="filter-title"><span>地区 (香港18区)</span></div>
-      <div class="district-scroll-box" id="districtFilterContainer">
-        <!-- 由 JS 动态生成 18 区勾选框与数量 -->
-      </div>
+      <div class="filter-title"><span>地区分布</span></div>
+      <label class="filter-checkbox"><input type="checkbox" name="region" value="香港岛" onchange="filterRestaurants()"><span>香港岛</span><span class="count" id="count-region-hk"></span></label>
+      <label class="filter-checkbox"><input type="checkbox" name="region" value="九龙" onchange="filterRestaurants()"><span>九龙</span><span class="count" id="count-region-kln"></span></label>
+      <label class="filter-checkbox"><input type="checkbox" name="region" value="新界" onchange="filterRestaurants()"><span>新界</span><span class="count" id="count-region-nt"></span></label>
     </div>
 
-    <!-- 特色设施（5 大 Tag，每个 Tag 皆包含 20-60 间餐厅） -->
+    <!-- 新增：菜系分类筛选 -->
+    <div class="filter-group">
+      <div class="filter-title"><span>菜系风味</span></div>
+      <label class="filter-checkbox"><input type="checkbox" name="cuisine" value="粤菜/中菜" onchange="filterRestaurants()"><span>粤菜 / 精细中菜</span><span class="count" id="count-cui-canton"></span></label>
+      <label class="filter-checkbox"><input type="checkbox" name="cuisine" value="法式料理" onchange="filterRestaurants()"><span>经典与当代法餐</span><span class="count" id="count-cui-french"></span></label>
+      <label class="filter-checkbox"><input type="checkbox" name="cuisine" value="日本料理" onchange="filterRestaurants()"><span>日本料理 / 寿司割烹</span><span class="count" id="count-cui-japan"></span></label>
+      <label class="filter-checkbox"><input type="checkbox" name="cuisine" value="意式料理" onchange="filterRestaurants()"><span>传统与现代意餐</span><span class="count" id="count-cui-italian"></span></label>
+      <label class="filter-checkbox"><input type="checkbox" name="cuisine" value="亚洲/融合菜" onchange="filterRestaurants()"><span>亚洲风味 / 创新融合</span><span class="count" id="count-cui-fusion"></span></label>
+      <label class="filter-checkbox"><input type="checkbox" name="cuisine" value="牛排扒房" onchange="filterRestaurants()"><span>炭烤牛排 / 高空扒房</span><span class="count" id="count-cui-steak"></span></label>
+    </div>
+
+    <!-- 特色设施（5 大 Tag） -->
     <div class="filter-group" style="border-bottom:none;margin-bottom:0;padding-bottom:0;">
       <div class="filter-title">特色设施与认证</div>
       <label class="filter-checkbox"><input type="checkbox" id="filterPrivateRoom" onchange="filterRestaurants()"><span>私密独立包厢</span><span class="count" id="count-privateRoom"></span></label>
@@ -207,7 +219,7 @@
 
   <section class="results-section">
     <div class="sort-bar">
-      <div>搜索结果：<span style="font-weight:700;" id="restaurantCount">80 间精选餐厅</span></div>
+      <div>搜索结果：<span style="font-weight:700;" id="restaurantCount">0 间精选餐厅</span></div>
       <div class="sort-options">
         <button class="sort-btn active" onclick="sortRestaurants('popular', this)">推荐排序</button>
         <button class="sort-btn" onclick="sortRestaurants('priceAsc', this)">人均：低至高</button>
@@ -239,7 +251,7 @@
         </div>
       </div>
       <button class="btn-search" style="width:100%;" onclick="acceptRecommendation()"><i class="fa-solid fa-bell-concierge"></i> 查看推荐专属套餐</button>
-      <button onclick="dismissRecommendation()" style="background:transparent;border:1px solid #cbd5e1;padding:0.6rem;border-radius:8px;cursor:pointer;color:var(--text-muted);">浏览全部 80 间餐厅清单</button>
+      <button onclick="dismissRecommendation()" style="background:transparent;border:1px solid #cbd5e1;padding:0.6rem;border-radius:8px;cursor:pointer;color:var(--text-muted);">浏览全部餐厅清单</button>
     </div>
   </div>
 </div>
@@ -293,7 +305,7 @@
   </div>
 </div>
 
-<!-- 弹窗 3：预订完成后的个人 ID 提示与复制 Dialog Box (中央对话框) -->
+<!-- 弹窗 3：预订完成后的个人 ID 提示与复制 Dialog Box -->
 <div class="modal-overlay" id="exitIdModal">
   <div class="exit-modal-card">
     <div style="font-size:2.5rem; color:var(--success);"><i class="fa-solid fa-circle-check"></i></div>
@@ -313,21 +325,39 @@
 </div>
 
 <script>
-  // ==================== 自定义返回主页目标网址变量 ====================
   const RETURN_HOME_URL = "index.html";
 
-  // 香港 18 区标准分区定义
-  const HK_18_DISTRICTS = [
-    "中西区", "湾仔区", "东区", "南区",
-    "油尖旺区", "深水埗区", "九龙城区", "黄大仙区", "观塘区",
-    "葵青区", "荃湾区", "屯门区", "元朗区", "北区", "大埔区", "沙田区", "西贡区", "离岛区"
-  ];
+  // 香港三大主要区域与对应行政区映射
+  const HK_REGIONS_MAP = {
+    "香港岛": ["中西区", "湾仔区", "东区", "南区"],
+    "九龙": ["油尖旺区", "深水埗区", "九龙城区", "黄大仙区", "观塘区"],
+    "新界": ["葵青区", "荃湾区", "屯门区", "元朗区", "北区", "大埔区", "沙田区", "西贡区", "离岛区"]
+  };
+
+  function getRegionByLocation(loc) {
+    for (let reg in HK_REGIONS_MAP) {
+      if (HK_REGIONS_MAP[reg].includes(loc)) return reg;
+    }
+    return "香港岛";
+  }
+
+  // 菜系识别归类辅助函数
+  function getCuisineCategory(styleStr) {
+    if (!styleStr) return "粤菜/中菜";
+    const s = styleStr.toLowerCase();
+    if (s.includes("粤") || s.includes("中菜") || s.includes("潮") || s.includes("江浙") || s.includes("沪") || s.includes("东莞") || s.includes("盆菜") || s.includes("素斋")) return "粤菜/中菜";
+    if (s.includes("法")) return "法式料理";
+    if (s.includes("寿司") || s.includes("割烹") || s.includes("日") || s.includes("怀石")) return "日本料理";
+    if (s.includes("意") || s.includes("拿坡里") || s.includes("西西里") || s.includes("披萨")) return "意式料理";
+    if (s.includes("牛排") || s.includes("扒房") || s.includes("炭烤")) return "牛排扒房";
+    return "亚洲/融合菜";
+  }
 
   let currentPID = localStorage.getItem("participantID") || "Anonymous";
   let AI_RECOMMENDED_ID = parseInt(localStorage.getItem("ai_recommended_restaurant_id"), 10) || 1;
   let AI_NUDGE_TEXT = localStorage.getItem("ai_nudge_text") || "为您精心甄选的专属主推餐厅。";
 
-  let currentRestaurants = typeof restaurantsData !== 'undefined' ? [...restaurantsData] : [];
+  let currentRestaurants = (typeof restaurantsData !== 'undefined' && Array.isArray(restaurantsData)) ? [...restaurantsData] : [];
   let selectedRest = null;
   let selectedMenu = null;
   let hasCopiedID = false;
@@ -341,80 +371,120 @@
     return "🏅 其它精选";
   }
 
-  function initDistrictFilters() {
-    const container = document.getElementById("districtFilterContainer");
-    const distCounts = {};
-    HK_18_DISTRICTS.forEach(d => distCounts[d] = 0);
-    restaurantsData.forEach(r => {
-      if (distCounts[r.location] !== undefined) distCounts[r.location]++;
-    });
-
-    container.innerHTML = HK_18_DISTRICTS.map(dist => `
-      <label class="filter-checkbox">
-        <input type="checkbox" name="district" value="${dist}" onchange="filterRestaurants()">
-        <span>${dist}</span>
-        <span class="count">(${distCounts[dist]})</span>
-      </label>
-    `).join('');
-  }
-
   function updateFilterCounts() {
     let s5 = 0, s4 = 0, s3 = 0, s2 = 0;
+    let rHk = 0, rKln = 0, rNt = 0;
+    let cCanton = 0, cFrench = 0, cJapan = 0, cItalian = 0, cFusion = 0, cSteak = 0;
     let pR = 0, wS = 0, pk = 0, som = 0, sus = 0;
 
-    restaurantsData.forEach(r => {
-      if (r.stars === 5) s5++;
-      else if (r.stars === 4) s4++;
-      else if (r.stars === 3) s3++;
-      else if (r.stars === 2) s2++;
+    if (Array.isArray(restaurantsData)) {
+      restaurantsData.forEach(r => {
+        if (!r) return;
+        // 星级
+        if (r.stars === 5) s5++;
+        else if (r.stars === 4) s4++;
+        else if (r.stars === 3) s3++;
+        else if (r.stars === 2) s2++;
 
-      if (r.hasPrivateRoom) pR++;
-      if (r.hasWindowSeat) wS++;
-      if (r.hasParking) pk++;
-      if (r.hasSommelier) som++;
-      if (r.hasSustainable) sus++;
-    });
+        // 区域统计
+        const reg = getRegionByLocation(r.location);
+        if (reg === "香港岛") rHk++;
+        else if (reg === "九龙") rKln++;
+        else if (reg === "新界") rNt++;
 
-    document.getElementById("count-star-5").innerText = `(${s5})`;
-    document.getElementById("count-star-4").innerText = `(${s4})`;
-    document.getElementById("count-star-3").innerText = `(${s3})`;
-    document.getElementById("count-star-2").innerText = `(${s2})`;
+        // 菜系统计
+        const cCat = getCuisineCategory(r.menus?.[0]?.style);
+        if (cCat === "粤菜/中菜") cCanton++;
+        else if (cCat === "法式料理") cFrench++;
+        else if (cCat === "日本料理") cJapan++;
+        else if (cCat === "意式料理") cItalian++;
+        else if (cCat === "牛排扒房") cSteak++;
+        else cFusion++;
 
-    document.getElementById("count-privateRoom").innerText = `(${pR})`;
-    document.getElementById("count-windowSeat").innerText = `(${wS})`;
-    document.getElementById("count-parking").innerText = `(${pk})`;
-    document.getElementById("count-sommelier").innerText = `(${som})`;
-    document.getElementById("count-sustainable").innerText = `(${sus})`;
+        // 设施
+        if (r.hasPrivateRoom) pR++;
+        if (r.hasWindowSeat) wS++;
+        if (r.hasParking) pk++;
+        if (r.hasSommelier) som++;
+        if (r.hasSustainable) sus++;
+      });
+    }
+
+    const setElText = (id, txt) => {
+      const el = document.getElementById(id);
+      if (el) el.innerText = txt;
+    };
+
+    setElText("count-star-5", `(${s5})`);
+    setElText("count-star-4", `(${s4})`);
+    setElText("count-star-3", `(${s3})`);
+    setElText("count-star-2", `(${s2})`);
+
+    setElText("count-region-hk", `(${rHk})`);
+    setElText("count-region-kln", `(${rKln})`);
+    setElText("count-region-nt", `(${rNt})`);
+
+    setElText("count-cui-canton", `(${cCanton})`);
+    setElText("count-cui-french", `(${cFrench})`);
+    setElText("count-cui-japan", `(${cJapan})`);
+    setElText("count-cui-italian", `(${cItalian})`);
+    setElText("count-cui-fusion", `(${cFusion})`);
+    setElText("count-cui-steak", `(${cSteak})`);
+
+    setElText("count-privateRoom", `(${pR})`);
+    setElText("count-windowSeat", `(${wS})`);
+    setElText("count-parking", `(${pk})`);
+    setElText("count-sommelier", `(${som})`);
+    setElText("count-sustainable", `(${sus})`);
   }
 
   function renderRestaurantList(data) {
     const container = document.getElementById("restaurantListContainer");
-    document.getElementById("restaurantCount").innerText = `${data.length} 间香港精选餐厅`;
+    if (!container) return;
+
+    const countEl = document.getElementById("restaurantCount");
+    if (countEl) countEl.innerText = `${data.length} 间香港精选餐厅`;
+
+    if (data.length === 0) {
+      container.innerHTML = `
+        <div style="background:white; padding:3.5rem 1.5rem; border-radius:12px; text-align:center; border:1px solid #e2e8f0;">
+          <i class="fa-solid fa-utensils" style="font-size:3rem; color:#cbd5e1; margin-bottom:1rem;"></i>
+          <h3 style="font-size:1.15rem; font-weight:700; color:#475569;">未找到符合当前条件的餐厅</h3>
+          <p style="font-size:0.85rem; color:#94a3b8; margin-top:0.4rem;">请尝试放宽菜系、地区或预算限制</p>
+          <button class="sort-btn active" style="margin-top:1rem;" onclick="resetFilters()">重置所有筛选条件</button>
+        </div>
+      `;
+      return;
+    }
 
     const sorted = [...data].sort((a, b) => (a.id === AI_RECOMMENDED_ID ? -1 : b.id === AI_RECOMMENDED_ID ? 1 : 0));
 
     container.innerHTML = sorted.map(rest => {
       const isAI = (rest.id === AI_RECOMMENDED_ID);
+      const imgUrl = (rest.images && rest.images[0]) ? rest.images[0] : "https://images.unsplash.com/photo-1550966871-3ed3cdb5ed0c?auto=format&fit=crop&w=800&q=80";
+      const regionName = getRegionByLocation(rest.location);
+
       return `
         <div class="restaurant-card ${isAI ? 'featured-recommendation' : ''}">
           ${isAI ? `<div class="top-recommend-banner"><span><i class="fa-solid fa-wand-magic-sparkles"></i> 为您量身推荐 • 专属席位特选</span><span>98% 食客高分好评</span></div>` : ''}
           <div class="rest-image-col">
-            <img src="${rest.images[0]}" alt="${rest.name}" loading="lazy">
+            <img src="${imgUrl}" alt="${rest.name}" loading="lazy">
             ${isAI ? `<div class="tag-deal" style="background:#d97706;">⭐ 推荐首选</div>` : ''}
           </div>
           <div class="rest-info-col">
             <div>
               <div style="color:var(--star);font-size:0.78rem;font-weight:700;">
-                ${getStarLabel(rest.stars)} • <span style="color:#0284c7;">${rest.location}</span>
+                ${getStarLabel(rest.stars)} • <span style="color:#0284c7;">${regionName} (${rest.location || ''})</span>
               </div>
               <h2 style="font-size:1.15rem;font-weight:800;margin-top:3px;">${rest.name}</h2>
               <p style="font-size:0.8rem;color:var(--text-muted);margin-top:2px;">
-                <i class="fa-solid fa-location-dot" style="color:var(--primary);"></i> ${rest.address}
+                <i class="fa-solid fa-location-dot" style="color:var(--primary);"></i> ${rest.address || ''}
               </p>
               ${rest.ecoAward ? `<div class="eco-award-box"><i class="fa-solid fa-leaf"></i> ${rest.ecoAward}</div>` : ''}
             </div>
             <div style="margin-top:8px;">
               ${isAI ? `<span class="badge-pill gold-star"><i class="fa-solid fa-crown"></i> 优先推荐</span>` : ''}
+              ${rest.menus?.[0]?.style ? `<span class="badge-pill" style="background:#e0f2fe;color:#0369a1;"><i class="fa-solid fa-utensils"></i> ${rest.menus[0].style}</span>` : ''}
               ${rest.hasPrivateRoom ? `<span class="badge-pill"><i class="fa-solid fa-door-closed"></i> 独立包厢</span>` : ''}
               ${rest.hasWindowSeat ? `<span class="badge-pill"><i class="fa-solid fa-city"></i> 景观席</span>` : ''}
               ${rest.hasParking ? `<span class="badge-pill"><i class="fa-solid fa-car"></i> 泊车服务</span>` : ''}
@@ -424,12 +494,12 @@
           </div>
           <div class="rest-pricing-col">
             <div>
-              <div style="font-size:0.8rem;font-weight:700;color:var(--primary);">${rest.verdict}</div>
-              <span style="font-size:0.72rem;color:var(--text-muted);">${rest.reviewCount} 条评价</span>
-              <span class="score-badge">${rest.rating}</span>
+              <div style="font-size:0.8rem;font-weight:700;color:var(--primary);">${rest.verdict || '精选推荐'}</div>
+              <span style="font-size:0.72rem;color:var(--text-muted);">${rest.reviewCount || 999} 条评价</span>
+              <span class="score-badge">${rest.rating || 9.0}</span>
             </div>
             <div style="margin-top:auto;">
-              <div style="text-decoration:line-through;font-size:0.78rem;color:var(--text-light);">HK$ ${rest.originalPrice}</div>
+              <div style="text-decoration:line-through;font-size:0.78rem;color:var(--text-light);">HK$ ${rest.originalPrice || Math.round(rest.price * 1.15)}</div>
               <span style="font-size:1.45rem;font-weight:800;color:var(--accent);">HK$ ${rest.price}</span>
               <span style="font-size:0.75rem;color:var(--text-muted);"> /位起</span>
             </div>
@@ -443,23 +513,30 @@
   }
 
   function setupAiModals() {
+    if (!Array.isArray(restaurantsData) || restaurantsData.length === 0) return;
     const aiRest = restaurantsData.find(r => r.id === AI_RECOMMENDED_ID) || restaurantsData[0];
     if (!aiRest) return;
 
-    document.getElementById("modalAiRecTitle").innerText = aiRest.name;
-    document.getElementById("modalAiRecName").innerText = aiRest.name;
-    document.getElementById("modalAiRecLoc").innerText = `${aiRest.location} • ${aiRest.address}`;
-    document.getElementById("modalAiRecPrice").innerText = `HK$ ${aiRest.price}`;
-    document.getElementById("modalAiRecImg").src = aiRest.images[0];
-    document.getElementById("modalAiRecNudgeText").innerText = AI_NUDGE_TEXT;
+    const setTxt = (id, t) => { const el = document.getElementById(id); if (el) el.innerText = t; };
+    setTxt("modalAiRecTitle", aiRest.name);
+    setTxt("modalAiRecName", aiRest.name);
+    setTxt("modalAiRecLoc", `${aiRest.location || ''} • ${aiRest.address || ''}`);
+    setTxt("modalAiRecPrice", `HK$ ${aiRest.price}`);
+    setTxt("modalAiRecNudgeText", AI_NUDGE_TEXT);
 
-    document.getElementById("floatingTitle").innerText = aiRest.name;
-    document.getElementById("floatingPrice").innerText = `HK$ ${aiRest.price} /位起`;
-    document.getElementById("floatingThumb").src = aiRest.images[0];
+    const modalImg = document.getElementById("modalAiRecImg");
+    if (modalImg && aiRest.images && aiRest.images[0]) modalImg.src = aiRest.images[0];
+
+    setTxt("floatingTitle", aiRest.name);
+    setTxt("floatingPrice", `HK$ ${aiRest.price} /位起`);
+    const floatImg = document.getElementById("floatingThumb");
+    if (floatImg && aiRest.images && aiRest.images[0]) floatImg.src = aiRest.images[0];
 
     setTimeout(() => {
-      document.getElementById("entryRecommendModal").classList.add("active");
-      document.getElementById("floatingRecommendPopup").classList.add("active");
+      const entryModal = document.getElementById("entryRecommendModal");
+      const floatPopup = document.getElementById("floatingRecommendPopup");
+      if (entryModal) entryModal.classList.add("active");
+      if (floatPopup) floatPopup.classList.add("active");
     }, 400);
   }
 
@@ -468,21 +545,39 @@
     closeFloatingPopup();
     openMenuModal(AI_RECOMMENDED_ID);
   }
-  function dismissRecommendation() { document.getElementById("entryRecommendModal").classList.remove("active"); }
-  function closeFloatingPopup() { document.getElementById("floatingRecommendPopup").classList.remove("active"); }
+  function dismissRecommendation() {
+    const el = document.getElementById("entryRecommendModal");
+    if (el) el.classList.remove("active");
+  }
+  function closeFloatingPopup() {
+    const el = document.getElementById("floatingRecommendPopup");
+    if (el) el.classList.remove("active");
+  }
 
   function openMenuModal(id) {
     selectedRest = restaurantsData.find(r => r.id === id);
-    document.getElementById("modalRestTitle").innerText = selectedRest.name;
-    document.getElementById("modalRestSubtitle").innerText = `${selectedRest.location} • ${selectedRest.address}`;
+    if (!selectedRest) return;
 
-    document.getElementById("modalMenuList").innerHTML = selectedRest.menus.map(m => `
+    document.getElementById("modalRestTitle").innerText = selectedRest.name;
+    document.getElementById("modalRestSubtitle").innerText = `${selectedRest.location || ''} • ${selectedRest.address || ''}`;
+
+    const menus = (selectedRest.menus && selectedRest.menus.length > 0) ? selectedRest.menus : [{
+      id: `m_${selectedRest.id}_default`,
+      name: `${selectedRest.name} 专属品鉴晚市套餐`,
+      image: (selectedRest.images && selectedRest.images[0]) ? selectedRest.images[0] : '',
+      style: "精选中西佳肴",
+      seating: "优选雅致席位",
+      drinks: "精选佐餐饮品",
+      price: selectedRest.price
+    }];
+
+    document.getElementById("modalMenuList").innerHTML = menus.map(m => `
       <div style="border:1px solid #e2e8f0;border-radius:8px;display:flex;overflow:hidden;">
-        <img src="${m.image}" style="width:180px;object-fit:cover;">
+        <img src="${m.image || ''}" style="width:180px;object-fit:cover;">
         <div style="padding:1rem;flex:1;display:flex;flex-direction:column;justify-content:space-between;">
           <div>
             <h4 style="font-weight:700;">${m.name}</h4>
-            <p style="font-size:0.8rem;color:var(--text-muted);margin-top:4px;">${m.style} • ${m.seating} • ${m.drinks}</p>
+            <p style="font-size:0.8rem;color:var(--text-muted);margin-top:4px;">${m.style || ''} • ${m.seating || ''} • ${m.drinks || ''}</p>
             ${selectedRest.ecoAward ? `<p style="font-size:0.78rem;color:#15803d;margin-top:4px;"><i class="fa-solid fa-leaf"></i> ${selectedRest.ecoAward}</p>` : ''}
           </div>
           <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-top:10px;">
@@ -497,7 +592,10 @@
   function closeMenuModal() { document.getElementById("menuModal").classList.remove("active"); }
 
   function openCheckoutModal(menuId) {
-    selectedMenu = selectedRest.menus.find(m => m.id === menuId);
+    if (!selectedRest) return;
+    const menus = selectedRest.menus || [];
+    selectedMenu = menus.find(m => m.id === menuId) || menus[0] || { name: "专属主厨套餐", price: selectedRest.price };
+
     closeMenuModal();
     document.getElementById("checkoutRestName").innerText = selectedRest.name;
     document.getElementById("checkoutMenuName").innerText = selectedMenu.name;
@@ -519,14 +617,14 @@
     selectedRestaurantName: selectedRest.name,
     selectedRestaurantLocation: selectedRest.location,
             isAiRecommendedSelected: isAiChosen,
-    menuName: selectedMenu.name,
-    totalAmount: document.getElementById("checkoutTotalPrice").innerText,
+    menuName: selectedMenu ? selectedMenu.name : "精选套餐",
+            totalAmount: document.getElementById("checkoutTotalPrice").innerText,
     bookingTime: new Date().toLocaleString()
   };
 
     try {
       if (typeof db !== 'undefined') {
-        await db.ref('restaurant_bookings').push(record);
+        db.ref('restaurant_bookings').push(record).catch(e => console.warn(e));
       }
     } catch (e) {
       console.error(e);
@@ -594,22 +692,51 @@
   }
 
   function filterRestaurants() {
-    const max = parseInt(document.getElementById("priceRange").value);
-    const keyword = (document.getElementById("keywordInput").value || "").trim().toLowerCase();
-    const starCbs = Array.from(document.querySelectorAll('input[name="star"]:checked')).map(c => parseInt(c.value));
-    const distCbs = Array.from(document.querySelectorAll('input[name="district"]:checked')).map(c => c.value);
+    if (!Array.isArray(restaurantsData)) return;
 
-    const pRoom = document.getElementById("filterPrivateRoom").checked;
-    const wSeat = document.getElementById("filterWindowSeat").checked;
-    const park = document.getElementById("filterParking").checked;
-    const som = document.getElementById("filterSommelier").checked;
-    const sus = document.getElementById("filterSustainable").checked;
+    const max = parseInt(document.getElementById("priceRange").value) || 5000;
+    const keywordInput = document.getElementById("keywordInput");
+    const keyword = keywordInput ? keywordInput.value.trim().toLowerCase() : "";
+
+    const starCbs = Array.from(document.querySelectorAll('input[name="star"]:checked')).map(c => parseInt(c.value));
+    const regCbs = Array.from(document.querySelectorAll('input[name="region"]:checked')).map(c => c.value);
+    const cuiCbs = Array.from(document.querySelectorAll('input[name="cuisine"]:checked')).map(c => c.value);
+
+    const getChecked = id => { const el = document.getElementById(id); return el ? el.checked : false; };
+    const pRoom = getChecked("filterPrivateRoom");
+    const wSeat = getChecked("filterWindowSeat");
+    const park = getChecked("filterParking");
+    const som = getChecked("filterSommelier");
+    const sus = getChecked("filterSustainable");
 
     currentRestaurants = restaurantsData.filter(r => {
+      if (!r) return false;
       if (r.price > max) return false;
-      if (keyword && !r.name.toLowerCase().includes(keyword) && !r.location.toLowerCase().includes(keyword) && !r.menus[0].style.toLowerCase().includes(keyword)) return false;
+
+      // 关键词过滤
+      if (keyword) {
+        const nameMatch = r.name && r.name.toLowerCase().includes(keyword);
+        const locMatch = r.location && r.location.toLowerCase().includes(keyword);
+        const styleMatch = r.menus?.[0]?.style?.toLowerCase().includes(keyword);
+        if (!nameMatch && !locMatch && !styleMatch) return false;
+      }
+
+      // 星级
       if (starCbs.length && !starCbs.includes(r.stars)) return false;
-      if (distCbs.length && !distCbs.includes(r.location)) return false;
+
+      // 大区过滤（香港岛 / 九龙 / 新界）
+      if (regCbs.length) {
+        const rReg = getRegionByLocation(r.location);
+        if (!regCbs.includes(rReg)) return false;
+      }
+
+      // 菜系过滤
+      if (cuiCbs.length) {
+        const cCat = getCuisineCategory(r.menus?.[0]?.style);
+        if (!cuiCbs.includes(cCat)) return false;
+      }
+
+      // 设施过滤
       if (pRoom && !r.hasPrivateRoom) return false;
       if (wSeat && !r.hasWindowSeat) return false;
       if (park && !r.hasParking) return false;
@@ -621,29 +748,37 @@
   }
 
   function resetFilters() {
-    document.getElementById("priceRange").value = 3500;
-    document.getElementById("priceRangeLabel").innerText = "最高 HK$ 3,500";
-    document.getElementById("keywordInput").value = "";
+    const slider = document.getElementById("priceRange");
+    if (slider) slider.value = 5000;
+    const priceLbl = document.getElementById("priceRangeLabel");
+    if (priceLbl) priceLbl.innerText = "最高 HK$ 5,000";
+
+    const kwInput = document.getElementById("keywordInput");
+    if (kwInput) kwInput.value = "";
+
     document.querySelectorAll('input[type="checkbox"]').forEach(c => c.checked = false);
-    currentRestaurants = [...restaurantsData];
+    currentRestaurants = Array.isArray(restaurantsData) ? [...restaurantsData] : [];
     renderRestaurantList(currentRestaurants);
   }
 
   function sortRestaurants(type, btn) {
     document.querySelectorAll(".sort-btn").forEach(b => b.classList.remove("active"));
-    btn.classList.add("active");
+    if (btn) btn.classList.add("active");
     if (type === 'priceAsc') currentRestaurants.sort((a,b) => a.price - b.price);
   else if (type === 'priceDesc') currentRestaurants.sort((a,b) => b.price - a.price);
-    else if (type === 'rating') currentRestaurants.sort((a,b) => b.rating - a.rating);
+  else if (type === 'rating') currentRestaurants.sort((a,b) => b.rating - a.rating);
   else currentRestaurants.sort((a,b) => (a.id === AI_RECOMMENDED_ID ? -1 : b.id === AI_RECOMMENDED_ID ? 1 : 0));
     renderRestaurantList(currentRestaurants);
   }
 
   window.addEventListener("DOMContentLoaded", () => {
-    initDistrictFilters();
-    updateFilterCounts();
-    renderRestaurantList(restaurantsData);
-    setupAiModals();
+    if (typeof restaurantsData !== 'undefined' && Array.isArray(restaurantsData)) {
+      updateFilterCounts();
+      renderRestaurantList(restaurantsData);
+      setupAiModals();
+    } else {
+      console.error("未能找到 restaurantsData 阵列，请检查 restaurants_data.js 是否在同一目录下引入。");
+    }
   });
 </script>
 </body>

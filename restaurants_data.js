@@ -1,7 +1,16 @@
 // restaurants_data.js
+const sampleImages = [
+    "https://images.unsplash.com/photo-1550966871-3ed3cdb5ed0c?auto=format&fit=crop&w=800&q=80",
+    "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=800&q=80",
+    "https://images.unsplash.com/photo-1559339352-11d035aa65de?auto=format&fit=crop&w=800&q=80",
+    "https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=800&q=80",
+    "https://images.unsplash.com/photo-1579871494447-9811cf80d66c?auto=format&fit=crop&w=800&q=80",
+    "https://images.unsplash.com/photo-1540420773420-3366772f4999?auto=format&fit=crop&w=800&q=80"
+];
+
 const rawRestaurantsList = [
-    // ================= 1. 米其林三星 (stars: 5) — 共 20 间 (ID 1 - 20) =================
-    { id: 1, name: "Amber (置地文华东方酒店)", stars: 5, location: "中西区", address: "中环皇后大道中15号置地文华东方酒店7楼", price: 2588, rating: 9.8, style: "当代法式料理", ecoAward: "米其林绿星奖 (Michelin Green Star) • 100%无乳制品可持续菜单及厨余堆肥计划", pRoom: true, wSeat: false, park: true, wine: true },
+    // 1. 米其林三星 (20 间)
+    { id: 1, name: "Amber (置地文华东方酒店)", stars: 5, location: "中西区", address: "中环皇后大道中15号置地文华东方酒店7楼", price: 2588, rating: 9.8, style: "当代法式料理", ecoAward: "米其林绿星奖 • 100%无乳制品可持续菜单及厨余堆肥计划", pRoom: true, wSeat: false, park: true, wine: true },
     { id: 2, name: "Caprice (香港四季酒店)", stars: 5, location: "中西区", address: "中环金融街8号香港四季酒店6楼", price: 2880, rating: 9.8, style: "经典法式料理", ecoAward: "四季酒店可持续海产采购认证 • 法国有机农庄直供食材", pRoom: true, wSeat: true, park: true, wine: true },
     { id: 3, name: "龙景轩 (香港四季酒店)", stars: 5, location: "中西区", address: "中环金融街8号香港四季酒店4楼", price: 2480, rating: 9.7, style: "顶级粤菜", ecoAward: "WWF 环保海鲜伙伴 • 100% 拒用鱼翅及支持可持续渔业认证", pRoom: true, wSeat: true, park: true, wine: true },
     { id: 4, name: "8 1/2 Otto e Mezzo BOMBANA", stars: 5, location: "中西区", address: "中环遮打道16-20号历山大厦2楼202号铺", price: 2780, rating: 9.8, style: "传统顶级意式", ecoAward: null, pRoom: true, wSeat: false, park: true, wine: true },
@@ -22,8 +31,8 @@ const rawRestaurantsList = [
     { id: 19, name: "Sushi Saito 斋藤寿司", stars: 5, location: "中西区", address: "中环金融街8号香港四季酒店45楼", price: 2980, rating: 9.8, style: "顶级江户前寿司", ecoAward: null, pRoom: true, wSeat: true, park: true, wine: true },
     { id: 20, name: "Forum 富临极品殿堂", stars: 5, location: "南区", address: "浅水湾海滩道28号海景大楼2楼", price: 2450, rating: 9.5, style: "传奇海景粤菜", ecoAward: null, pRoom: true, wSeat: true, park: true, wine: true },
 
-    // ================= 2. 米其林二星 (stars: 4) — 共 20 间 (ID 21 - 40) =================
-    { id: 21, name: "Feuille", stars: 4, location: "中西区", address: "中环威灵顿街198号The Wellington 5楼", price: 1880, rating: 9.5, style: "自然主义法餐", ecoAward: "米其林绿星奖 (Michelin Green Star) • 80%本地有机农作物与全株植物零浪费料理", pRoom: false, wSeat: true, park: false, wine: true },
+    // 2. 米其林二星 (20 间)
+    { id: 21, name: "Feuille", stars: 4, location: "中西区", address: "中环威灵顿街198号The Wellington 5楼", price: 1880, rating: 9.5, style: "自然主义法餐", ecoAward: "米其林绿星奖 • 80%本地有机农作物与全株植物零浪费料理", pRoom: false, wSeat: true, park: false, wine: true },
     { id: 22, name: "Arbor", stars: 4, location: "中西区", address: "中环皇后大道中80号H Queen's 25楼", price: 2088, rating: 9.4, style: "北欧日式融合", ecoAward: "可持续森林与海洋友善采购认证餐厅", pRoom: true, wSeat: true, park: false, wine: true },
     { id: 23, name: "Bo Innovation 厨魔", stars: 4, location: "湾仔区", address: "湾仔庄士敦道60号J Senses 1楼", price: 2180, rating: 9.4, style: "分子中菜料理", ecoAward: null, pRoom: true, wSeat: false, park: false, wine: true },
     { id: 24, name: "润 Rùn (香港瑞吉酒店)", stars: 4, location: "湾仔区", address: "湾仔港湾径1号香港瑞吉酒店2楼", price: 2080, rating: 9.5, style: "当代精致粤菜", ecoAward: "瑞吉酒店绿色厨房认证 • 选用本地生态养殖家禽", pRoom: true, wSeat: false, park: true, wine: true },
@@ -44,9 +53,9 @@ const rawRestaurantsList = [
     { id: 39, name: "ÉPURE", stars: 4, location: "油尖旺区", address: "尖沙咀海港城海洋中心4楼403号铺", price: 1980, rating: 9.3, style: "法式花园美馔", ecoAward: null, pRoom: true, wSeat: true, park: true, wine: true },
     { id: 40, name: "BELON", stars: 4, location: "中西区", address: "中环苏豪伊利近街1-5号1楼", price: 2080, rating: 9.4, style: "新派巴黎法餐", ecoAward: null, pRoom: false, wSeat: false, park: false, wine: true },
 
-    // ================= 3. 米其林一星 (stars: 3) — 共 20 间 (ID 41 - 60) =================
-    { id: 41, name: "Roganic Hong Kong", stars: 3, location: "湾仔区", address: "铜锣湾告士打道255号信和广场UG楼8号", price: 1680, rating: 9.6, style: "英国农场到餐桌料理", ecoAward: "米其林绿星奖 (Michelin Green Star) • 新界本地有机农场直供与零浪费微型菜园", pRoom: true, wSeat: false, park: true, wine: true },
-    { id: 42, name: "摩 (Mora)", stars: 3, location: "中西区", address: "上环摩罗上街40号地下", price: 1580, rating: 9.5, style: "中法大豆概念料理", ecoAward: "米其林绿星奖 (Michelin Green Star) • 低碳植物基大豆蛋白创新及零塑环保包装", pRoom: false, wSeat: false, park: false, wine: true },
+    // 3. 米其林一星 (20 间)
+    { id: 41, name: "Roganic Hong Kong", stars: 3, location: "湾仔区", address: "铜锣湾告士打道255号信和广场UG楼8号", price: 1680, rating: 9.6, style: "英国农场到餐桌料理", ecoAward: "米其林绿星奖 • 新界本地有机农场直供与零浪费微型菜园", pRoom: true, wSeat: false, park: true, wine: true },
+    { id: 42, name: "摩 (Mora)", stars: 3, location: "中西区", address: "上环摩罗上街40号地下", price: 1580, rating: 9.5, style: "中法大豆概念料理", ecoAward: "米其林绿星奖 • 低碳植物基大豆蛋白创新及零塑环保包装", pRoom: false, wSeat: false, park: false, wine: true },
     { id: 43, name: "Andō", stars: 3, location: "中西区", address: "中环威灵顿街52号Somptueux Central 1楼", price: 1980, rating: 9.4, style: "日西交响料理", ecoAward: null, pRoom: true, wSeat: false, park: false, wine: true },
     { id: 44, name: "CHAAT (香港瑰丽酒店)", stars: 3, location: "油尖旺区", address: "尖沙咀梳士巴利道18号香港瑰丽酒店5楼", price: 1588, rating: 9.4, style: "精致印度烤肉料理", ecoAward: "瑰丽酒店 Rosewood Impacts 可持续认证 • 太阳能再生能源与零厨余回收", pRoom: true, wSeat: true, park: true, wine: true },
     { id: 45, name: "Estro", stars: 3, location: "中西区", address: "中环都爹利街1号2楼", price: 1980, rating: 9.3, style: "当代拿坡里意菜", ecoAward: null, pRoom: true, wSeat: false, park: false, wine: true },
@@ -54,7 +63,7 @@ const rawRestaurantsList = [
     { id: 47, name: "Mono", stars: 3, location: "中西区", address: "中环安兰街18号5楼", price: 1980, rating: 9.3, style: "当代拉丁美洲料理", ecoAward: "公平贸易单一产地有机可可豆及南美小农直接采购认证", pRoom: false, wSeat: true, park: false, wine: true },
     { id: 48, name: "Hansik Goo", stars: 3, location: "中西区", address: "中环威灵顿街198号The Wellington 1楼", price: 1680, rating: 9.2, style: "现代宫廷韩馔", ecoAward: null, pRoom: true, wSeat: false, park: false, wine: true },
     { id: 49, name: "New Punjab Club", stars: 3, location: "中西区", address: "中环云咸街34号世界商业大厦地下", price: 1680, rating: 9.3, style: "旁遮普泥炉炭烤", ecoAward: null, pRoom: false, wSeat: false, park: false, wine: true },
-    { id: 50, name: "文华扒房+酒吧 (Mandarin Grill)", stars: 3, location: "中西区", address: "中环干诺道中5号香港文华东方酒店1楼", price: 1900, rating: 9.3, style: "经典牛排与海鲜", ecoAward: "100% 采用认证有机草饲牛肉及 MSC 环保海鲜", pRoom: true, wSeat: true, park: true, wine: true },
+    { id: 50, name: "文华扒房+酒吧 (Mandarin Grill)", stars: 3, location: "中西区", address: "中环干诺道中5号香港文华东方酒店1楼", price: 1900, rating: 9.3, style: "牛排扒房", ecoAward: "100% 采用认证有机草饲牛肉及 MSC 环保海鲜", pRoom: true, wSeat: true, park: true, wine: true },
     { id: 51, name: "万豪金殿 (Man Ho)", stars: 3, location: "中西区", address: "金钟道88号太古广场香港JW万豪酒店3楼", price: 1680, rating: 9.3, style: "手工养生粤菜", ecoAward: "WWF 环保海鲜先锋餐厅 • 本地有机菇菌与茶园直采", pRoom: true, wSeat: true, park: true, wine: true },
     { id: 52, name: "都爹利会馆 (Duddell's)", stars: 3, location: "中西区", address: "中环都爹利街1号上海滩大厦3至4楼", price: 1650, rating: 9.2, style: "艺术会馆粤菜", ecoAward: null, pRoom: true, wSeat: true, park: false, wine: true },
     { id: 53, name: "逸东轩 (Yat Tung Heen)", stars: 3, location: "油尖旺区", address: "佐敦弥敦道380号香港逸东酒店B2楼层", price: 1380, rating: 9.2, style: "传统手工粤菜", ecoAward: "EarthCheck 认证 • 惜食堂厨余捐赠与有机食材伙伴", pRoom: true, wSeat: false, park: true, wine: false },
@@ -66,17 +75,17 @@ const rawRestaurantsList = [
     { id: 59, name: "六福菜馆 (西贡总店)", stars: 3, location: "西贡区", address: "西贡市场街49号地下至2楼", price: 1380, rating: 9.2, style: "本地渔船海鲜料理", ecoAward: "西贡休渔期生态保育支持商户 • 每日小艇低碳直采鲜鱼", pRoom: true, wSeat: true, park: true, wine: false },
     { id: 60, name: "何洪记名家私房宴", stars: 3, location: "东区", address: "北角渣华道123号北角汇二期2楼", price: 1250, rating: 9.1, style: "古法手工粤式私房菜", ecoAward: null, pRoom: true, wSeat: true, park: true, wine: false },
 
-    // ================= 4. 其它精选 (stars: 2) — 共 20 间 (ID 61 - 80) =================
+    // 4. 其它精选 (20 间)
     { id: 61, name: "沙田18 (香港沙田凯悦酒店)", stars: 2, location: "沙田区", address: "沙田泽祥街18号香港沙田凯悦酒店4楼", price: 1280, rating: 9.2, style: "果木烤鸭与东莞菜", ecoAward: "凯悦 World of Care 环保认证 • 采用龙眼果木修枝再生燃料及新界有机蜂蜜", pRoom: true, wSeat: true, park: true, wine: true },
     { id: 62, name: "大屿山大澳文物酒店玻璃屋餐厅", stars: 2, location: "离岛区", address: "大屿山大澳石仔埗街旧大澳警署", price: 1180, rating: 9.1, style: "古迹海景欧陆融合菜", ecoAward: "UNESCO 亚太文化遗产保护奖 • 大澳社区低碳食材及太阳能供电认证", pRoom: false, wSeat: true, park: false, wine: false },
     { id: 63, name: "大埔林村有机农庄私房料理", stars: 2, location: "大埔区", address: "大埔林锦公路新塘段生态园12号", price: 1150, rating: 9.0, style: "新界田园有机私房菜", ecoAward: "香港有机资源中心认证合作餐厅 • 100% 自家农田有机蔬果与厨余堆肥", pRoom: true, wSeat: true, park: true, wine: false },
     { id: 64, name: "元朗屏山传统盆菜与围村私房宴", stars: 2, location: "元朗区", address: "元朗屏山塘坊村古迹文化径8号", price: 1120, rating: 8.9, style: "古法围村精制料理", ecoAward: "元朗本地生态鱼塘乌头及有机农场直采伙伴", pRoom: true, wSeat: false, park: true, wine: false },
-    { id: 65, name: "屯门黄金海岸聆沨咖啡厅", stars: 2, location: "屯门区", address: "屯门青山公路1号香港黄金海岸酒店低层", price: 1180, rating: 9.0, style: "南中国海景炭烤海鲜", ecoAward: "信和集团可持续发展餐厅 • 设有酒店有机香草农圃及鱼菜共生系统", pRoom: false, wSeat: true, park: true, wine: true },
+    { id: 65, name: "屯门黄金海岸聆沨咖啡厅", stars: 2, location: "屯门区", address: "屯门青山公路1号香港黄金海岸酒店低层", price: 1180, rating: 9.0, style: "牛排扒房", ecoAward: "信和集团可持续发展餐厅 • 设有酒店有机香草农圃及鱼菜共生系统", pRoom: false, wSeat: true, park: true, wine: true },
     { id: 66, name: "上水古洞有机生态园农庄御膳", stars: 2, location: "北区", address: "上水古洞河上乡排峰路生态庄园", price: 1100, rating: 8.9, style: "有机养生农家私房菜", ecoAward: "北区低碳农业发展联盟成员 • 零化学农药水耕及有机走地鸡认证", pRoom: true, wSeat: true, park: true, wine: false },
     { id: 67, name: "深水埗文青活化古迹法式小馆", stars: 2, location: "深水埗区", address: "深水埗荔枝角道119号雷生春堂旁古迹楼", price: 1280, rating: 9.1, style: "新派手工作法式料理", ecoAward: "深水埗社区咖啡渣再生与本地精酿低碳合作餐厅", pRoom: false, wSeat: false, park: false, wine: true },
-    { id: 68, name: "观塘海滨工业风可持续牛排馆", stars: 2, location: "观塘区", address: "观塘海滨道181号One Harbour Square 2楼", price: 1450, rating: 9.1, style: "干式熟成炭火牛排", ecoAward: "LEED 铂金级绿建筑餐厅 • 选用碳中和认证澳洲草饲牛肉", pRoom: true, wSeat: true, park: true, wine: true },
+    { id: 68, name: "观塘海滨工业风可持续牛排馆", stars: 2, location: "观塘区", address: "观塘海滨道181号One Harbour Square 2楼", price: 1450, rating: 9.1, style: "牛排扒房", ecoAward: "LEED 铂金级绿建筑餐厅 • 选用碳中和认证澳洲草饲牛肉", pRoom: true, wSeat: true, park: true, wine: true },
     { id: 69, name: "黄大仙志莲净苑荷花池畔素斋宴", stars: 2, location: "黄大仙区", address: "钻石山凤德道60号南莲园池龙门楼", price: 1080, rating: 9.3, style: "精致禅意全素私房宴", ecoAward: "100% 纯植物基低碳排健康饮食认证 • 园林雨水回收灌溉系统", pRoom: true, wSeat: true, park: true, wine: false },
-    { id: 70, name: "葵青货柜码头高空海景扒房", stars: 2, location: "葵青区", address: "葵涌青山公路388号悦品酒店顶层", price: 1250, rating: 8.8, style: "高空全景欧陆扒房", ecoAward: null, pRoom: false, wSeat: true, park: true, wine: true },
+    { id: 70, name: "葵青货柜码头高空海景扒房", stars: 2, location: "葵青区", address: "葵涌青山公路388号悦品酒店顶层", price: 1250, rating: 8.8, style: "牛排扒房", ecoAward: null, pRoom: false, wSeat: true, park: true, wine: true },
     { id: 71, name: "赤柱美利楼海风地中海餐厅", stars: 2, location: "南区", address: "赤柱佳美道23号美利楼2楼", price: 1480, rating: 9.1, style: "地中海海鲜料理", ecoAward: "古迹建筑自然通风节能设计 • 采用可持续认证地中海海产", pRoom: false, wSeat: true, park: true, wine: true },
     { id: 72, name: "太古坊糖厂街有机现代欧陆餐厅 (FEAST)", stars: 2, location: "东区", address: "鲗鱼涌太古坊华兰路29号东隅酒店1楼", price: 1420, rating: 9.2, style: "当代可持续欧陆料理", ecoAward: "太古酒店 SD2030 可持续发展金奖 • 100% 厨余分解机转化肥料", pRoom: true, wSeat: true, park: true, wine: true },
     { id: 73, name: "九龙城寨风味潮州私房名菜馆", stars: 2, location: "九龙城区", address: "九龙城衙前塱道42号1至2楼", price: 1320, rating: 9.1, style: "正宗古法潮州打冷", ecoAward: null, pRoom: true, wSeat: false, park: false, wine: false },
@@ -86,47 +95,38 @@ const rawRestaurantsList = [
     { id: 77, name: "荃湾南丰纱厂活化文创植物料理馆", stars: 2, location: "荃湾区", address: "荃湾白田坝街45号南丰纱厂1楼", price: 1180, rating: 9.2, style: "新派植物基融合料理", ecoAward: "南丰纱厂可持续文创奖 • 采用香港本地水耕菜及升级再造食材", pRoom: false, wSeat: false, park: true, wine: false },
     { id: 78, name: "元朗锦田有机水耕农场玻璃屋餐厅", stars: 2, location: "元朗区", address: "元朗锦田公路水尾村有机生态园", price: 1150, rating: 9.0, style: "农场直达餐桌欧陆菜", ecoAward: "香港水耕农业绿色认证 • 节水 90% 垂直农法即摘即煮", pRoom: false, wSeat: true, park: true, wine: false },
     { id: 79, name: "愉景湾海滨白教堂欧陆餐厅", stars: 2, location: "离岛区", address: "大屿山愉景湾海澄湖畔路88号", price: 1380, rating: 9.1, style: "浪漫海景欧陆料理", ecoAward: "愉景湾无车环保社区零碳排接驳认证餐厅", pRoom: true, wSeat: true, park: false, wine: true },
-    { id: 80, name: "The Steak House (香港丽晶酒店)", stars: 2, location: "油尖旺区", address: "尖沙咀梳士巴利道18号香港丽晶酒店地下", price: 1850, rating: 9.3, style: "木炭烤炙顶级牛排馆", ecoAward: null, pRoom: true, wSeat: true, park: true, wine: true }
+    { id: 80, name: "The Steak House (香港丽晶酒店)", stars: 2, location: "油尖旺区", address: "尖沙咀梳士巴利道18号香港丽晶酒店地下", price: 1850, rating: 9.3, style: "牛排扒房", ecoAward: null, pRoom: true, wSeat: true, park: true, wine: true }
 ];
 
-const sampleImages = [
-    "https://images.unsplash.com/photo-1550966871-3ed3cdb5ed0c?auto=format&fit=crop&w=800&q=80",
-    "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=800&q=80",
-    "https://images.unsplash.com/photo-1559339352-11d035aa65de?auto=format&fit=crop&w=800&q=80",
-    "https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=800&q=80",
-    "https://images.unsplash.com/photo-1579871494447-9811cf80d66c?auto=format&fit=crop&w=800&q=80",
-    "https://images.unsplash.com/photo-1540420773420-3366772f4999?auto=format&fit=crop&w=800&q=80"
-];
-
-const restaurantsData = rawRestaurantsList.map((item, idx) => {
-    const isEco = Boolean(item.ecoAward);
+// 直接掛載到全域變數，確保任何情況下 HTML 都能存取
+var restaurantsData = rawRestaurantsList.map(function(item, idx) {
+    var isEco = Boolean(item.ecoAward);
     return {
         id: item.id,
         name: item.name,
-        location: item.location, // 标准香港 18 区名称 (中西区, 湾仔区, 油尖旺区等)
+        location: item.location,
         district: item.location,
         address: item.address,
         distance: "距离核心交通枢纽步行约 3-6 分钟",
         images: [sampleImages[idx % sampleImages.length]],
-        stars: item.stars, // 5:米其林三星, 4:米其林二星, 3:米其林一星, 2:其它精选
+        stars: item.stars,
         rating: item.rating,
         reviewCount: 850 + (idx * 37) % 2500,
         verdict: item.rating >= 9.5 ? "传奇极佳" : item.rating >= 9.2 ? "极高赞誉" : "精选好评",
         originalPrice: Math.round(item.price * 1.15),
         price: item.price,
-        ecoAward: item.ecoAward, // 环保可持续奖项纪录
-        // 5 大特色设施 Tag
-        hasPrivateRoom: item.pRoom,
-        hasWindowSeat: item.wSeat,
-        hasParking: item.park,
-        hasSommelier: item.wine,
+        ecoAward: item.ecoAward,
+        hasPrivateRoom: Boolean(item.pRoom),
+        hasWindowSeat: Boolean(item.wSeat),
+        hasParking: Boolean(item.park),
+        hasSommelier: Boolean(item.wine),
         hasSustainable: isEco,
         menus: [
             {
-                id: `m_${item.id}_1`,
-                name: `${item.name} 主厨精选时令品鉴晚宴`,
+                id: "m_" + item.id + "_1",
+                name: item.name + " 主厨精选时令品鉴晚宴",
                 image: sampleImages[(idx + 1) % sampleImages.length],
-                style: item.style,
+                style: item.style || "精致料理",
                 drinks: item.wine ? "包含侍酒师精选餐酒搭配" : "包含精选名茶或特调饮品",
                 seating: item.wSeat ? "优先安排景观雅座" : "主厅雅致席位",
                 cancel: "24小时前免费取消",
