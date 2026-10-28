@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Academic Research Survey 1</title>
+    <title>问卷调查</title>
     <style>
         :root {
             --bg-color: #f4f6f8;
@@ -15,29 +15,115 @@
             --border-color: #e2e8f0;
         }
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background-color: var(--bg-color); color: var(--text-primary); line-height: 1.6; padding: 20px; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; }
-        .container { background-color: var(--card-bg); max-width: 800px; width: 100%; height: calc(100vh - 40px); border-radius: 12px; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05); padding: 30px; border: 1px solid var(--border-color); display: flex; flex-direction: column; }
-        .fixed-top-section { flex-shrink: 0; border-bottom: 2px solid var(--bg-color); margin-bottom: 15px; padding-bottom: 15px; }
-        .academic-badge { display: inline-block; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; font-weight: 600; color: #718096; background-color: #edf2f7; padding: 4px 10px; border-radius: 4px; margin-bottom: 8px; }
-        h1 { font-size: 1.4rem; font-weight: 700; color: var(--text-primary); margin-bottom: 6px; }
-        p.intro { font-size: 0.88rem; color: var(--text-secondary); }
-        .scale-info { background-color: #f8fafc; border: 1px solid var(--border-color); border-radius: 8px; padding: 12px 16px; margin-top: 12px; font-size: 0.85rem; }
-        .scale-info h3 { font-size: 0.9rem; margin-bottom: 6px; }
-        .scale-info ul { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 4px 10px; list-style: none; color: var(--text-secondary); }
-        .dev-autofill-btn { display: inline-block; margin-top: 12px; padding: 6px 14px; background-color: #e2e8f0; color: #4a5568; border: 1px dashed #cbd5e1; border-radius: 6px; font-size: 0.8rem; font-weight: 600; cursor: pointer; }
-        #surveyForm { flex: 1; overflow-y: auto; padding-right: 12px; margin-top: 10px; }
-        #surveyForm::-webkit-scrollbar { width: 6px; }
-        #surveyForm::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 4px; }
-        .form-group { margin-bottom: 20px; }
-        label.question-title { display: block; font-size: 0.9rem; font-weight: 600; margin-bottom: 8px; }
-        .question-title .required { color: #e53e3e; margin-left: 4px; }
-        .scale-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; }
-        .scale-card input[type="radio"] { position: absolute; opacity: 0; width: 0; height: 0; }
-        .scale-card label { display: flex; align-items: center; justify-content: center; width: 100%; height: 40px; background-color: #fafafa; border: 1.5px solid var(--border-color); border-radius: 8px; cursor: pointer; font-size: 0.95rem; font-weight: 700; color: var(--text-primary); transition: all 0.2s ease; }
-        .scale-card input[type="radio"]:checked + label { border-color: var(--accent-color); background-color: #fff1f2; color: var(--accent-color); box-shadow: 0 0 0 1px var(--accent-color); }
-        .submit-btn { display: block; width: 100%; padding: 14px; background-color: var(--accent-color); color: #ffffff; border: none; border-radius: 8px; font-size: 1rem; font-weight: 600; cursor: pointer; margin: 30px 0 10px 0; }
-        .submit-btn:hover { background-color: var(--hover-color); }
-        .scale-hint { font-size: 0.68rem; font-weight: 500; color: var(--text-secondary); margin-top: 5px; text-align: center; line-height: 1.2; width: 100%; display: block; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans SC", sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            line-height: 1.6;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .container {
+            background-color: var(--card-bg);
+            max-width: 600px;
+            width: 100%;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+            padding: 36px 30px;
+            border: 1px solid var(--border-color);
+        }
+        .lead-text {
+            font-size: 1.05rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 24px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid var(--bg-color);
+        }
+        .form-group {
+            margin-bottom: 24px;
+        }
+        label.question-title {
+            display: block;
+            font-size: 0.98rem;
+            font-weight: 700;
+            margin-bottom: 12px;
+            color: var(--text-primary);
+        }
+        .required {
+            color: #e53e3e;
+            margin-left: 4px;
+        }
+        .radio-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .radio-card {
+            display: flex;
+            align-items: center;
+            padding: 12px 16px;
+            border: 1.5px solid var(--border-color);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            background: #fafafa;
+        }
+        .radio-card:hover {
+            border-color: #cbd5e1;
+            background: #f8fafc;
+        }
+        .radio-card input[type="radio"] {
+            accent-color: var(--accent-color);
+            width: 18px;
+            height: 18px;
+            margin-right: 12px;
+            cursor: pointer;
+        }
+        .radio-card span {
+            font-size: 0.95rem;
+            font-weight: 600;
+        }
+        .form-select {
+            width: 100%;
+            padding: 12px 14px;
+            border: 1.5px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            background-color: #fafafa;
+            outline: none;
+            cursor: pointer;
+        }
+        .form-select:focus {
+            border-color: var(--accent-color);
+            background-color: #ffffff;
+        }
+        .submit-btn {
+            display: block;
+            width: 100%;
+            padding: 14px;
+            background-color: var(--accent-color);
+            color: #ffffff;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+            margin-top: 10px;
+        }
+        .submit-btn:hover {
+            background-color: var(--hover-color);
+        }
+        .submit-btn:disabled {
+            background-color: #94a3b8;
+            cursor: not-allowed;
+        }
     </style>
 
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
@@ -52,68 +138,79 @@
             messagingSenderId: "597103940431",
             appId: "1:597103940431:web:d854df1b51a7f76f2aeb3a"
         };
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.database();
+        try {
+            firebase.initializeApp(firebaseConfig);
+            var db = firebase.database();
+        } catch(e) {
+            console.warn("Firebase 初始化略過或已存在:", e);
+        }
     </script>
-    <!-- 引入餐廳數據集 -->
     <script src="restaurants_data.js"></script>
 </head>
 <body>
 
 <div class="container">
-    <div class="fixed-top-section">
-        <header>
-            <div class="academic-badge">Dining Preference Survey 1</div>
-            <h1>Restaurant Preference Investigation</h1>
-            <p class="intro">All data collected will be kept completely anonymous and strictly used for academic research purposes.</p>
-        </header>
-
-        <div class="scale-info">
-            <h3>Response Scale Reference:</h3>
-            <ul>
-                <li><strong>1</strong> = Not at all important</li>
-                <li><strong>2</strong> = Not important</li>
-                <li><strong>3</strong> = Slightly unimportant</li>
-                <li><strong>4</strong> = Neutral</li>
-                <li><strong>5</strong> = Slightly important</li>
-                <li><strong>6</strong> = Important</li>
-                <li><strong>7</strong> = Extremely important</li>
-            </ul>
-        </div>
-        <button type="button" class="dev-autofill-btn" onclick="autoFillRandom()">⚡ Quick Autofill (Random)</button>
-    </div>
+    <p class="lead-text">请继续填写以下部分</p>
 
     <form id="surveyForm" onsubmit="handleSubmit(event)">
-        <!-- 32位專屬個人ID展示與欄位 -->
-        <div class="form-group" style="background: #eef2f7; padding: 15px; border-radius: 8px; border: 1px solid #cbd5e1;">
-            <label class="question-title">
-                Your Assigned 32-digit Participant ID <span class="required">*</span>
-            </label>
-            <input type="text" id="inputParticipantID" name="inputParticipantID" required readonly
-                   style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #cbd5e1; font-size: 0.95rem; margin-top: 6px; font-family: monospace; font-weight: 700; color: #1d4ed8; background-color: #ffffff;">
-            <small style="color: #64748b; font-size: 0.78rem; margin-top: 4px; display: block;">系統已為您自動生成 32 位專屬研究 ID (包含時間戳記與專屬編碼)。</small>
+        <!-- 问题 1 -->
+        <div class="form-group">
+            <label class="question-title">1. 你选择餐厅时注重什么？<span class="required">*</span></label>
+            <div class="radio-group">
+                <label class="radio-card">
+                    <input type="radio" name="focus_factor" value="价钱便宜" required>
+                    <span>价钱便宜</span>
+                </label>
+                <label class="radio-card">
+                    <input type="radio" name="focus_factor" value="食物质素" required>
+                    <span>食物质素</span>
+                </label>
+                <label class="radio-card">
+                    <input type="radio" name="focus_factor" value="环境舒适" required>
+                    <span>环境舒适</span>
+                </label>
+            </div>
         </div>
 
-        <div class="form-group"><label class="question-title">1. Michelin / Fine Dining gastronomic experience. <span class="required">*</span></label><div class="scale-grid" id="q01_sensory_experience"></div></div>
-        <div class="form-group"><label class="question-title">2. Seasonal fresh ingredients and culinary freshness. <span class="required">*</span></label><div class="scale-grid" id="q02_fresh"></div></div>
-        <div class="form-group"><label class="question-title">3. Familiarity with cuisine style (Cantonese, French, Japanese, etc.). <span class="required">*</span></label><div class="scale-grid" id="q03_familiar"></div></div>
-        <div class="form-group"><label class="question-title">4. High quality chef-crafted tasting menus. <span class="required">*</span></label><div class="scale-grid" id="q04_high_quality"></div></div>
-        <div class="form-group"><label class="question-title">5. Availability of private dining rooms or panoramic view seating. <span class="required">*</span></label><div class="scale-grid" id="q05_healthy"></div></div>
-        <div class="form-group"><label class="question-title">6. Hygiene standards & wine pairing excellence. <span class="required">*</span></label><div class="scale-grid" id="q06_safe_to_consume"></div></div>
-        <div class="form-group"><label class="question-title">7. Price justified by ambiance and Michelin accolades. <span class="required">*</span></label><div class="scale-grid" id="q07_price_within_budget"></div></div>
-        <div class="form-group"><label class="question-title">8. Sustainable sourcing & green gastronomic practices. <span class="required">*</span></label><div class="scale-grid" id="q08_price_justified"></div></div>
+        <!-- 问题 2 -->
+        <div class="form-group">
+            <label class="question-title">2. 你想在哪一区用餐？<span class="required">*</span></label>
+            <select name="preferred_district" id="preferred_district" class="form-select" required>
+                <option value="" disabled selected>请选择地区（香港18区）</option>
+                <optgroup label="香港岛">
+                    <option value="中西区">中西区</option>
+                    <option value="湾仔区">湾仔区</option>
+                    <option value="东区">东区</option>
+                    <option value="南区">南区</option>
+                </optgroup>
+                <optgroup label="九龙">
+                    <option value="油尖旺区">油尖旺区</option>
+                    <option value="深水埗区">深水埗区</option>
+                    <option value="九龙城区">九龙城区</option>
+                    <option value="黄大仙区">黄大仙区</option>
+                    <option value="观塘区">观塘区</option>
+                </optgroup>
+                <optgroup label="新界">
+                    <option value="葵青区">葵青区</option>
+                    <option value="荃湾区">荃湾区</option>
+                    <option value="屯门区">屯门区</option>
+                    <option value="元朗区">元朗区</option>
+                    <option value="北区">北区</option>
+                    <option value="大埔区">大埔区</option>
+                    <option value="沙田区">沙田区</option>
+                    <option value="西贡区">西贡区</option>
+                    <option value="离岛区">离岛区</option>
+                </optgroup>
+            </select>
+        </div>
 
-        <button type="submit" id="submitBtn" class="submit-btn">Submit & Proceed to Dining Platform</button>
+        <button type="submit" id="submitBtn" class="submit-btn">提交</button>
     </form>
 </div>
 
 <script>
-    /**
-     * 生成 32 位專屬個人 ID
-     * 第一部分 (14 位): "YYYYMMDDHHmmss"
-     * 第二部分 (18 位): 隨機數字
-     * 合計: 32 位
-     */
+    let currentPID = "";
+
     function generate32DigitParticipantID() {
         const now = new Date();
         const year = now.getFullYear();
@@ -122,115 +219,85 @@
         const hours = String(now.getHours()).padStart(2, '0');
         const minutes = String(now.getMinutes()).padStart(2, '0');
         const seconds = String(now.getSeconds()).padStart(2, '0');
-
-        const timestampPart = `${year}${month}${day}${hours}${minutes}${seconds}`; // 14 位
+        const timestampPart = `${year}${month}${day}${hours}${minutes}${seconds}`;
 
         let randomDigits = '';
         while (randomDigits.length < 18) {
-            randomDigits += Math.floor(Math.random() * 10).toString(); // 18 位隨機數字
+            randomDigits += Math.floor(Math.random() * 10).toString();
         }
-
-        return timestampPart + randomDigits; // 32 位
+        return timestampPart + randomDigits;
     }
 
     async function initUserSession() {
         let participantID = localStorage.getItem("participantID");
-
-        // 若無 ID 或長度不為 32 位，重新生成並寫入 Local Storage 與 Firebase
         if (!participantID || participantID.length !== 32) {
             participantID = generate32DigitParticipantID();
             localStorage.setItem("participantID", participantID);
 
-            try {
-                if (typeof db !== 'undefined') {
-                    await db.ref('users/' + participantID).set({
-                        participantID: participantID,
-                        createdAt: new Date().toISOString(),
-                        timestamp: Date.now()
-                    });
-                }
-            } catch (err) {
-                console.warn("Firebase ID registration skipped:", err);
+            // 背景寫入，不 await 卡住頁面
+            if (typeof db !== 'undefined') {
+                db.ref('users/' + participantID).set({
+                    participantID: participantID,
+                    createdAt: new Date().toISOString(),
+                    timestamp: Date.now()
+                }).catch(err => console.warn("Firebase 註冊使用者略過:", err));
             }
         }
-
-        // 填入 Participant ID 欄位
-        const inputPid = document.getElementById("inputParticipantID");
-        if (inputPid) {
-            inputPid.value = participantID;
-        }
-    }
-
-    const questionIds = [
-        "q01_sensory_experience", "q02_fresh", "q03_familiar", "q04_high_quality",
-        "q05_healthy", "q06_safe_to_consume", "q07_price_within_budget", "q08_price_justified"
-    ];
-
-    questionIds.forEach(qId => {
-        const container = document.getElementById(qId);
-        if (!container) return;
-        for (let i = 1; i <= 7; i++) {
-            const card = document.createElement("div");
-            card.className = "scale-card";
-            let hintText = "";
-            if (i === 1) hintText = '<span class="scale-hint">Not important</span>';
-            if (i === 4) hintText = '<span class="scale-hint">Neutral</span>';
-            if (i === 7) hintText = '<span class="scale-hint">Important</span>';
-            card.innerHTML = `
-                <input type="radio" id="${qId}_${i}" name="${qId}" value="${i}" required>
-                <label for="${qId}_${i}">${i}</label>
-                ${hintText}
-            `;
-            container.appendChild(card);
-        }
-    });
-
-    function autoFillRandom() {
-        questionIds.forEach(qId => {
-            const randomVal = Math.floor(Math.random() * 7) + 1;
-            const radio = document.getElementById(`${qId}_${randomVal}`);
-            if (radio) radio.checked = true;
-        });
+        currentPID = participantID;
     }
 
     async function handleSubmit(event) {
         event.preventDefault();
         const submitBtn = document.getElementById('submitBtn');
         submitBtn.disabled = true;
-        submitBtn.textContent = 'Submitting & Generating Recommendations...';
-
-        const participantNum = document.getElementById('inputParticipantID').value.trim();
-        localStorage.setItem("participantID", participantNum);
+        submitBtn.textContent = '提交中，正在跳轉...';
 
         const formData = new FormData(event.target);
-        const surveyResponses = {};
-        questionIds.forEach(qId => {
-            surveyResponses[qId] = parseInt(formData.get(qId), 10);
-        });
+        const focusFactor = formData.get("focus_factor");
+        const preferredDistrict = formData.get("preferred_district");
 
-        // 預設推薦目標 (預設為 ID 42 Caprice 或依偏好自適應)
-        let recommendedRestaurantId = 42;
-        let nudgeText = "根據您對星級評級與優質餐飲體驗的偏好，為您推薦精選餐廳。";
-
-        const simplifiedRestaurants = (typeof restaurantsData !== 'undefined' ? restaurantsData : []).map(r => ({
-            id: r.id,
-            name: r.name,
-            district: r.district,
-            stars: r.stars,
-            price: r.price,
-            style: r.menus?.[0]?.style || 'Fine Dining'
-        }));
-
-        const payload = {
-            restaurants: simplifiedRestaurants,
-            preferences: surveyResponses
+        const surveyResponses = {
+            focus_factor: focusFactor,
+            preferred_district: preferredDistrict
         };
 
+        // 1. 本地即時配對計算推薦餐廳
+        const allRests = typeof restaurantsData !== 'undefined' ? restaurantsData : [];
+        let matchingRests = allRests.filter(r => r.location === preferredDistrict);
+        if (matchingRests.length === 0) matchingRests = [...allRests];
+
+        if (focusFactor === "价钱便宜") {
+            matchingRests.sort((a, b) => a.price - b.price);
+        } else if (focusFactor === "食物质素") {
+            matchingRests.sort((a, b) => b.rating - a.rating);
+        } else {
+            matchingRests.sort((a, b) => (b.hasWindowSeat ? 1 : 0) - (a.hasWindowSeat ? 1 : 0));
+        }
+
+        let recommendedRestaurantId = matchingRests[0] ? matchingRests[0].id : 1;
+        let nudgeText = `根据您在「${preferredDistrict}」注重「${focusFactor}」的用餐偏好，为您精心甄选推荐：${matchingRests[0] ? matchingRests[0].name : ''}。`;
+
+        // 2. 嘗試調用 AI API（加入 1.5 秒逾時保護，逾時自動改用本地配對）
+        const controller = new AbortController();
+        const fetchTimeout = setTimeout(() => controller.abort(), 1500);
+
         try {
+            const simplifiedRestaurants = allRests.slice(0, 40).map(r => ({
+                id: r.id,
+                name: r.name,
+                location: r.location,
+                stars: r.stars,
+                price: r.price
+            }));
+
             const response = await fetch("/api/recommend", {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
+                body: JSON.stringify({
+                    restaurants: simplifiedRestaurants,
+                    preferences: surveyResponses
+                }),
+                signal: controller.signal
             });
 
             if (response.ok) {
@@ -239,36 +306,29 @@
                 if (resData.nudge_text) nudgeText = resData.nudge_text;
             }
         } catch (error) {
-            console.warn("Using default fallback recommendation logic:", error);
-            if (surveyResponses["q05_healthy"] >= 6 && surveyResponses["q03_familiar"] <= 3) {
-                recommendedRestaurantId = 15; // 鮨·志魂
-                nudgeText = "鮨·志魂 (Sushi Shikon) 能提供專屬優質日式料理。";
-            }
+            console.log("使用本地精準配對結果作為推薦:", error.message);
+        } finally {
+            clearTimeout(fetchTimeout);
         }
 
-        // 本地保存 AI 推薦資訊
+        // 3. 儲存推薦資訊至 LocalStorage
         localStorage.setItem('ai_recommended_restaurant_id', recommendedRestaurantId.toString());
         localStorage.setItem('ai_nudge_text', nudgeText);
         localStorage.setItem('user_preferences', JSON.stringify(surveyResponses));
 
-        // 寫入 Firebase
-        const firebaseData = {
-            participantID: participantNum,
-            submittedAt: new Date().toLocaleString(),
-            aiRecommendedRestaurantId: recommendedRestaurantId,
-            nudgeContent: nudgeText,
-            responses: surveyResponses
-        };
-
-        try {
-            await db.ref('survey_responses').push(firebaseData);
-        } catch (dbError) {
-            console.error('Failed to save to Firebase:', dbError);
+        // 4. 背景非阻塞寫入 Firebase
+        if (typeof db !== 'undefined') {
+            db.ref('survey_responses').push({
+                participantID: currentPID,
+                submittedAt: new Date().toLocaleString(),
+                aiRecommendedRestaurantId: recommendedRestaurantId,
+                nudgeContent: nudgeText,
+                responses: surveyResponses
+            }).catch(e => console.warn("Firebase 紀錄略過:", e));
         }
 
-        setTimeout(() => {
-            window.location.href = 'restaurant_page.html';
-        }, 500);
+        // 5. 立刻安全跳轉至預訂頁面
+        window.location.href = 'restaurant_page.html';
     }
 
     window.addEventListener("DOMContentLoaded", initUserSession);

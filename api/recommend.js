@@ -124,7 +124,6 @@ module.exports = async (req, res) => {
 
             const result = await getAiRecommendationsFromGemini(list, preferences);
 
-            // 直接回傳前端 survey.html 期待的欄位格式
             return res.status(200).json({
                 recommend_hotel_id: result.recommend_hotel_id,
                 nudge_text: result.nudge_text,
