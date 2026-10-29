@@ -201,7 +201,7 @@
 
     <div class="action-box">
         <button id="exportBtn" class="btn btn-export" onclick="exportMasterData()">
-            <i class="fa-solid fa-file-excel"></i> 下载单表汇总数据 Excel (.xlsx)[cite: 12]
+            <i class="fa-solid fa-file-excel"></i> 下载单表汇总数据 Excel (.xlsx)
         </button>
     </div>
 
@@ -269,7 +269,7 @@
     // ==========================================
     async function exportMasterData() {
         const btn = document.getElementById("exportBtn");
-        btn.disabled = true;[cite: 12]
+        btn.disabled = true;
         showStatus("<i class='fa-solid fa-spinner fa-spin'></i> 正在读取 Firebase 数据库并整合成单表数据...", "info");
 
         try {
@@ -285,12 +285,12 @@
             const surveys = surveySnap.val() ? Object.values(surveySnap.val()) : [];
             const bookings = bookingsSnap.val() ? Object.values(bookingsSnap.val()) : [];
 
-            // 搜集所有不重复的 32 位 Participant ID[cite: 12]
+            // 搜集所有不重复的 32 位 Participant ID
             const allPIDs = new Set([
                 ...users.map(u => u.participantID),
                 ...surveys.map(s => s.participantID),
                 ...bookings.map(b => b.participantID)
-            ].filter(pid => pid && pid.trim() !== ""));[cite: 12]
+            ].filter(pid => pid && pid.trim() !== ""));
 
             const masterDataMap = {};
 
@@ -298,7 +298,7 @@
             allPIDs.forEach(pid => {
                 masterDataMap[pid] = {
                     // 被试身份与实验分组
-                    "Participant_ID": pid,[cite: 12]
+                    "Participant_ID": pid,
                 "Assigned_Group": "",
                     "Group_Condition_Label": "",
                     "Use_Real_AI": "",
@@ -321,15 +321,15 @@
                     "Recommendation_Nudge_Text": "",
 
                     // 最终餐厅预订行为
-                    "Has_Completed_Booking": "No",[cite: 12]
+                    "Has_Completed_Booking": "No",
                 "Booking_Ref_Code": "",
-                    "Booking_Confirmed_Time": "",[cite: 12]
-                "Selected_Rest_ID": "",[cite: 12]
-                "Selected_Rest_Name": "",[cite: 12]
+                    "Booking_Confirmed_Time": "",
+                "Selected_Rest_ID": "",
+                "Selected_Rest_Name": "",
                 "Selected_Rest_Region": "",
                     "Selected_Rest_Cuisine": "",
-                    "Selected_Menu_Name": "",[cite: 12]
-                "Booking_Total_Amount": "",[cite: 12]
+                    "Selected_Menu_Name": "",
+                "Booking_Total_Amount": "",
                 "Is_Recommendation_Adopted": "No"
             };
             });
@@ -376,28 +376,28 @@
                 }
             });
 
-            // 2. 填充预订记录数据[cite: 12]
+            // 2. 填充预订记录数据
             bookings.forEach(b => {
                 const pid = b.participantID;
                 if (masterDataMap[pid]) {
                     const row = masterDataMap[pid];
-                    row["Has_Completed_Booking"] = "Yes";[cite: 12]
+                    row["Has_Completed_Booking"] = "Yes";
                     row["Booking_Ref_Code"] = b.bookingRef || "";
-                    row["Booking_Confirmed_Time"] = b.bookingTime || "";[cite: 12]
-                    row["Selected_Rest_ID"] = b.selectedRestaurantId || "";[cite: 12]
-                    row["Selected_Rest_Name"] = b.selectedRestaurantName || getRestDetailsById(b.selectedRestaurantId).name;[cite: 12]
+                    row["Booking_Confirmed_Time"] = b.bookingTime || "";
+                    row["Selected_Rest_ID"] = b.selectedRestaurantId || "";
+                    row["Selected_Rest_Name"] = b.selectedRestaurantName || getRestDetailsById(b.selectedRestaurantId).name;
                     row["Selected_Rest_Region"] = b.selectedRestaurantRegion || "";
                     row["Selected_Rest_Cuisine"] = b.selectedRestaurantCuisine || "";
-                    row["Selected_Menu_Name"] = b.menuName || "";[cite: 12]
-                    row["Booking_Total_Amount"] = b.totalAmount || "";[cite: 12]
+                    row["Selected_Menu_Name"] = b.menuName || "";
+                    row["Booking_Total_Amount"] = b.totalAmount || "";
                     row["Is_Recommendation_Adopted"] = b.isAiRecommendedSelected ? "Yes" : "No";
                 }
             });
 
-            // 3. 构建单一 Sheet 的 Excel 文件[cite: 12]
-            const wb = XLSX.utils.book_new();[cite: 12]
+            // 3. 构建单一 Sheet 的 Excel 文件
+            const wb = XLSX.utils.book_new();
             const rowsArray = Object.values(masterDataMap);
-            const wsMaster = XLSX.utils.json_to_sheet(rowsArray);[cite: 12]
+            const wsMaster = XLSX.utils.json_to_sheet(rowsArray);
 
             // 仅附加单个 Sheet: Master_Research_Data
             XLSX.utils.book_append_sheet(wb, wsMaster, "Master_Research_Data");
@@ -410,7 +410,7 @@
             console.error(err);
             showStatus(`❌ 导出失败: ${err.message}`, "error");
         } finally {
-            btn.disabled = false;[cite: 12]
+            btn.disabled = false;
             loadStats();
         }
     }
