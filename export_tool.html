@@ -1,15 +1,21 @@
 <!DOCTYPE html>
-<html lang="zh-HK">
+<html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <title>DineReserve Data Exporter (Standalone Tool)</title>
-    <!-- SheetJS 與 Firebase SDK -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DineReserve 实验数据导出与管理工具</title>
+    <!-- SheetJS 与 Font Awesome -->
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Firebase SDK (online-study-4) -->
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
 
+    <!-- 引入 80 间正交基底独立餐厅数据集 -->
+    <script src="restaurants_data.js"></script>
+
     <script>
-        // 與本專案保持完全一致的 Firebase 配置 (online-study-4)
         const firebaseConfig = {
             apiKey: "AIzaSyB5OysrS98cHA7WXbObSGtUvfazPJStkRE",
             authDomain: "online-study-4.firebaseapp.com",
@@ -19,278 +25,437 @@
             messagingSenderId: "597103940431",
             appId: "1:597103940431:web:d854df1b51a7f76f2aeb3a"
         };
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.database();
+        try {
+            firebase.initializeApp(firebaseConfig);
+            var db = firebase.database();
+        } catch(e) {
+            console.error("Firebase 初始化失败:", e);
+        }
     </script>
 
     <style>
+        :root {
+            --primary: #0f172a;
+            --accent: #2563eb;
+            --danger: #dc2626;
+            --danger-hover: #b91c1c;
+            --success: #16a34a;
+            --bg: #f8fafc;
+            --card-bg: #ffffff;
+            --border: #e2e8f0;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans SC", sans-serif; }
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            background: #f1f5f9;
+            background-color: var(--bg);
+            color: #1e293b;
+            min-height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
-            margin: 0;
+            padding: 24px;
         }
-        .export-card {
-            background: #ffffff;
-            padding: 40px;
-            border-radius: 12px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+        .main-card {
+            background: var(--card-bg);
+            max-width: 680px;
+            width: 100%;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px -5px rgba(0,0,0,0.06), 0 8px 10px -6px rgba(0,0,0,0.01);
+            border: 1px solid var(--border);
+            padding: 36px 32px;
+        }
+        .header-section {
+            border-bottom: 2px solid #f1f5f9;
+            padding-bottom: 20px;
+            margin-bottom: 24px;
+        }
+        .header-section h1 {
+            font-size: 1.45rem;
+            font-weight: 800;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .header-section p {
+            color: #64748b;
+            font-size: 0.9rem;
+            margin-top: 6px;
+            line-height: 1.5;
+        }
+        .stat-banner {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            background: #f8fafc;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 14px;
+            margin-bottom: 24px;
             text-align: center;
-            max-width: 520px;
-            width: 90%;
         }
-        h2 { color: #0f172a; margin-bottom: 8px; }
-        p { color: #64748b; font-size: 14px; margin-bottom: 24px; line-height: 1.5; }
-        .export-btn {
-            background: #e11d48;
-            color: #ffffff;
-            border: none;
-            padding: 14px 28px;
+        .stat-item h4 {
+            font-size: 0.78rem;
+            color: #64748b;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        .stat-item .val {
+            font-size: 1.3rem;
+            font-weight: 800;
+            color: var(--primary);
+            margin-top: 2px;
+        }
+        .action-box {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            margin-bottom: 24px;
+        }
+        .btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            width: 100%;
+            padding: 14px;
             border-radius: 8px;
-            font-size: 16px;
+            font-size: 0.98rem;
             font-weight: 700;
             cursor: pointer;
-            width: 100%;
+            border: none;
             transition: all 0.2s ease;
         }
-        .export-btn:hover { background: #be123c; }
-        .export-btn:disabled { background: #94a3b8; cursor: not-allowed; }
-        #statusMsg { margin-top: 16px; font-size: 14px; font-weight: 600; color: #334155; }
+        .btn-export {
+            background: #2563eb;
+            color: white;
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+        }
+        .btn-export:hover { background: #1d4ed8; }
+        .btn-export:disabled { background: #94a3b8; cursor: not-allowed; }
+
+        .admin-danger-zone {
+            border: 1.5px dashed #fca5a5;
+            background: #fffaf0;
+            border-radius: 12px;
+            padding: 18px 20px;
+            margin-top: 10px;
+        }
+        .danger-title {
+            font-size: 0.92rem;
+            font-weight: 800;
+            color: #991b1b;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 6px;
+        }
+        .danger-desc {
+            font-size: 0.82rem;
+            color: #7f1d1d;
+            line-height: 1.5;
+            margin-bottom: 14px;
+        }
+        .btn-danger {
+            background: var(--danger);
+            color: white;
+        }
+        .btn-danger:hover { background: var(--danger-hover); }
+
+        #statusMsg {
+            font-size: 0.9rem;
+            font-weight: 600;
+            padding: 12px 14px;
+            border-radius: 8px;
+            display: none;
+            margin-top: 16px;
+            line-height: 1.4;
+        }
+        .status-info { background: #eff6ff; color: #1e40af; border: 1px solid #bfdbfe; }
+        .status-success { background: #f0fdf4; color: #166534; border: 1px solid #bbf7d0; }
+        .status-error { background: #fef2f2; color: #991b1b; border: 1px solid #fecaca; }
     </style>
 </head>
 <body>
 
-<div class="export-card">
-    <h2>📊 DineReserve Master Data Exporter</h2>
-    <p>點擊下方按鈕直接自 Firebase 擷取最新餐廳研究資料，並整合匯出包含 AI 推薦決策、預訂數據與問卷之 Master Excel 檔案。</p>
-    <button id="exportBtn" class="export-btn" onclick="exportData()">下載研究數據總表 (.xlsx)</button>
+<div class="main-card">
+    <div class="header-section">
+        <h1><i class="fa-solid fa-chart-pie" style="color:var(--accent);"></i> 实验数据统一导出与管理后台</h1>
+        <p>单 Sheet 宽表整合架构：每个被试独占一行数据，包含 2×2 分组、问卷 5 项偏好、AI/默认环保推荐结果及最终预订行为。</p>
+    </div>
+
+    <!-- 实时指标卡 -->
+    <div class="stat-banner">
+        <div class="stat-item">
+            <h4>当前 Grouping 计数</h4>
+            <div class="val" id="statGrouping">--</div>
+        </div>
+        <div class="stat-item">
+            <h4>问卷提交样本数</h4>
+            <div class="val" id="statSurveys">--</div>
+        </div>
+        <div class="stat-item">
+            <h4>完成预订样本数</h4>
+            <div class="val" id="statBookings">--</div>
+        </div>
+    </div>
+
+    <div class="action-box">
+        <button id="exportBtn" class="btn btn-export" onclick="exportMasterData()">
+            <i class="fa-solid fa-file-excel"></i> 下载单表汇总数据 Excel (.xlsx)[cite: 12]
+        </button>
+    </div>
+
+    <!-- 管理员高危清空区域 (短语验证保护) -->
+    <div class="admin-danger-zone">
+        <div class="danger-title">
+            <i class="fa-solid fa-triangle-exclamation"></i> 实验重置与数据清空 (短语验证防误触)
+        </div>
+        <div class="danger-desc">
+            此操作将彻底抹除数据库中的用户、问卷答卷、预订记录，<strong>并将 <code>grouping</code> 变量彻底归零重置为 0</strong>。操作前需输入安全校验短语。
+        </div>
+        <button id="resetBtn" class="btn btn-danger" onclick="handleSecureReset()">
+            <i class="fa-solid fa-trash-can"></i> 重置清空数据库并归零 Grouping
+        </button>
+    </div>
+
     <div id="statusMsg"></div>
 </div>
 
 <script>
-    // 定義 Pre-Survey 偏好題項 (Q1 ~ Q8)
-    const PRE_SURVEY_QUESTIONS = [
-        { key: "q01_sensory_experience", header: "Pre_Q01_SensoryExperience" },
-        { key: "q02_fresh",              header: "Pre_Q02_Fresh" },
-        { key: "q03_familiar",           header: "Pre_Q03_FamiliarCuisine" },
-        { key: "q04_high_quality",       header: "Pre_Q04_HighQualityMenu" },
-        { key: "q05_healthy",            header: "Pre_Q05_PrivateRoomView" },
-        { key: "q06_safe_to_consume",    header: "Pre_Q06_HygieneWinePairing" },
-        { key: "q07_price_within_budget",header: "Pre_Q07_PriceJustified" },
-        { key: "q08_price_justified",    header: "Pre_Q08_SustainableSourcing" }
-    ];
+    // 指定的安全重置验证短语
+    const REQUIRED_CONFIRM_PHRASE = "DELETE-DATABASE";
 
-    // 定義 Post-Survey 18 題量表題項 (Likert 1~7)
-    const POST_SURVEY_QUESTIONS = [
-        { key: "q_scenario_realistic",   header: "Post_Q01_Scenario_Realistic" },
-        { key: "q_scenario_project",     header: "Post_Q02_Scenario_ProjectSelf" },
-        { key: "q_scenario_imagine",     header: "Post_Q03_Scenario_ImagineReal" },
-        { key: "q_mc_onesize",           header: "Post_Q04_Rec_OneSizeFitAll" },
-        { key: "q_mc_identical",         header: "Post_Q05_Rec_IdenticalToAll" },
-        { key: "q_wtp_tomato",           header: "Post_Q06_WTP_Item1" },
-        { key: "q_wtp_chicken",          header: "Post_Q07_WTP_Item2" },
-        { key: "q_wtp_salmon",           header: "Post_Q08_WTP_Item3" },
-        { key: "q_wtp_strawberries",     header: "Post_Q09_WTP_Item4" },
-        { key: "q_sus_tomato",           header: "Post_Q10_Sus_Item1" },
-        { key: "q_sus_chicken",          header: "Post_Q11_Sus_Item2" },
-        { key: "q_sus_salmon",           header: "Post_Q12_Sus_Item3" },
-        { key: "q_sus_strawberries",     header: "Post_Q13_Sus_Item4" },
-        { key: "q_pers_tailored",        header: "Post_Q14_Pers_TailoredInterests" },
-        { key: "q_pers_understood",      header: "Post_Q15_Pers_NeedsUnderstood" },
-        { key: "q_pers_account",         header: "Post_Q16_Pers_PrefTakenAccount" },
-        { key: "q_ai_familiar",          header: "Post_Q17_AI_Familiar" },
-        { key: "q_ai_like",              header: "Post_Q18_AI_LikeGeneral" }
-    ];
+    function getRestDetailsById(id) {
+        if (typeof restaurantsData !== 'undefined' && Array.isArray(restaurantsData)) {
+            const found = restaurantsData.find(r => r.id === parseInt(id, 10));
+            if (found) {
+                return {
+                    name: found.name,
+                    region: found.region,
+                    cuisine: found.cuisine,
+                    hasEco: found.hasSustainable ? "Yes" : "No",
+                    ecoAward: found.ecoAward || "None"
+                };
+            }
+        }
+        return { name: `餐厅ID #${id}`, region: "", cuisine: "", hasEco: "Unknown", ecoAward: "" };
+    }
 
-    async function exportData() {
+    async function loadStats() {
+        if (typeof db === 'undefined') return;
+        try {
+            const [groupSnap, surveySnap, bookSnap] = await Promise.all([
+                db.ref('grouping').once('value'),
+                db.ref('survey_responses').once('value'),
+                db.ref('restaurant_bookings').once('value')
+            ]);
+            document.getElementById("statGrouping").innerText = groupSnap.val() !== null ? groupSnap.val() : 0;
+            document.getElementById("statSurveys").innerText = surveySnap.val() ? Object.keys(surveySnap.val()).length : 0;
+            document.getElementById("statBookings").innerText = bookSnap.val() ? Object.keys(bookSnap.val()).length : 0;
+        } catch(e) {
+            console.warn("读取统计信息失败:", e);
+        }
+    }
+
+    function showStatus(text, type = "info") {
+        const el = document.getElementById("statusMsg");
+        el.className = `status-${type}`;
+        el.innerHTML = text;
+        el.style.display = "block";
+    }
+
+    // ==========================================
+    // 1. 导出单 Sheet 宽表逻辑 (One Row per Participant)
+    // ==========================================
+    async function exportMasterData() {
         const btn = document.getElementById("exportBtn");
-        const status = document.getElementById("statusMsg");
-        btn.disabled = true;
-        status.innerText = "⏳ 正在自 Firebase 讀取所有資料庫節點...";
+        btn.disabled = true;[cite: 12]
+        showStatus("<i class='fa-solid fa-spinner fa-spin'></i> 正在读取 Firebase 数据库并整合成单表数据...", "info");
 
         try {
-            // 平行抓取所有相關節點
-            const [usersSnap, preSurveySnap, bookingsSnap, postSurveySnap, visitsSnap] = await Promise.all([
+            const [groupSnap, usersSnap, surveySnap, bookingsSnap] = await Promise.all([
+                db.ref('grouping').once('value'),
                 db.ref('users').once('value'),
                 db.ref('survey_responses').once('value'),
-                db.ref('restaurant_bookings').once('value'),
-                db.ref('post_survey_records').once('value'),
-                db.ref('visit_logs').once('value')
+                db.ref('restaurant_bookings').once('value')
             ]);
 
+            const currentGroupingCounter = groupSnap.val() !== null ? groupSnap.val() : 0;
             const users = usersSnap.val() ? Object.values(usersSnap.val()) : [];
-            const preSurveys = preSurveySnap.val() ? Object.values(preSurveySnap.val()) : [];
+            const surveys = surveySnap.val() ? Object.values(surveySnap.val()) : [];
             const bookings = bookingsSnap.val() ? Object.values(bookingsSnap.val()) : [];
-            const postSurveys = postSurveySnap.val() ? Object.values(postSurveySnap.val()) : [];
-            const visits = visitsSnap.val() ? Object.values(visitsSnap.val()) : [];
 
-            // 匯總所有不重複的 32 位 Participant ID
+            // 搜集所有不重复的 32 位 Participant ID[cite: 12]
             const allPIDs = new Set([
                 ...users.map(u => u.participantID),
-                ...preSurveys.map(s => s.participantID),
-                ...bookings.map(b => b.participantID),
-                ...postSurveys.map(p => p.participantID),
-                ...visits.map(v => v.participantID)
-            ].filter(pid => pid && pid.trim() !== ""));
+                ...surveys.map(s => s.participantID),
+                ...bookings.map(b => b.participantID)
+            ].filter(pid => pid && pid.trim() !== ""));[cite: 12]
 
             const masterDataMap = {};
 
+            // 预定义单一行的数据结构（涵盖所有维度字段）
             allPIDs.forEach(pid => {
-                const row = {};
+                masterDataMap[pid] = {
+                    // 被试身份与实验分组
+                    "Participant_ID": pid,[cite: 12]
+                "Assigned_Group": "",
+                    "Group_Condition_Label": "",
+                    "Use_Real_AI": "",
+                    "Show_AI_Label": "",
+                    "Group_Counter_At_Entry": "",
 
-                // 1. 基本用戶身份資訊
-                row["Participant_ID"] = pid;
-                row["User_Registered_Time"] = "";
+                    // 问卷偏好作答 (5 题)
+                    "Survey_Submitted_Time": "",
+                    "Q1_Budget_Tier_HK$": "",
+                    "Q2_Star_Tier_Rating": "",
+                    "Q3_Preferred_Region": "",
+                    "Q4_Preferred_Cuisine": "",
+                    "Q5_Selected_Facilities": "",
 
-                // 2. Pre-Survey 與 AI 推薦紀錄
-                row["PreSurvey_Submitted_Time"] = "";
-                row["AI_Recommended_Rest_ID"] = "";
-                row["AI_Nudge_Text"] = "";
-                PRE_SURVEY_QUESTIONS.forEach(q => {
-                    row[q.header] = "";
-                });
+                    // 推荐系统决策
+                    "Recommended_Rest_ID": "",
+                    "Recommended_Rest_Name": "",
+                    "Recommended_Rest_Has_EcoAward": "",
+                    "Recommended_Rest_EcoAward_Details": "",
+                    "Recommendation_Nudge_Text": "",
 
-                // 3. 餐廳預訂行為指標
-                row["Has_Completed_Booking"] = "No";
-                row["Booking_Ref"] = "";
-                row["Booking_Time"] = "";
-                row["Selected_Rest_ID"] = "";
-                row["Selected_Rest_Name"] = "";
-                row["Selected_Menu_Name"] = "";
-                row["Booking_Total_Amount"] = "";
-                row["Is_AI_Recommendation_Adopted"] = "No";
-
-                // 4. Post-Survey 量表回應
-                row["PostSurvey_Submitted_Time"] = "";
-                POST_SURVEY_QUESTIONS.forEach(q => {
-                    row[q.header] = "";
-                });
-
-                // 5. 人口學統計資料
-                row["Demo_Gender"] = "";
-                row["Demo_Age"] = "";
-                row["Demo_Country"] = "";
-                row["Demo_Income"] = "";
-                row["Demo_Ethnicity"] = "";
-                row["Demo_MaritalStatus"] = "";
-                row["Demo_Education"] = "";
-                row["Demo_Occupation"] = "";
-
-                // 6. 質性反饋問題
-                row["Open_Survey_Purpose_Thoughts"] = "";
-                row["Open_Study_Feedback"] = "";
-
-                masterDataMap[pid] = row;
+                    // 最终餐厅预订行为
+                    "Has_Completed_Booking": "No",[cite: 12]
+                "Booking_Ref_Code": "",
+                    "Booking_Confirmed_Time": "",[cite: 12]
+                "Selected_Rest_ID": "",[cite: 12]
+                "Selected_Rest_Name": "",[cite: 12]
+                "Selected_Rest_Region": "",
+                    "Selected_Rest_Cuisine": "",
+                    "Selected_Menu_Name": "",[cite: 12]
+                "Booking_Total_Amount": "",[cite: 12]
+                "Is_Recommendation_Adopted": "No"
+            };
             });
 
-            // 填充 1: Users (32 位 ID 註冊紀錄)
-            users.forEach(u => {
-                const pid = u.participantID;
-                if (masterDataMap[pid]) {
-                    masterDataMap[pid]["User_Registered_Time"] = u.createdAt || "";
-                }
-            });
-
-            // 填充 2: Pre-Survey & AI 推薦
-            preSurveys.forEach(s => {
+            // 1. 填充问卷数据与推荐决策
+            surveys.forEach(s => {
                 const pid = s.participantID;
                 if (masterDataMap[pid]) {
-                    masterDataMap[pid]["PreSurvey_Submitted_Time"] = s.submittedAt || "";
-                    masterDataMap[pid]["AI_Recommended_Rest_ID"] = s.aiRecommendedRestaurantId || "";
-                    masterDataMap[pid]["AI_Nudge_Text"] = s.nudgeContent || "";
-                    if (s.responses) {
-                        PRE_SURVEY_QUESTIONS.forEach(q => {
-                            if (s.responses[q.key] !== undefined) {
-                                masterDataMap[pid][q.header] = s.responses[q.key];
-                            }
-                        });
+                    const row = masterDataMap[pid];
+                    row["Survey_Submitted_Time"] = s.submittedAt || "";
+                    row["Group_Counter_At_Entry"] = s.groupCounter !== undefined ? s.groupCounter : "";
+
+                    if (s.assignedGroup !== undefined) {
+                        row["Assigned_Group"] = s.assignedGroup;
+                        const groupConditions = [
+                            "Group 0 (真实AI推荐 / 标示AI)",
+                            "Group 1 (预设推荐 / 标示AI)",
+                            "Group 2 (真实AI推荐 / 不标示AI)",
+                            "Group 3 (预设推荐 / 不标示AI)"
+                        ];
+                        row["Group_Condition_Label"] = groupConditions[s.assignedGroup] || `Group ${s.assignedGroup}`;
                     }
+
+                    row["Use_Real_AI"] = s.useRealAi ? "Yes" : "No";
+                    row["Show_AI_Label"] = s.showAiLabel ? "Yes" : "No";
+
+                    if (s.responses) {
+                        row["Q1_Budget_Tier_HK$"] = s.responses.budget_tier || "";
+                        row["Q2_Star_Tier_Rating"] = s.responses.star_tier ? `${s.responses.star_tier}星` : "";
+                        row["Q3_Preferred_Region"] = s.responses.preferred_region || "";
+                        row["Q4_Preferred_Cuisine"] = s.responses.preferred_cuisine || "";
+                        row["Q5_Selected_Facilities"] = Array.isArray(s.responses.facility_highlights)
+                            ? s.responses.facility_highlights.join("; ")
+                            : (s.responses.facility_highlight || "");
+                    }
+
+                    const recId = s.aiRecommendedRestaurantId;
+                    row["Recommended_Rest_ID"] = recId || "";
+                    const recDetails = getRestDetailsById(recId);
+                    row["Recommended_Rest_Name"] = recDetails.name;
+                    row["Recommended_Rest_Has_EcoAward"] = recDetails.hasEco;
+                    row["Recommended_Rest_EcoAward_Details"] = recDetails.ecoAward;
+                    row["Recommendation_Nudge_Text"] = s.nudgeContent || "";
                 }
             });
 
-            // 填充 3: Restaurant Bookings
+            // 2. 填充预订记录数据[cite: 12]
             bookings.forEach(b => {
                 const pid = b.participantID;
                 if (masterDataMap[pid]) {
-                    masterDataMap[pid]["Has_Completed_Booking"] = "Yes";
-                    masterDataMap[pid]["Booking_Ref"] = b.bookingRef || "";
-                    masterDataMap[pid]["Booking_Time"] = b.bookingTime || "";
-                    masterDataMap[pid]["Selected_Rest_ID"] = b.selectedRestaurantId || "";
-                    masterDataMap[pid]["Selected_Rest_Name"] = b.selectedRestaurantName || "";
-                    masterDataMap[pid]["Selected_Menu_Name"] = b.menuName || "";
-                    masterDataMap[pid]["Booking_Total_Amount"] = b.totalAmount || "";
-                    masterDataMap[pid]["Is_AI_Recommendation_Adopted"] = b.isAiRecommendedSelected ? "Yes" : "No";
+                    const row = masterDataMap[pid];
+                    row["Has_Completed_Booking"] = "Yes";[cite: 12]
+                    row["Booking_Ref_Code"] = b.bookingRef || "";
+                    row["Booking_Confirmed_Time"] = b.bookingTime || "";[cite: 12]
+                    row["Selected_Rest_ID"] = b.selectedRestaurantId || "";[cite: 12]
+                    row["Selected_Rest_Name"] = b.selectedRestaurantName || getRestDetailsById(b.selectedRestaurantId).name;[cite: 12]
+                    row["Selected_Rest_Region"] = b.selectedRestaurantRegion || "";
+                    row["Selected_Rest_Cuisine"] = b.selectedRestaurantCuisine || "";
+                    row["Selected_Menu_Name"] = b.menuName || "";[cite: 12]
+                    row["Booking_Total_Amount"] = b.totalAmount || "";[cite: 12]
+                    row["Is_Recommendation_Adopted"] = b.isAiRecommendedSelected ? "Yes" : "No";
                 }
             });
 
-            // 填充 4: Post-Survey & Demographics
-            postSurveys.forEach(p => {
-                const pid = p.participantID;
-                if (masterDataMap[pid]) {
-                    masterDataMap[pid]["PostSurvey_Submitted_Time"] = p.submittedAt || "";
+            // 3. 构建单一 Sheet 的 Excel 文件[cite: 12]
+            const wb = XLSX.utils.book_new();[cite: 12]
+            const rowsArray = Object.values(masterDataMap);
+            const wsMaster = XLSX.utils.json_to_sheet(rowsArray);[cite: 12]
 
-                    if (p.postSurveyLikert) {
-                        POST_SURVEY_QUESTIONS.forEach(q => {
-                            if (p.postSurveyLikert[q.key] !== undefined) {
-                                masterDataMap[pid][q.header] = p.postSurveyLikert[q.key];
-                            }
-                        });
-                    }
+            // 仅附加单个 Sheet: Master_Research_Data
+            XLSX.utils.book_append_sheet(wb, wsMaster, "Master_Research_Data");
 
-                    if (p.demographics) {
-                        masterDataMap[pid]["Demo_Gender"] = p.demographics.gender || "";
-                        masterDataMap[pid]["Demo_Age"] = p.demographics.age || "";
-                        masterDataMap[pid]["Demo_Country"] = p.demographics.country || "";
-                        masterDataMap[pid]["Demo_Income"] = p.demographics.income || "";
-                        masterDataMap[pid]["Demo_Ethnicity"] = p.demographics.ethnicity || "";
-                        masterDataMap[pid]["Demo_MaritalStatus"] = p.demographics.maritalStatus || "";
-                        masterDataMap[pid]["Demo_Education"] = p.demographics.education || "";
-                        masterDataMap[pid]["Demo_Occupation"] = p.demographics.occupation || "";
-                    }
+            const timestamp = new Date().toISOString().replace(/[:.]/g, "-").slice(0, 19);
+            XLSX.writeFile(wb, `DineReserve_SingleSheet_Data_${timestamp}.xlsx`);
 
-                    if (p.openResponses) {
-                        masterDataMap[pid]["Open_Survey_Purpose_Thoughts"] = p.openResponses.surveyPurposeThoughts || "";
-                        masterDataMap[pid]["Open_Study_Feedback"] = p.openResponses.generalFeedback || "";
-                    }
-                }
-            });
-
-            // 產生 Excel 工作表
-            const wb = XLSX.utils.book_new();
-
-            // 工作表 1: 整合總表 (Master Data)
-            const wsMaster = XLSX.utils.json_to_sheet(Object.values(masterDataMap));
-            XLSX.utils.book_append_sheet(wb, wsMaster, "All_Research_Data");
-
-            // 工作表 2: 純預訂紀錄表 (Bookings Only)
-            const bookingRows = bookings.map(b => ({
-                "Participant_ID": b.participantID || "",
-                "Booking_Ref": b.bookingRef || "",
-                "Booking_Time": b.bookingTime || "",
-                "AI_Recommended_ID": b.aiRecommendedRestaurantId || "",
-                "Selected_Restaurant_ID": b.selectedRestaurantId || "",
-                "Selected_Restaurant_Name": b.selectedRestaurantName || "",
-                "Menu_Name": b.menuName || "",
-                "Is_AI_Adopted": b.isAiRecommendedSelected ? "Yes" : "No",
-                "Total_Amount": b.totalAmount || ""
-            }));
-            const wsBookings = XLSX.utils.json_to_sheet(bookingRows);
-            XLSX.utils.book_append_sheet(wb, wsBookings, "Bookings_Detail");
-
-            const dateStr = new Date().toISOString().split('T')[0];
-            XLSX.writeFile(wb, `DineReserve_Master_Research_Data_${dateStr}.xlsx`);
-
-            status.innerText = `✅ 匯出成功！已彙整匯出 ${Object.keys(masterDataMap).length} 筆受試者資料。`;
-        } catch (err) {
-            console.error("Export error:", err);
-            status.innerText = "❌ 匯出失敗，請打開瀏覽器 Console 檢視錯誤細節。";
+            showStatus(`✅ 导出成功！共导出 ${rowsArray.length} 位被试者的单表记录（单行聚合所有指标），当前 Grouping 值为: <strong>${currentGroupingCounter}</strong>`, "success");
+        } catch(err) {
+            console.error(err);
+            showStatus(`❌ 导出失败: ${err.message}`, "error");
         } finally {
-            btn.disabled = false;
+            btn.disabled = false;[cite: 12]
+            loadStats();
         }
     }
+
+    // ==========================================
+    // 2. 短语验证重置逻辑 (清空数据并归零 Grouping)
+    // ==========================================
+    async function handleSecureReset() {
+        const promptMsg = `⚠️【高危操作警告】\n\n此操作将抹除所有作答、预订记录并将 grouping 重置为 0！\n\n如确认重置，请在下方文本框中精确输入提示短语：\n${REQUIRED_CONFIRM_PHRASE}`;
+        const userInput = prompt(promptMsg);
+
+        if (userInput === null) {
+            return; // 用户点击取消
+        }
+
+        if (userInput.trim() !== REQUIRED_CONFIRM_PHRASE) {
+            alert(`输入错误！您输入的短语不匹配，操作已安全取消。\n要求短语为: ${REQUIRED_CONFIRM_PHRASE}`);
+            return;
+        }
+
+        const resetBtn = document.getElementById("resetBtn");
+        resetBtn.disabled = true;
+        showStatus("<i class='fa-solid fa-spinner fa-spin'></i> 验证通过，正在清空节点并将 grouping 计数重置为 0...", "info");
+
+        try {
+            await Promise.all([
+                db.ref('users').remove(),
+                db.ref('survey_responses').remove(),
+                db.ref('restaurant_bookings').remove(),
+                db.ref('visit_logs').remove(),
+                db.ref('grouping').set(0) // 确保将 grouping 准确归零
+            ]);
+
+            showStatus("🎉 数据库重置完毕！所有被试数据已清空，<code>grouping</code> 变量已重置归零为 <strong>0</strong>。", "success");
+            alert("重置完成！grouping 计数器已归零为 0。");
+        } catch(err) {
+            console.error("Reset Failed:", err);
+            showStatus(`❌ 重置失败: ${err.message}`, "error");
+        } finally {
+            resetBtn.disabled = false;
+            loadStats();
+        }
+    }
+
+    window.addEventListener("DOMContentLoaded", loadStats);
 </script>
 </body>
 </html>
