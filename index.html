@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>问卷调查</title>
+    <title>用餐偏好问卷</title>
     <style>
         :root {
-            --bg-color: #f4f6f8;
+            --bg-color: #f8fafc;
             --card-bg: #ffffff;
-            --text-primary: #2c3e50;
-            --text-secondary: #606f7b;
+            --text-primary: #0f172a;
+            --text-secondary: #475569;
             --accent-color: #e11d48;
             --hover-color: #be123c;
             --border-color: #e2e8f0;
@@ -20,7 +20,7 @@
             background-color: var(--bg-color);
             color: var(--text-primary);
             line-height: 1.6;
-            padding: 20px;
+            padding: 24px 16px;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -28,16 +28,16 @@
         }
         .container {
             background-color: var(--card-bg);
-            max-width: 600px;
+            max-width: 680px;
             width: 100%;
-            border-radius: 12px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
-            padding: 36px 30px;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.01);
+            padding: 36px 32px;
             border: 1px solid var(--border-color);
         }
         .lead-text {
-            font-size: 1.05rem;
-            font-weight: 600;
+            font-size: 1.1rem;
+            font-weight: 700;
             color: var(--text-primary);
             margin-bottom: 24px;
             padding-bottom: 12px;
@@ -45,63 +45,55 @@
         }
         .form-group {
             margin-bottom: 24px;
+            background: #fafbfc;
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 16px 18px;
         }
         label.question-title {
             display: block;
-            font-size: 0.98rem;
+            font-size: 0.96rem;
             font-weight: 700;
             margin-bottom: 12px;
             color: var(--text-primary);
         }
         .required {
-            color: #e53e3e;
+            color: #e11d48;
             margin-left: 4px;
         }
-        .radio-group {
-            display: flex;
-            flex-direction: column;
+        .hint-text {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            font-weight: normal;
+            margin-left: 6px;
+        }
+        .radio-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
             gap: 10px;
         }
-        .radio-card {
+        .option-card {
             display: flex;
             align-items: center;
-            padding: 12px 16px;
+            padding: 10px 14px;
             border: 1.5px solid var(--border-color);
             border-radius: 8px;
             cursor: pointer;
             transition: all 0.2s ease;
-            background: #fafafa;
+            background: #ffffff;
+            font-size: 0.9rem;
+            font-weight: 600;
         }
-        .radio-card:hover {
+        .option-card:hover {
             border-color: #cbd5e1;
-            background: #f8fafc;
+            background: #f1f5f9;
         }
-        .radio-card input[type="radio"] {
+        .option-card input {
             accent-color: var(--accent-color);
-            width: 18px;
-            height: 18px;
-            margin-right: 12px;
+            width: 16px;
+            height: 16px;
+            margin-right: 10px;
             cursor: pointer;
-        }
-        .radio-card span {
-            font-size: 0.95rem;
-            font-weight: 600;
-        }
-        .form-select {
-            width: 100%;
-            padding: 12px 14px;
-            border: 1.5px solid var(--border-color);
-            border-radius: 8px;
-            font-size: 0.95rem;
-            font-weight: 600;
-            color: var(--text-primary);
-            background-color: #fafafa;
-            outline: none;
-            cursor: pointer;
-        }
-        .form-select:focus {
-            border-color: var(--accent-color);
-            background-color: #ffffff;
         }
         .submit-btn {
             display: block;
@@ -141,9 +133,7 @@
         try {
             firebase.initializeApp(firebaseConfig);
             var db = firebase.database();
-        } catch(e) {
-            console.warn("Firebase 初始化略過或已存在:", e);
-        }
+        } catch(e) {}
     </script>
     <script src="restaurants_data.js"></script>
 </head>
@@ -153,63 +143,140 @@
     <p class="lead-text">请继续填写以下部分</p>
 
     <form id="surveyForm" onsubmit="handleSubmit(event)">
-        <!-- 问题 1 -->
+
+        <!-- 问题 1：对应 Panel 价格滑块 -->
         <div class="form-group">
-            <label class="question-title">1. 你选择餐厅时注重什么？<span class="required">*</span></label>
-            <div class="radio-group">
-                <label class="radio-card">
-                    <input type="radio" name="focus_factor" value="价钱便宜" required>
-                    <span>价钱便宜</span>
+            <label class="question-title">1. 这次就餐，你最契合哪种消费心境与用餐场景？<span class="required">*</span></label>
+            <div class="radio-grid">
+                <label class="option-card">
+                    <input type="radio" name="budget_tier" value="500" required>
+                    <span>日常便餐 / 舒适休闲尝味</span>
                 </label>
-                <label class="radio-card">
-                    <input type="radio" name="focus_factor" value="食物质素" required>
-                    <span>食物质素</span>
+                <label class="option-card">
+                    <input type="radio" name="budget_tier" value="1000" required>
+                    <span>好友相聚 / 品质精致之选</span>
                 </label>
-                <label class="radio-card">
-                    <input type="radio" name="focus_factor" value="环境舒适" required>
-                    <span>环境舒适</span>
+                <label class="option-card">
+                    <input type="radio" name="budget_tier" value="1500" required>
+                    <span>重要宴请 / 精致奢享体验</span>
+                </label>
+                <label class="option-card">
+                    <input type="radio" name="budget_tier" value="2000" required>
+                    <span>非凡庆典 / 顶奢无上限品鉴</span>
                 </label>
             </div>
         </div>
 
-        <!-- 问题 2 -->
+        <!-- 问题 2：对应 Panel 餐厅星级 -->
         <div class="form-group">
-            <label class="question-title">2. 你想在哪一区用餐？<span class="required">*</span></label>
-            <select name="preferred_district" id="preferred_district" class="form-select" required>
-                <option value="" disabled selected>请选择地区（香港18区）</option>
-                <optgroup label="香港岛">
-                    <option value="中西区">中西区</option>
-                    <option value="湾仔区">湾仔区</option>
-                    <option value="东区">东区</option>
-                    <option value="南区">南区</option>
-                </optgroup>
-                <optgroup label="九龙">
-                    <option value="油尖旺区">油尖旺区</option>
-                    <option value="深水埗区">深水埗区</option>
-                    <option value="九龙城区">九龙城区</option>
-                    <option value="黄大仙区">黄大仙区</option>
-                    <option value="观塘区">观塘区</option>
-                </optgroup>
-                <optgroup label="新界">
-                    <option value="葵青区">葵青区</option>
-                    <option value="荃湾区">荃湾区</option>
-                    <option value="屯门区">屯门区</option>
-                    <option value="元朗区">元朗区</option>
-                    <option value="北区">北区</option>
-                    <option value="大埔区">大埔区</option>
-                    <option value="沙田区">沙田区</option>
-                    <option value="西贡区">西贡区</option>
-                    <option value="离岛区">离岛区</option>
-                </optgroup>
-            </select>
+            <label class="question-title">2. 你对餐厅的主厨造诣与美食地位有什么期待？<span class="required">*</span></label>
+            <div class="radio-grid">
+                <label class="option-card">
+                    <input type="radio" name="star_tier" value="5" required>
+                    <span>登峰造极：世界级大师的艺术巅峰之作</span>
+                </label>
+                <label class="option-card">
+                    <input type="radio" name="star_tier" value="4" required>
+                    <span>卓越非凡：具备极高水准的名厨私飨</span>
+                </label>
+                <label class="option-card">
+                    <input type="radio" name="star_tier" value="3" required>
+                    <span>精致标准：水准出众的星级美味典范</span>
+                </label>
+                <label class="option-card">
+                    <input type="radio" name="star_tier" value="2" required>
+                    <span>地道精选：独具个性与匠心口碑的地方名店</span>
+                </label>
+            </div>
         </div>
 
-        <button type="submit" id="submitBtn" class="submit-btn">提交</button>
+        <!-- 问题 3：对应 Panel 地区分布 (已移除 value 尾部空格) -->
+        <div class="form-group">
+            <label class="question-title">3. 你希望在哪一个地理片区就餐？<span class="required">*</span></label>
+            <div class="radio-grid">
+                <label class="option-card">
+                    <input type="radio" name="preferred_region" value="香港岛" required>
+                    <span>香港岛</span>
+                </label>
+                <label class="option-card">
+                    <input type="radio" name="preferred_region" value="九龙" required>
+                    <span>九龙</span>
+                </label>
+                <label class="option-card">
+                    <input type="radio" name="preferred_region" value="新界东" required>
+                    <span>新界东</span>
+                </label>
+                <label class="option-card">
+                    <input type="radio" name="preferred_region" value="新界西" required>
+                    <span>新界西</span>
+                </label>
+            </div>
+        </div>
+
+        <!-- 问题 4：对应 Panel 菜系风味 -->
+        <div class="form-group">
+            <label class="question-title">4. 本次用餐你最期待体验的菜系风味是？<span class="required">*</span></label>
+            <div class="radio-grid">
+                <label class="option-card">
+                    <input type="radio" name="preferred_cuisine" value="粤菜/中菜" required>
+                    <span>粤菜 / 精细中菜</span>
+                </label>
+                <label class="option-card">
+                    <input type="radio" name="preferred_cuisine" value="法式料理" required>
+                    <span>法式料理</span>
+                </label>
+                <label class="option-card">
+                    <input type="radio" name="preferred_cuisine" value="日本料理" required>
+                    <span>日本料理</span>
+                </label>
+                <label class="option-card">
+                    <input type="radio" name="preferred_cuisine" value="意式料理" required>
+                    <span>意式料理</span>
+                </label>
+            </div>
+        </div>
+
+        <!-- 问题 5：多选题 -->
+        <div class="form-group">
+            <label class="question-title">
+                5. 哪些专属设施或就餐礼遇符合你的需求？<span class="required">*</span>
+                <span class="hint-text">(可多选)</span>
+            </label>
+            <div class="radio-grid">
+                <label class="option-card">
+                    <input type="checkbox" name="facility_highlight" value="hasPrivateRoom">
+                    <span>独立私密包厢</span>
+                </label>
+                <label class="option-card">
+                    <input type="checkbox" name="facility_highlight" value="hasWindowSeat">
+                    <span>浪漫靠窗席位</span>
+                </label>
+                <label class="option-card">
+                    <input type="checkbox" name="facility_highlight" value="hasParking">
+                    <span>代客泊车或便利车位</span>
+                </label>
+                <label class="option-card">
+                    <input type="checkbox" name="facility_highlight" value="hasSommelier">
+                    <span>餐酒搭配佐餐</span>
+                </label>
+                <label class="option-card">
+                    <input type="checkbox" name="facility_highlight" value="hasSustainable">
+                    <span>有机食材认证</span>
+                </label>
+            </div>
+        </div>
+
+        <button type="submit" id="submitBtn" class="submit-btn">提交问卷并查看推荐</button>
     </form>
 </div>
 
 <script>
     let currentPID = "";
+
+    // 默认固定推荐选项（米芝莲一星 + 绿星有机认证）
+    const DEFAULT_ECO_STAR1_ID = 46; // Roganic Hong Kong
+    const DEFAULT_NUDGE_AI = "AI 智能分析为您精选荣获米其林绿星的 Roganic Hong Kong，坚持新界本地有机农场直供与可持续微型菜园料理。";
+    const DEFAULT_NUDGE_NORMAL = "为您精选荣获米其林绿星的 Roganic Hong Kong，坚持新界本地有机农场直供与可持续微型菜园料理。";
 
     function generate32DigitParticipantID() {
         const now = new Date();
@@ -234,100 +301,136 @@
             participantID = generate32DigitParticipantID();
             localStorage.setItem("participantID", participantID);
 
-            // 背景寫入，不 await 卡住頁面
             if (typeof db !== 'undefined') {
                 db.ref('users/' + participantID).set({
                     participantID: participantID,
                     createdAt: new Date().toISOString(),
                     timestamp: Date.now()
-                }).catch(err => console.warn("Firebase 註冊使用者略過:", err));
+                }).catch(err => console.warn(err));
             }
         }
         currentPID = participantID;
     }
 
-    async function handleSubmit(event) {
-        event.preventDefault();
-        const submitBtn = document.getElementById('submitBtn');
-        submitBtn.disabled = true;
-        submitBtn.textContent = '提交中，正在跳轉...';
-
-        const formData = new FormData(event.target);
-        const focusFactor = formData.get("focus_factor");
-        const preferredDistrict = formData.get("preferred_district");
-
-        const surveyResponses = {
-            focus_factor: focusFactor,
-            preferred_district: preferredDistrict
-        };
-
-        // 1. 本地即時配對計算推薦餐廳
-        const allRests = typeof restaurantsData !== 'undefined' ? restaurantsData : [];
-        let matchingRests = allRests.filter(r => r.location === preferredDistrict);
-        if (matchingRests.length === 0) matchingRests = [...allRests];
-
-        if (focusFactor === "价钱便宜") {
-            matchingRests.sort((a, b) => a.price - b.price);
-        } else if (focusFactor === "食物质素") {
-            matchingRests.sort((a, b) => b.rating - a.rating);
-        } else {
-            matchingRests.sort((a, b) => (b.hasWindowSeat ? 1 : 0) - (a.hasWindowSeat ? 1 : 0));
-        }
-
-        let recommendedRestaurantId = matchingRests[0] ? matchingRests[0].id : 1;
-        let nudgeText = `根据您在「${preferredDistrict}」注重「${focusFactor}」的用餐偏好，为您精心甄选推荐：${matchingRests[0] ? matchingRests[0].name : ''}。`;
-
-        // 2. 嘗試調用 AI API（加入 1.5 秒逾時保護，逾時自動改用本地配對）
-        const controller = new AbortController();
-        const fetchTimeout = setTimeout(() => controller.abort(), 1500);
+    // 原子递增 grouping 取得分组
+    async function getAssignedGroup() {
+        let assignedGroup = 0;
+        let counterVal = 0;
 
         try {
-            const simplifiedRestaurants = allRests.slice(0, 40).map(r => ({
-                id: r.id,
-                name: r.name,
-                location: r.location,
-                stars: r.stars,
-                price: r.price
-            }));
+            if (typeof db !== 'undefined') {
+                const groupRef = db.ref('grouping');
+                const result = await groupRef.transaction((currentValue) => {
+                    return (currentValue === null) ? 1 : currentValue + 1;
+                });
 
-            const response = await fetch("/api/recommend", {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    restaurants: simplifiedRestaurants,
-                    preferences: surveyResponses
-                }),
-                signal: controller.signal
-            });
-
-            if (response.ok) {
-                const resData = await response.json();
-                if (resData.recommend_hotel_id) recommendedRestaurantId = resData.recommend_hotel_id;
-                if (resData.nudge_text) nudgeText = resData.nudge_text;
+                if (result.committed) {
+                    counterVal = result.snapshot.val();
+                    assignedGroup = (counterVal - 1) % 4;
+                } else {
+                    assignedGroup = Math.floor(Math.random() * 4);
+                }
+            } else {
+                assignedGroup = Math.floor(Math.random() * 4);
             }
-        } catch (error) {
-            console.log("使用本地精準配對結果作為推薦:", error.message);
-        } finally {
-            clearTimeout(fetchTimeout);
+        } catch (e) {
+            console.warn("无法取得 Firebase grouping，使用本机分组:", e);
+            assignedGroup = Math.floor(Math.random() * 4);
         }
 
-        // 3. 儲存推薦資訊至 LocalStorage
-        localStorage.setItem('ai_recommended_restaurant_id', recommendedRestaurantId.toString());
-        localStorage.setItem('ai_nudge_text', nudgeText);
+        return { assignedGroup, counterVal };
+    }
+
+    async function handleSubmit(event) {
+        event.preventDefault();
+
+        const selectedFacilities = Array.from(document.querySelectorAll('input[name="facility_highlight"]:checked')).map(cb => cb.value);
+        if (selectedFacilities.length === 0) {
+            alert("请在第 5 题中至少勾选一项设施或礼遇！");
+            return;
+        }
+
+        const submitBtn = document.getElementById('submitBtn');
+        submitBtn.disabled = true;
+        submitBtn.textContent = '提交中，正在为您挑选专属餐厅...';
+
+        const formData = new FormData(event.target);
+        const budgetTier = parseInt(formData.get("budget_tier"), 10);
+        const starTier = parseInt(formData.get("star_tier"), 10);
+        const preferredRegion = (formData.get("preferred_region") || "").trim();
+        const preferredCuisine = (formData.get("preferred_cuisine") || "").trim();
+
+        const surveyResponses = {
+            budget_tier: budgetTier,
+            star_tier: starTier,
+            preferred_region: preferredRegion,
+            preferred_cuisine: preferredCuisine,
+            facility_highlights: selectedFacilities
+        };
+
+        const { assignedGroup, counterVal } = await getAssignedGroup();
+
+        const useRealAi = (assignedGroup === 0 || assignedGroup === 2);
+        const showAiLabel = (assignedGroup === 0 || assignedGroup === 1);
+
+        let finalRecId = DEFAULT_ECO_STAR1_ID;
+        let finalNudgeText = showAiLabel ? DEFAULT_NUDGE_AI : DEFAULT_NUDGE_NORMAL;
+
+        if (useRealAi) {
+            const allRests = (typeof restaurantsData !== 'undefined' && Array.isArray(restaurantsData)) ? restaurantsData : [];
+            const controller = new AbortController();
+            const timeout = setTimeout(() => controller.abort(), 2000);
+
+            try {
+                const response = await fetch("/api/recommend", {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        restaurants: allRests.slice(0, 40),
+                        preferences: surveyResponses
+                    }),
+                    signal: controller.signal
+                });
+
+                if (response.ok) {
+                    const resData = await response.json();
+                    if (resData.recommend_hotel_id) finalRecId = resData.recommend_hotel_id;
+                    if (resData.nudge_text) {
+                        let text = resData.nudge_text;
+                        if (!showAiLabel) {
+                            text = text.replace(/AI\s*智能(推荐|分析)?/gi, "专家精心")
+                                .replace(/AI/gi, "精选");
+                        }
+                        finalNudgeText = text;
+                    }
+                }
+            } catch (e) {
+                console.log("AI 调用超时或离线，使用正交备用推荐");
+            } finally {
+                clearTimeout(timeout);
+            }
+        }
+
+        localStorage.setItem('participantGroup', assignedGroup.toString());
+        localStorage.setItem('showAiLabel', showAiLabel ? "true" : "false");
+        localStorage.setItem('ai_recommended_restaurant_id', finalRecId.toString());
+        localStorage.setItem('ai_nudge_text', finalNudgeText);
         localStorage.setItem('user_preferences', JSON.stringify(surveyResponses));
 
-        // 4. 背景非阻塞寫入 Firebase
         if (typeof db !== 'undefined') {
             db.ref('survey_responses').push({
                 participantID: currentPID,
+                assignedGroup: assignedGroup,
+                groupCounter: counterVal,
+                useRealAi: useRealAi,
+                showAiLabel: showAiLabel,
                 submittedAt: new Date().toLocaleString(),
-                aiRecommendedRestaurantId: recommendedRestaurantId,
-                nudgeContent: nudgeText,
+                aiRecommendedRestaurantId: finalRecId,
+                nudgeContent: finalNudgeText,
                 responses: surveyResponses
-            }).catch(e => console.warn("Firebase 紀錄略過:", e));
+            }).catch(e => console.warn(e));
         }
 
-        // 5. 立刻安全跳轉至預訂頁面
         window.location.href = 'restaurant_page.html';
     }
 

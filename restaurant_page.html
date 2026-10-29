@@ -26,7 +26,7 @@
     }
   </script>
 
-  <!-- 引入 80 间独立餐厅数据集 -->
+  <!-- 引入 80 间正交基底独立餐厅数据集 -->
   <script src="restaurants_data.js"></script>
 
   <!-- 字体与 Font Awesome 图标库 -->
@@ -79,7 +79,7 @@
     .filter-group { margin-bottom: 1.25rem; padding-bottom: 1.1rem; border-bottom: 1px solid #f1f5f9; }
     .filter-title { font-size: 0.88rem; font-weight: 700; margin-bottom: 0.65rem; display: flex; justify-content: space-between; }
     .filter-checkbox { display: flex; align-items: center; gap: 0.6rem; margin-bottom: 0.45rem; font-size: 0.84rem; cursor: pointer; }
-    .filter-checkbox .count { margin-left: auto; color: var(--text-light); font-size: 0.75rem; }
+    .filter-checkbox .count { margin-left: auto; color: var(--text-light); font-size: 0.75rem; font-weight: 700; }
     .price-range-slider { width: 100%; margin: 0.5rem 0; accent-color: var(--primary); }
 
     .results-section { display: flex; flex-direction: column; gap: 1rem; }
@@ -105,7 +105,28 @@
     .btn-select-menu { background: var(--primary); color: white; border: none; padding: 0.7rem 1rem; border-radius: var(--radius-md); font-weight: 700; cursor: pointer; }
     .btn-select-menu.gold-btn { background: linear-gradient(135deg, #d97706 0%, #b45309 100%); }
 
-    /* 弹窗通用样式 */
+    /* 结账确认按纽 */
+    .btn-confirm-pay {
+      background: var(--accent);
+      color: white;
+      border: none;
+      font-size: 1rem;
+      font-weight: 700;
+      padding: 0.85rem 1.2rem;
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      display: block;
+      width: 100%;
+      margin-top: 1.2rem;
+      transition: all 0.2s;
+      box-shadow: 0 4px 10px rgba(245, 158, 11, 0.3);
+    }
+    .btn-confirm-pay:hover {
+      background: var(--accent-hover);
+      transform: translateY(-1px);
+    }
+
+    /* 弹窗通用基础样式 */
     .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(15, 23, 42, 0.75); backdrop-filter: blur(4px); z-index: 100; display: none; align-items: center; justify-content: center; padding: 1.5rem; }
     .modal-overlay.active { display: flex; }
     .modal-container { background: white; border-radius: var(--radius-lg); width: 100%; max-width: 900px; max-height: 90vh; display: flex; flex-direction: column; overflow: hidden; }
@@ -118,11 +139,186 @@
     .floating-recommend-popup { position: fixed; bottom: 24px; right: 24px; width: 380px; background: #ffffff; border-radius: var(--radius-lg); border: 2px solid #f59e0b; z-index: 90; display: none; box-shadow: 0 10px 25px rgba(0,0,0,0.18); }
     .floating-recommend-popup.active { display: block; }
 
-    .exit-modal-card { background: #ffffff; border-radius: var(--radius-lg); max-width: 540px; width: 100%; padding: 2rem; border: 2px solid var(--primary); text-align: center; display: flex; flex-direction: column; gap: 1.25rem; }
-    .exit-id-box { background: #f8fafc; border: 2px dashed #cbd5e1; padding: 1rem; border-radius: 8px; font-size: 1.05rem; font-weight: 800; color: var(--primary); word-break: break-all; }
-    .btn-copy-id { background: #2563eb; color: white; border: none; padding: 0.65rem 1.2rem; border-radius: var(--radius-md); font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 0.5rem; margin: 0 auto; }
-    .btn-return-home { background: var(--primary); color: white; border: none; padding: 0.85rem 1.5rem; border-radius: var(--radius-md); font-weight: 700; font-size: 1rem; cursor: pointer; }
-    .btn-return-home:disabled { background: #cbd5e1; cursor: not-allowed; color: #64748b; }
+    /* 最终完成核验弹窗 */
+    .complete-modal-card {
+      background: #ffffff;
+      border-radius: 20px;
+      max-width: 620px;
+      width: 100%;
+      padding: 2.2rem 2rem;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1.15rem;
+      animation: slideUp 0.3s ease-out;
+    }
+
+    .complete-icon-wrapper {
+      width: 68px;
+      height: 68px;
+      border-radius: 50%;
+      background: #e0f2fe;
+      color: #2563eb;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2rem;
+    }
+
+    .complete-title {
+      font-size: 1.55rem;
+      font-weight: 800;
+      color: #0f172a;
+      letter-spacing: -0.5px;
+      margin-top: -0.2rem;
+    }
+
+    .alert-warning-card {
+      width: 100%;
+      background: #fff5f5;
+      border: 1.5px solid #ef4444;
+      border-radius: 12px;
+      padding: 1.1rem 1.25rem;
+      text-align: left;
+    }
+
+    .alert-warning-title {
+      color: #b91c1c;
+      font-weight: 800;
+      font-size: 0.95rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .alert-warning-list {
+      padding-left: 1.2rem;
+      font-size: 0.85rem;
+      color: #334155;
+      line-height: 1.6;
+    }
+
+    .alert-warning-list li {
+      margin-bottom: 0.25rem;
+    }
+
+    .alert-highlight-text {
+      color: #b91c1c;
+      font-weight: 700;
+      text-decoration: underline;
+    }
+
+    .id-section-wrapper {
+      width: 100%;
+      text-align: left;
+    }
+
+    .id-section-label {
+      font-size: 0.88rem;
+      font-weight: 700;
+      color: #1e293b;
+      margin-bottom: 0.5rem;
+      display: block;
+    }
+
+    .id-copy-container {
+      display: flex;
+      align-items: center;
+      background: #f8fafc;
+      border: 1.5px solid #cbd5e1;
+      border-radius: 8px;
+      padding: 0.45rem 0.6rem 0.45rem 1rem;
+    }
+
+    .id-display-text {
+      font-family: monospace;
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: #1e3a8a;
+      letter-spacing: 0.5px;
+      flex: 1;
+      word-break: break-all;
+    }
+
+    .btn-blue-copy {
+      background: #2563eb;
+      color: white;
+      border: none;
+      padding: 0.6rem 1.1rem;
+      border-radius: 6px;
+      font-size: 0.88rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      transition: background 0.2s;
+      flex-shrink: 0;
+    }
+
+    .btn-blue-copy:hover {
+      background: #1d4ed8;
+    }
+
+    .copy-status-msg {
+      font-size: 0.82rem;
+      font-weight: 600;
+      margin-top: 0.45rem;
+    }
+    .copy-status-msg.unready { color: #dc2626; }
+    .copy-status-msg.ready { color: #16a34a; }
+
+    .summary-detail-box {
+      width: 100%;
+      background: #f8fafc;
+      border: 1px dashed #cbd5e1;
+      border-radius: 8px;
+      padding: 1rem 1.25rem;
+      font-size: 0.85rem;
+      line-height: 1.8;
+      text-align: left;
+      color: #475569;
+    }
+
+    .summary-detail-box strong {
+      color: #1e293b;
+      width: 115px;
+      display: inline-block;
+    }
+
+    .summary-price-highlight {
+      color: #ea580c;
+      font-weight: 800;
+      font-size: 1.05rem;
+    }
+
+    .btn-footer-instruction {
+      width: 100%;
+      background: #f1f5f9;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      padding: 0.85rem;
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: #334155;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-footer-instruction:hover {
+      background: #e2e8f0;
+    }
+
+    @keyframes slideUp {
+      from { transform: translateY(20px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
   </style>
 </head>
 <body>
@@ -130,14 +326,12 @@
 <header>
   <div class="navbar">
     <a href="#" class="logo"><i class="fa-solid fa-utensils"></i> DineReserve<span>.com</span></a>
-    <div style="font-size:0.85rem;font-weight:600;color:var(--text-muted);"><i class="fa-solid fa-user-check"></i> 会员尊享预订通道</div>
   </div>
 </header>
 
 <div class="hero-search-wrapper">
   <div class="search-container">
     <h1 class="hero-title">探索中国香港 80 间米其林与精选餐厅</h1>
-    <p class="hero-subtitle">覆盖香港三大区域星级美馔与可持续环保认证餐厅，智能锁定专属席位</p>
     <div class="search-box">
       <div class="search-field">
         <i class="fa-solid fa-location-dot"></i>
@@ -150,7 +344,7 @@
         <i class="fa-regular fa-clock"></i>
         <div class="search-field-content">
           <span class="search-label">就餐时间</span>
-          <input type="text" class="search-input" value="2026年8月20日 19:30 (晚市)">
+          <input type="text" class="search-input" value="2027年1月20日 19:30 (晚市)">
         </div>
       </div>
       <div class="search-field">
@@ -172,54 +366,53 @@
       <button onclick="resetFilters()" style="border:none;background:none;color:var(--primary);cursor:pointer;font-weight:600;font-size:0.82rem;">重置所有</button>
     </div>
 
-    <!-- 人均预算滑块 -->
+    <!-- 人均预算滑块 ($200 ~ $2000) -->
     <div class="filter-group">
-      <div class="filter-title"><span>人均预算上限</span><span id="priceRangeLabel">最高 HK$ 5,000</span></div>
-      <input type="range" id="priceRange" class="price-range-slider" min="500" max="5000" step="100" value="5000" oninput="updatePriceFilter(this.value)">
+      <div class="filter-title"><span>人均预算上限</span><span id="priceRangeLabel">最高 HK$ 2,000</span></div>
+      <input type="range" id="priceRange" class="price-range-slider" min="200" max="2000" step="50" value="2000" oninput="updatePriceFilter(this.value)">
     </div>
 
-    <!-- 餐厅星级筛选（4 种类类别各 20 间） -->
+    <!-- 1. 餐厅星级筛选 (4类，各20间) -->
     <div class="filter-group">
       <div class="filter-title">餐厅评级 (各20间)</div>
-      <label class="filter-checkbox"><input type="checkbox" name="star" value="5" onchange="filterRestaurants()"><span>⭐⭐⭐⭐⭐ 米其林三星</span><span class="count" id="count-star-5"></span></label>
-      <label class="filter-checkbox"><input type="checkbox" name="star" value="4" onchange="filterRestaurants()"><span>⭐⭐⭐⭐ 米其林二星</span><span class="count" id="count-star-4"></span></label>
-      <label class="filter-checkbox"><input type="checkbox" name="star" value="3" onchange="filterRestaurants()"><span>⭐⭐⭐ 米其林一星</span><span class="count" id="count-star-3"></span></label>
-      <label class="filter-checkbox"><input type="checkbox" name="star" value="2" onchange="filterRestaurants()"><span>🏅 其它精选</span><span class="count" id="count-star-2"></span></label>
+      <label class="filter-checkbox"><input type="checkbox" name="star" value="5" onchange="filterRestaurants()"><span>米其林三星</span><span class="count" id="count-star-5"></span></label>
+      <label class="filter-checkbox"><input type="checkbox" name="star" value="4" onchange="filterRestaurants()"><span>米其林二星</span><span class="count" id="count-star-4"></span></label>
+      <label class="filter-checkbox"><input type="checkbox" name="star" value="3" onchange="filterRestaurants()"><span>米其林一星</span><span class="count" id="count-star-3"></span></label>
+      <label class="filter-checkbox"><input type="checkbox" name="star" value="2" onchange="filterRestaurants()"><span>地道精选</span><span class="count" id="count-star-2"></span></label>
     </div>
 
-    <!-- 大区筛选（仅保留香港岛、九龙、新界） -->
+    <!-- 2. 四大正交区域筛选 (各20间) -->
     <div class="filter-group">
-      <div class="filter-title"><span>地区分布</span></div>
+      <div class="filter-title"><span>地区分布 (各20间)</span></div>
       <label class="filter-checkbox"><input type="checkbox" name="region" value="香港岛" onchange="filterRestaurants()"><span>香港岛</span><span class="count" id="count-region-hk"></span></label>
       <label class="filter-checkbox"><input type="checkbox" name="region" value="九龙" onchange="filterRestaurants()"><span>九龙</span><span class="count" id="count-region-kln"></span></label>
-      <label class="filter-checkbox"><input type="checkbox" name="region" value="新界" onchange="filterRestaurants()"><span>新界</span><span class="count" id="count-region-nt"></span></label>
+      <label class="filter-checkbox"><input type="checkbox" name="region" value="新界东" onchange="filterRestaurants()"><span>新界东</span><span class="count" id="count-region-nte"></span></label>
+      <label class="filter-checkbox"><input type="checkbox" name="region" value="新界西" onchange="filterRestaurants()"><span>新界西</span><span class="count" id="count-region-ntw"></span></label>
     </div>
 
-    <!-- 新增：菜系分类筛选 -->
+    <!-- 3. 四大正交菜系筛选 (各20间) -->
     <div class="filter-group">
-      <div class="filter-title"><span>菜系风味</span></div>
+      <div class="filter-title"><span>菜系风味 (各20间)</span></div>
       <label class="filter-checkbox"><input type="checkbox" name="cuisine" value="粤菜/中菜" onchange="filterRestaurants()"><span>粤菜 / 精细中菜</span><span class="count" id="count-cui-canton"></span></label>
-      <label class="filter-checkbox"><input type="checkbox" name="cuisine" value="法式料理" onchange="filterRestaurants()"><span>经典与当代法餐</span><span class="count" id="count-cui-french"></span></label>
-      <label class="filter-checkbox"><input type="checkbox" name="cuisine" value="日本料理" onchange="filterRestaurants()"><span>日本料理 / 寿司割烹</span><span class="count" id="count-cui-japan"></span></label>
+      <label class="filter-checkbox"><input type="checkbox" name="cuisine" value="法式料理" onchange="filterRestaurants()"><span>经典法餐</span><span class="count" id="count-cui-french"></span></label>
+      <label class="filter-checkbox"><input type="checkbox" name="cuisine" value="日本料理" onchange="filterRestaurants()"><span>日本料理</span><span class="count" id="count-cui-japan"></span></label>
       <label class="filter-checkbox"><input type="checkbox" name="cuisine" value="意式料理" onchange="filterRestaurants()"><span>传统与现代意餐</span><span class="count" id="count-cui-italian"></span></label>
-      <label class="filter-checkbox"><input type="checkbox" name="cuisine" value="亚洲/融合菜" onchange="filterRestaurants()"><span>亚洲风味 / 创新融合</span><span class="count" id="count-cui-fusion"></span></label>
-      <label class="filter-checkbox"><input type="checkbox" name="cuisine" value="牛排扒房" onchange="filterRestaurants()"><span>炭烤牛排 / 高空扒房</span><span class="count" id="count-cui-steak"></span></label>
     </div>
 
-    <!-- 特色设施（5 大 Tag） -->
+    <!-- 4. 特色设施 (每项严控在 32~44 间) -->
     <div class="filter-group" style="border-bottom:none;margin-bottom:0;padding-bottom:0;">
       <div class="filter-title">特色设施与认证</div>
       <label class="filter-checkbox"><input type="checkbox" id="filterPrivateRoom" onchange="filterRestaurants()"><span>私密独立包厢</span><span class="count" id="count-privateRoom"></span></label>
       <label class="filter-checkbox"><input type="checkbox" id="filterWindowSeat" onchange="filterRestaurants()"><span>靠窗景观 / 夜景席</span><span class="count" id="count-windowSeat"></span></label>
       <label class="filter-checkbox"><input type="checkbox" id="filterParking" onchange="filterRestaurants()"><span>代客泊车 / 免费停车</span><span class="count" id="count-parking"></span></label>
       <label class="filter-checkbox"><input type="checkbox" id="filterSommelier" onchange="filterRestaurants()"><span>专业侍酒师 / 餐酒搭配</span><span class="count" id="count-sommelier"></span></label>
-      <label class="filter-checkbox"><input type="checkbox" id="filterSustainable" onchange="filterRestaurants()"><span>🌱 环保永续认证 / 有机</span><span class="count" id="count-sustainable"></span></label>
+      <label class="filter-checkbox"><input type="checkbox" id="filterSustainable" onchange="filterRestaurants()"><span>有机食材认证</span><span class="count" id="count-sustainable"></span></label>
     </div>
   </aside>
 
   <section class="results-section">
     <div class="sort-bar">
-      <div>搜索结果：<span style="font-weight:700;" id="restaurantCount">0 间精选餐厅</span></div>
+      <div>搜索结果：<span style="font-weight:700;" id="restaurantCount">80 间精选餐厅</span></div>
       <div class="sort-options">
         <button class="sort-btn active" onclick="sortRestaurants('popular', this)">推荐排序</button>
         <button class="sort-btn" onclick="sortRestaurants('priceAsc', this)">人均：低至高</button>
@@ -235,7 +428,7 @@
 <div class="modal-overlay" id="entryRecommendModal">
   <div class="recommend-modal-card">
     <div class="recommend-modal-header">
-      <div style="background:#f59e0b;color:#78350f;font-size:0.75rem;font-weight:800;padding:2px 8px;border-radius:999px;display:inline-block;margin-bottom:6px;"><i class="fa-solid fa-wand-magic-sparkles"></i> 专属诚意推荐</div>
+      <div id="modalAiRecBadge" style="background:#f59e0b;color:#78350f;font-size:0.75rem;font-weight:800;padding:2px 8px;border-radius:999px;display:inline-block;margin-bottom:6px;"><i class="fa-solid fa-wand-magic-sparkles"></i> 专属诚意推荐</div>
       <h2 style="font-size:1.3rem; font-weight:800;" id="modalAiRecTitle"></h2>
       <p style="font-size:0.85rem; opacity:0.95; margin-top:4px;" id="modalAiRecNudgeText"></p>
     </div>
@@ -270,20 +463,36 @@
 <!-- 弹窗 2：结账确认 -->
 <div class="modal-overlay" id="checkoutModal">
   <div class="modal-container" style="max-width: 780px;">
-    <div class="modal-header"><h2 class="modal-header-title"><i class="fa-solid fa-shield-halved" style="color:var(--primary);"></i> 锁定餐位与预订确认</h2><button class="btn-close-modal" onclick="closeCheckoutModal()"><i class="fa-solid fa-xmark"></i></button></div>
-    <div class="modal-body">
-      <div style="display:grid; grid-template-columns: 1.4fr 1fr; gap:1.5rem;">
+    <div class="modal-header">
+      <h2 class="modal-header-title">
+        <i class="fa-solid fa-shield-halved" style="color:var(--primary);"></i> 锁定餐位与预订确认
+      </h2>
+      <button class="btn-close-modal" onclick="closeCheckoutModal()">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+    <div class="modal-body" style="padding: 1.75rem;">
+      <div style="display:grid; grid-template-columns: 1.2fr 1fr; gap:1.5rem; align-items: start;">
         <div>
-          <h4 style="margin-bottom:0.8rem;">预订人资料</h4>
-          <input type="text" id="guestName" value="Alex Wong" style="width:100%;padding:0.65rem;border:1px solid #cbd5e1;border-radius:6px;margin-bottom:0.8rem;">
-          <input type="email" id="guestEmail" value="alex.wong@example.com" style="width:100%;padding:0.65rem;border:1px solid #cbd5e1;border-radius:6px;margin-bottom:0.8rem;">
-          <input type="tel" id="guestPhone" value="+852 9123 4567" style="width:100%;padding:0.65rem;border:1px solid #cbd5e1;border-radius:6px;">
+          <h4 style="margin-bottom:0.8rem; font-size: 0.95rem;">预订人资料</h4>
+          <input type="text" id="guestName" value="Alex Wong" style="width:100%;padding:0.65rem;border:1px solid #cbd5e1;border-radius:6px;margin-bottom:0.8rem;font-size:0.9rem;">
+          <input type="email" id="guestEmail" value="alex.wong@example.com" style="width:100%;padding:0.65rem;border:1px solid #cbd5e1;border-radius:6px;margin-bottom:0.8rem;font-size:0.9rem;">
+          <input type="tel" id="guestPhone" value="+852 9123 4567" style="width:100%;padding:0.65rem;border:1px solid #cbd5e1;border-radius:6px;font-size:0.9rem;">
         </div>
-        <div style="background:#f8fafc;padding:1.25rem;border-radius:10px;border:1px solid var(--border);">
-          <h4 id="checkoutRestName"></h4>
-          <p id="checkoutMenuName" style="font-size:0.85rem;color:var(--text-muted);margin:6px 0;"></p>
-          <div style="display:flex;justify-content:space-between;margin-top:1rem;font-weight:800;font-size:1.15rem;"><span>实付总额 (2位含服务费)</span><span style="color:var(--accent);" id="checkoutTotalPrice"></span></div>
-          <button class="btn-search" style="width:100%;margin-top:1rem;" onclick="confirmBooking()">确认并锁定餐位</button>
+        <div style="background:#f8fafc;padding:1.25rem;border-radius:10px;border:1px solid var(--border);display:flex;flex-direction:column;justify-content:space-between;">
+          <div>
+            <h4 id="checkoutRestName" style="font-size: 1.05rem; font-weight: 800; color: var(--text-main);"></h4>
+            <p id="checkoutMenuName" style="font-size:0.82rem;color:var(--text-muted);margin:8px 0 16px 0;line-height:1.4;"></p>
+
+            <div style="display:flex;justify-content:space-between;align-items:baseline;border-top:1px dashed #cbd5e1;padding-top:12px;">
+              <span style="font-size:0.85rem;font-weight:600;color:var(--text-secondary);">实付总额 (2位含服务费)</span>
+              <span style="color:var(--accent);font-size:1.35rem;font-weight:800;" id="checkoutTotalPrice">HK$ 0</span>
+            </div>
+          </div>
+
+          <button class="btn-confirm-pay" type="button" onclick="confirmBooking()">
+            确认并锁定餐位
+          </button>
         </div>
       </div>
     </div>
@@ -293,7 +502,7 @@
 <!-- 右下角悬浮推荐卡片 -->
 <div class="floating-recommend-popup" id="floatingRecommendPopup">
   <div style="background:linear-gradient(90deg, #b45309, #d97706);color:white;padding:0.5rem 0.8rem;display:flex;justify-content:space-between;font-size:0.85rem;font-weight:700;">
-    <span><i class="fa-solid fa-wand-magic-sparkles"></i> 诚意推荐</span>
+    <span id="floatingPopupTitle"><i class="fa-solid fa-wand-magic-sparkles"></i> 诚意推荐</span>
     <button onclick="closeFloatingPopup()" style="background:none;border:none;color:white;cursor:pointer;"><i class="fa-solid fa-xmark"></i></button>
   </div>
   <div style="padding:0.85rem;background:#fffdfa;">
@@ -305,21 +514,52 @@
   </div>
 </div>
 
-<!-- 弹窗 3：预订完成后的个人 ID 提示与复制 Dialog Box -->
+<!-- 弹窗 3：预订完成提示与警告核验弹窗 (严格对照截图) -->
 <div class="modal-overlay" id="exitIdModal">
-  <div class="exit-modal-card">
-    <div style="font-size:2.5rem; color:var(--success);"><i class="fa-solid fa-circle-check"></i></div>
-    <h2 style="font-size:1.35rem; font-weight:800; color:var(--text-main);">预订完成！即将回到问卷主页</h2>
-    <p style="font-size:0.9rem; color:var(--text-muted); line-height:1.6;">
-      请<strong>务必复制</strong>下方您的专属 32 位个人 ID，并在即将返回的问卷主页中粘贴以完成研究认证：
-    </p>
-    <div class="exit-id-box" id="exitParticipantIDText">Loading ID...</div>
-    <button class="btn-copy-id" id="btnCopyID" onclick="copyParticipantID()">
-      <i class="fa-regular fa-copy"></i> 复制个人 ID
-    </button>
-    <div id="copyAlertText" style="font-size:0.8rem; color:var(--success); display:none; font-weight:700;">已成功复制至剪贴板！</div>
-    <button class="btn-return-home" id="btnReturnHome" onclick="returnToHomePage()" disabled>
-      确认并返回问卷主页 (<span id="countdownSec">5</span>s)
+  <div class="complete-modal-card">
+
+    <div class="complete-icon-wrapper">
+      <i class="fa-solid fa-clipboard-check"></i>
+    </div>
+
+    <h2 class="complete-title">模拟预订已成功完成</h2>
+
+    <div class="alert-warning-card">
+      <div class="alert-warning-title">
+        <i class="fa-solid fa-triangle-exclamation"></i>
+        <span>【重要警告】必须完成以下核验步骤</span>
+      </div>
+      <ol class="alert-warning-list">
+        <li>请务必点击下方按钮<strong>复制您的专属个人 ID</strong>。</li>
+        <li>请<strong>自行切换回原本的问卷主页分页面</strong>，在相应题目中<strong>贴上此 ID</strong> 继续完成作答。</li>
+      </ol>
+      <div style="font-size: 0.82rem; margin-top: 0.4rem; line-height: 1.5;">
+        <span class="alert-highlight-text">特别声明：若未在问卷中贴上正确 ID，系统将无法核验您的实验记录，本次作答将被视为无效，且绝不会发放任何相关报酬或实验奖励！</span>
+      </div>
+    </div>
+
+    <div class="id-section-wrapper">
+      <span class="id-section-label">您的 32 位个人识别码 (Participant ID):</span>
+      <div class="id-copy-container">
+        <span class="id-display-text" id="exitParticipantIDText">Loading ID...</span>
+        <button class="btn-blue-copy" type="button" id="btnCopyID" onclick="copyParticipantID()">
+          <i class="fa-regular fa-copy"></i> 复制ID
+        </button>
+      </div>
+      <div class="copy-status-msg unready" id="copyStatusText">
+        * 尚未复制：请先点击上方蓝色「复制ID」按钮
+      </div>
+    </div>
+
+    <div class="summary-detail-box">
+      <div><strong>最终选定餐厅：</strong><span id="summaryRestName">--</span></div>
+      <div><strong>所选品鉴套餐：</strong><span id="summaryMenuName">--</span></div>
+      <div><strong>订单确认编号：</strong><span id="summaryBookingRef" style="font-family: monospace; font-weight:700;">--</span></div>
+      <div><strong>模拟实付金额：</strong><span class="summary-price-highlight" id="summaryTotalPaid">--</span></div>
+    </div>
+
+    <button class="btn-footer-instruction" type="button" id="btnReturnHome" onclick="returnToHomePage()">
+      <i class="fa-solid fa-arrow-left"></i> 已复制 ID 后，请在浏览器上方切换回问卷主页面继续作答。
     </button>
   </div>
 </div>
@@ -327,42 +567,15 @@
 <script>
   const RETURN_HOME_URL = "index.html";
 
-  // 香港三大主要区域与对应行政区映射
-  const HK_REGIONS_MAP = {
-    "香港岛": ["中西区", "湾仔区", "东区", "南区"],
-    "九龙": ["油尖旺区", "深水埗区", "九龙城区", "黄大仙区", "观塘区"],
-    "新界": ["葵青区", "荃湾区", "屯门区", "元朗区", "北区", "大埔区", "沙田区", "西贡区", "离岛区"]
-  };
-
-  function getRegionByLocation(loc) {
-    for (let reg in HK_REGIONS_MAP) {
-      if (HK_REGIONS_MAP[reg].includes(loc)) return reg;
-    }
-    return "香港岛";
-  }
-
-  // 菜系识别归类辅助函数
-  function getCuisineCategory(styleStr) {
-    if (!styleStr) return "粤菜/中菜";
-    const s = styleStr.toLowerCase();
-    if (s.includes("粤") || s.includes("中菜") || s.includes("潮") || s.includes("江浙") || s.includes("沪") || s.includes("东莞") || s.includes("盆菜") || s.includes("素斋")) return "粤菜/中菜";
-    if (s.includes("法")) return "法式料理";
-    if (s.includes("寿司") || s.includes("割烹") || s.includes("日") || s.includes("怀石")) return "日本料理";
-    if (s.includes("意") || s.includes("拿坡里") || s.includes("西西里") || s.includes("披萨")) return "意式料理";
-    if (s.includes("牛排") || s.includes("扒房") || s.includes("炭烤")) return "牛排扒房";
-    return "亚洲/融合菜";
-  }
-
   let currentPID = localStorage.getItem("participantID") || "Anonymous";
-  let AI_RECOMMENDED_ID = parseInt(localStorage.getItem("ai_recommended_restaurant_id"), 10) || 1;
+  let AI_RECOMMENDED_ID = parseInt(localStorage.getItem("ai_recommended_restaurant_id"), 10) || 46;
   let AI_NUDGE_TEXT = localStorage.getItem("ai_nudge_text") || "为您精心甄选的专属主推餐厅。";
+  const SHOW_AI_LABEL = (localStorage.getItem("showAiLabel") === "true");
 
-  let currentRestaurants = (typeof restaurantsData !== 'undefined' && Array.isArray(restaurantsData)) ? [...restaurantsData] : [];
+  let currentRestaurants = [];
   let selectedRest = null;
   let selectedMenu = null;
   let hasCopiedID = false;
-  let countdownTimer = null;
-  let secondsLeft = 5;
 
   function getStarLabel(stars) {
     if (stars === 5) return "⭐⭐⭐⭐⭐ 米其林三星";
@@ -373,42 +586,35 @@
 
   function updateFilterCounts() {
     let s5 = 0, s4 = 0, s3 = 0, s2 = 0;
-    let rHk = 0, rKln = 0, rNt = 0;
-    let cCanton = 0, cFrench = 0, cJapan = 0, cItalian = 0, cFusion = 0, cSteak = 0;
+    let rHk = 0, rKln = 0, rNte = 0, rNtw = 0;
+    let cCanton = 0, cFrench = 0, cJapan = 0, cItalian = 0;
     let pR = 0, wS = 0, pk = 0, som = 0, sus = 0;
 
-    if (Array.isArray(restaurantsData)) {
-      restaurantsData.forEach(r => {
-        if (!r) return;
-        // 星级
-        if (r.stars === 5) s5++;
-        else if (r.stars === 4) s4++;
-        else if (r.stars === 3) s3++;
-        else if (r.stars === 2) s2++;
+    const dataList = (typeof restaurantsData !== 'undefined' && Array.isArray(restaurantsData)) ? restaurantsData : [];
 
-        // 区域统计
-        const reg = getRegionByLocation(r.location);
-        if (reg === "香港岛") rHk++;
-        else if (reg === "九龙") rKln++;
-        else if (reg === "新界") rNt++;
+    dataList.forEach(r => {
+      if (!r) return;
+      if (r.stars === 5) s5++;
+      else if (r.stars === 4) s4++;
+      else if (r.stars === 3) s3++;
+      else if (r.stars === 2) s2++;
 
-        // 菜系统计
-        const cCat = getCuisineCategory(r.menus?.[0]?.style);
-        if (cCat === "粤菜/中菜") cCanton++;
-        else if (cCat === "法式料理") cFrench++;
-        else if (cCat === "日本料理") cJapan++;
-        else if (cCat === "意式料理") cItalian++;
-        else if (cCat === "牛排扒房") cSteak++;
-        else cFusion++;
+      if (r.region === "香港岛") rHk++;
+      else if (r.region === "九龙") rKln++;
+      else if (r.region === "新界东") rNte++;
+      else if (r.region === "新界西") rNtw++;
 
-        // 设施
-        if (r.hasPrivateRoom) pR++;
-        if (r.hasWindowSeat) wS++;
-        if (r.hasParking) pk++;
-        if (r.hasSommelier) som++;
-        if (r.hasSustainable) sus++;
-      });
-    }
+      if (r.cuisine === "粤菜/中菜") cCanton++;
+      else if (r.cuisine === "法式料理") cFrench++;
+      else if (r.cuisine === "日本料理") cJapan++;
+      else if (r.cuisine === "意式料理") cItalian++;
+
+      if (r.hasPrivateRoom) pR++;
+      if (r.hasWindowSeat) wS++;
+      if (r.hasParking) pk++;
+      if (r.hasSommelier) som++;
+      if (r.hasSustainable) sus++;
+    });
 
     const setElText = (id, txt) => {
       const el = document.getElementById(id);
@@ -422,14 +628,13 @@
 
     setElText("count-region-hk", `(${rHk})`);
     setElText("count-region-kln", `(${rKln})`);
-    setElText("count-region-nt", `(${rNt})`);
+    setElText("count-region-nte", `(${rNte})`);
+    setElText("count-region-ntw", `(${rNtw})`);
 
     setElText("count-cui-canton", `(${cCanton})`);
     setElText("count-cui-french", `(${cFrench})`);
     setElText("count-cui-japan", `(${cJapan})`);
     setElText("count-cui-italian", `(${cItalian})`);
-    setElText("count-cui-fusion", `(${cFusion})`);
-    setElText("count-cui-steak", `(${cSteak})`);
 
     setElText("count-privateRoom", `(${pR})`);
     setElText("count-windowSeat", `(${wS})`);
@@ -445,12 +650,12 @@
     const countEl = document.getElementById("restaurantCount");
     if (countEl) countEl.innerText = `${data.length} 间香港精选餐厅`;
 
-    if (data.length === 0) {
+    if (!data || data.length === 0) {
       container.innerHTML = `
         <div style="background:white; padding:3.5rem 1.5rem; border-radius:12px; text-align:center; border:1px solid #e2e8f0;">
           <i class="fa-solid fa-utensils" style="font-size:3rem; color:#cbd5e1; margin-bottom:1rem;"></i>
           <h3 style="font-size:1.15rem; font-weight:700; color:#475569;">未找到符合当前条件的餐厅</h3>
-          <p style="font-size:0.85rem; color:#94a3b8; margin-top:0.4rem;">请尝试放宽菜系、地区或预算限制</p>
+          <p style="font-size:0.85rem; color:#94a3b8; margin-top:0.4rem;">请尝试调高预算上限或重置筛选条件</p>
           <button class="sort-btn active" style="margin-top:1rem;" onclick="resetFilters()">重置所有筛选条件</button>
         </div>
       `;
@@ -459,22 +664,26 @@
 
     const sorted = [...data].sort((a, b) => (a.id === AI_RECOMMENDED_ID ? -1 : b.id === AI_RECOMMENDED_ID ? 1 : 0));
 
+    const bannerTitle = SHOW_AI_LABEL ? "AI 智能为您量身推荐 • 专属席位特选" : "平台顾问为您量身推荐 • 专属席位特选";
+    const tagDealText = SHOW_AI_LABEL ? "⭐ AI 推荐首选" : "⭐ 臻选推荐首选";
+    const badgeText = SHOW_AI_LABEL ? "AI 优先推荐" : "诚意甄选";
+    const btnSelectText = SHOW_AI_LABEL ? "预订 AI 推荐套餐" : "预订推荐套餐";
+
     container.innerHTML = sorted.map(rest => {
       const isAI = (rest.id === AI_RECOMMENDED_ID);
       const imgUrl = (rest.images && rest.images[0]) ? rest.images[0] : "https://images.unsplash.com/photo-1550966871-3ed3cdb5ed0c?auto=format&fit=crop&w=800&q=80";
-      const regionName = getRegionByLocation(rest.location);
 
       return `
         <div class="restaurant-card ${isAI ? 'featured-recommendation' : ''}">
-          ${isAI ? `<div class="top-recommend-banner"><span><i class="fa-solid fa-wand-magic-sparkles"></i> 为您量身推荐 • 专属席位特选</span><span>98% 食客高分好评</span></div>` : ''}
+          ${isAI ? `<div class="top-recommend-banner"><span><i class="fa-solid fa-wand-magic-sparkles"></i> ${bannerTitle}</span><span>98% 食客高分好评</span></div>` : ''}
           <div class="rest-image-col">
             <img src="${imgUrl}" alt="${rest.name}" loading="lazy">
-            ${isAI ? `<div class="tag-deal" style="background:#d97706;">⭐ 推荐首选</div>` : ''}
+            ${isAI ? `<div class="tag-deal" style="background:#d97706;">${tagDealText}</div>` : ''}
           </div>
           <div class="rest-info-col">
             <div>
               <div style="color:var(--star);font-size:0.78rem;font-weight:700;">
-                ${getStarLabel(rest.stars)} • <span style="color:#0284c7;">${regionName} (${rest.location || ''})</span>
+                ${getStarLabel(rest.stars)} • <span style="color:#0284c7;">${rest.region} (${rest.location || ''})</span>
               </div>
               <h2 style="font-size:1.15rem;font-weight:800;margin-top:3px;">${rest.name}</h2>
               <p style="font-size:0.8rem;color:var(--text-muted);margin-top:2px;">
@@ -483,8 +692,8 @@
               ${rest.ecoAward ? `<div class="eco-award-box"><i class="fa-solid fa-leaf"></i> ${rest.ecoAward}</div>` : ''}
             </div>
             <div style="margin-top:8px;">
-              ${isAI ? `<span class="badge-pill gold-star"><i class="fa-solid fa-crown"></i> 优先推荐</span>` : ''}
-              ${rest.menus?.[0]?.style ? `<span class="badge-pill" style="background:#e0f2fe;color:#0369a1;"><i class="fa-solid fa-utensils"></i> ${rest.menus[0].style}</span>` : ''}
+              ${isAI ? `<span class="badge-pill gold-star"><i class="fa-solid fa-crown"></i> ${badgeText}</span>` : ''}
+              <span class="badge-pill" style="background:#e0f2fe;color:#0369a1;"><i class="fa-solid fa-utensils"></i> ${rest.cuisine}</span>
               ${rest.hasPrivateRoom ? `<span class="badge-pill"><i class="fa-solid fa-door-closed"></i> 独立包厢</span>` : ''}
               ${rest.hasWindowSeat ? `<span class="badge-pill"><i class="fa-solid fa-city"></i> 景观席</span>` : ''}
               ${rest.hasParking ? `<span class="badge-pill"><i class="fa-solid fa-car"></i> 泊车服务</span>` : ''}
@@ -504,7 +713,7 @@
               <span style="font-size:0.75rem;color:var(--text-muted);"> /位起</span>
             </div>
             <button class="btn-select-menu ${isAI ? 'gold-btn' : ''}" style="margin-top:8px;" onclick="openMenuModal(${rest.id})">
-              ${isAI ? '预订推荐套餐' : '查看套餐及席位'}
+              ${isAI ? btnSelectText : '查看套餐及席位'}
             </button>
           </div>
         </div>
@@ -513,16 +722,24 @@
   }
 
   function setupAiModals() {
-    if (!Array.isArray(restaurantsData) || restaurantsData.length === 0) return;
-    const aiRest = restaurantsData.find(r => r.id === AI_RECOMMENDED_ID) || restaurantsData[0];
+    const dataList = (typeof restaurantsData !== 'undefined' && Array.isArray(restaurantsData)) ? restaurantsData : [];
+    if (dataList.length === 0) return;
+    const aiRest = dataList.find(r => r.id === AI_RECOMMENDED_ID) || dataList[0];
     if (!aiRest) return;
 
     const setTxt = (id, t) => { const el = document.getElementById(id); if (el) el.innerText = t; };
     setTxt("modalAiRecTitle", aiRest.name);
     setTxt("modalAiRecName", aiRest.name);
-    setTxt("modalAiRecLoc", `${aiRest.location || ''} • ${aiRest.address || ''}`);
+    setTxt("modalAiRecLoc", `${aiRest.region} (${aiRest.location || ''}) • ${aiRest.address || ''}`);
     setTxt("modalAiRecPrice", `HK$ ${aiRest.price}`);
     setTxt("modalAiRecNudgeText", AI_NUDGE_TEXT);
+
+    const modalBadge = document.getElementById("modalAiRecBadge");
+    if (modalBadge) {
+      modalBadge.innerHTML = SHOW_AI_LABEL
+              ? '<i class="fa-solid fa-wand-magic-sparkles"></i> AI 智能诚意推荐'
+              : '<i class="fa-solid fa-crown"></i> 平台顾问诚意推荐';
+    }
 
     const modalImg = document.getElementById("modalAiRecImg");
     if (modalImg && aiRest.images && aiRest.images[0]) modalImg.src = aiRest.images[0];
@@ -531,6 +748,13 @@
     setTxt("floatingPrice", `HK$ ${aiRest.price} /位起`);
     const floatImg = document.getElementById("floatingThumb");
     if (floatImg && aiRest.images && aiRest.images[0]) floatImg.src = aiRest.images[0];
+
+    const floatBadge = document.getElementById("floatingPopupTitle");
+    if (floatBadge) {
+      floatBadge.innerHTML = SHOW_AI_LABEL
+              ? '<i class="fa-solid fa-wand-magic-sparkles"></i> AI 推荐'
+              : '<i class="fa-solid fa-crown"></i> 精选推荐';
+    }
 
     setTimeout(() => {
       const entryModal = document.getElementById("entryRecommendModal");
@@ -555,17 +779,18 @@
   }
 
   function openMenuModal(id) {
-    selectedRest = restaurantsData.find(r => r.id === id);
+    const dataList = (typeof restaurantsData !== 'undefined' && Array.isArray(restaurantsData)) ? restaurantsData : [];
+    selectedRest = dataList.find(r => r.id === id);
     if (!selectedRest) return;
 
     document.getElementById("modalRestTitle").innerText = selectedRest.name;
-    document.getElementById("modalRestSubtitle").innerText = `${selectedRest.location || ''} • ${selectedRest.address || ''}`;
+    document.getElementById("modalRestSubtitle").innerText = `${selectedRest.region} (${selectedRest.location || ''}) • ${selectedRest.address || ''}`;
 
     const menus = (selectedRest.menus && selectedRest.menus.length > 0) ? selectedRest.menus : [{
       id: `m_${selectedRest.id}_default`,
-      name: `${selectedRest.name} 专属品鉴晚市套餐`,
+      name: `${selectedRest.name} 经典品鉴套餐`,
       image: (selectedRest.images && selectedRest.images[0]) ? selectedRest.images[0] : '',
-      style: "精选中西佳肴",
+      style: selectedRest.cuisine,
       seating: "优选雅致席位",
       drinks: "精选佐餐饮品",
       price: selectedRest.price
@@ -577,7 +802,7 @@
         <div style="padding:1rem;flex:1;display:flex;flex-direction:column;justify-content:space-between;">
           <div>
             <h4 style="font-weight:700;">${m.name}</h4>
-            <p style="font-size:0.8rem;color:var(--text-muted);margin-top:4px;">${m.style || ''} • ${m.seating || ''} • ${m.drinks || ''}</p>
+            <p style="font-size:0.8rem;color:var(--text-muted);margin-top:4px;">${selectedRest.cuisine} • ${m.seating || ''} • ${m.drinks || ''}</p>
             ${selectedRest.ecoAward ? `<p style="font-size:0.78rem;color:#15803d;margin-top:4px;"><i class="fa-solid fa-leaf"></i> ${selectedRest.ecoAward}</p>` : ''}
           </div>
           <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-top:10px;">
@@ -606,95 +831,138 @@
   function closeCheckoutModal() { document.getElementById("checkoutModal").classList.remove("active"); }
 
   async function confirmBooking() {
-    const isAiChosen = (selectedRest.id === AI_RECOMMENDED_ID);
-    const bookingRef = "BK-" + Math.floor(100000 + Math.random() * 900000);
-
-    const record = {
-      bookingRef: bookingRef,
-    participantID: currentPID,
-    aiRecommendedRestaurantId: AI_RECOMMENDED_ID,
-    selectedRestaurantId: selectedRest.id,
-    selectedRestaurantName: selectedRest.name,
-    selectedRestaurantLocation: selectedRest.location,
-            isAiRecommendedSelected: isAiChosen,
-    menuName: selectedMenu ? selectedMenu.name : "精选套餐",
-            totalAmount: document.getElementById("checkoutTotalPrice").innerText,
-    bookingTime: new Date().toLocaleString()
-  };
-
     try {
-      if (typeof db !== 'undefined') {
-        db.ref('restaurant_bookings').push(record).catch(e => console.warn(e));
+      if (!selectedRest) {
+        const dataList = (typeof restaurantsData !== 'undefined' && Array.isArray(restaurantsData)) ? restaurantsData : [];
+        selectedRest = dataList[0] || { id: 1, name: "精选餐厅", price: 1000, region: "香港岛", cuisine: "粤菜/中菜" };
       }
-    } catch (e) {
-      console.error(e);
-    }
 
-    closeCheckoutModal();
-    openExitIdDialog();
+      const isAiChosen = (selectedRest.id === AI_RECOMMENDED_ID);
+      const bookingRef = "HK-" + Math.floor(100000 + Math.random() * 900000);
+
+      const priceElem = document.getElementById("checkoutTotalPrice");
+      const paidTotalStr = priceElem ? priceElem.innerText : `HK$ ${(selectedRest.price * 2.2).toFixed(0)}`;
+      const currentMenuName = (selectedMenu && selectedMenu.name) ? selectedMenu.name : "经典主厨品鉴套餐";
+
+      const record = {
+        bookingRef: bookingRef,
+        participantID: currentPID,
+        aiRecommendedRestaurantId: AI_RECOMMENDED_ID,
+        selectedRestaurantId: selectedRest.id,
+        selectedRestaurantName: selectedRest.name,
+        selectedRestaurantRegion: selectedRest.region || "香港岛",
+        selectedRestaurantCuisine: selectedRest.cuisine || "粤菜/中菜",
+        isAiRecommendedSelected: isAiChosen,
+        menuName: currentMenuName,
+        totalAmount: paidTotalStr,
+        bookingTime: new Date().toLocaleString()
+      };
+
+      try {
+        if (typeof db !== 'undefined' && db && db.ref) {
+          db.ref('restaurant_bookings').push(record).catch(e => console.warn(e));
+        }
+      } catch (e) {
+        console.warn("Firebase 预订记录同步已跳过:", e);
+      }
+
+      const setSafeText = (id, val) => {
+        const el = document.getElementById(id);
+        if (el) el.innerText = val;
+      };
+
+      setSafeText("summaryRestName", selectedRest.name);
+      setSafeText("summaryMenuName", currentMenuName);
+      setSafeText("summaryBookingRef", bookingRef);
+      setSafeText("summaryTotalPaid", paidTotalStr);
+
+      closeCheckoutModal();
+      openExitIdDialog();
+    } catch (err) {
+      console.error("confirmBooking 执行出错:", err);
+      closeCheckoutModal();
+      openExitIdDialog();
+    }
   }
 
   function openExitIdDialog() {
-    document.getElementById("exitParticipantIDText").innerText = currentPID;
-    document.getElementById("exitIdModal").classList.add("active");
+    const idElem = document.getElementById("exitParticipantIDText");
+    if (idElem) idElem.innerText = currentPID;
 
-    const returnBtn = document.getElementById("btnReturnHome");
-    const countSpan = document.getElementById("countdownSec");
-    secondsLeft = 5;
-    returnBtn.disabled = true;
+    hasCopiedID = false;
+    const statusMsg = document.getElementById("copyStatusText");
+    if (statusMsg) {
+      statusMsg.className = "copy-status-msg unready";
+      statusMsg.innerText = "* 尚未复制：请先点击上方蓝色「复制ID」按钮";
+    }
 
-    countdownTimer = setInterval(() => {
-      secondsLeft--;
-      if (secondsLeft > 0) {
-        countSpan.innerText = secondsLeft;
-      } else {
-        clearInterval(countdownTimer);
-        checkEnableReturnButton();
-      }
-    }, 1000);
-  }
+    const copyBtn = document.getElementById("btnCopyID");
+    if (copyBtn) {
+      copyBtn.innerHTML = '<i class="fa-regular fa-copy"></i> 复制ID';
+      copyBtn.style.background = "#2563eb";
+    }
 
-  function copyParticipantID() {
-    navigator.clipboard.writeText(currentPID).then(() => {
-      hasCopiedID = true;
-      document.getElementById("copyAlertText").style.display = "block";
-      checkEnableReturnButton();
-    }).catch(() => {
-      const tempInput = document.createElement("input");
-      tempInput.value = currentPID;
-      document.body.appendChild(tempInput);
-      tempInput.select();
-      document.execCommand("copy");
-      document.body.removeChild(tempInput);
-      hasCopiedID = true;
-      document.getElementById("copyAlertText").style.display = "block";
-      checkEnableReturnButton();
-    });
-  }
-
-  function checkEnableReturnButton() {
-    const returnBtn = document.getElementById("btnReturnHome");
-    if (secondsLeft <= 0 && hasCopiedID) {
-      returnBtn.disabled = false;
-      returnBtn.innerText = "确认并返回问卷主页";
-    } else if (secondsLeft <= 0 && !hasCopiedID) {
-      returnBtn.innerText = "请先点击上方按钮复制个人 ID";
+    const modal = document.getElementById("exitIdModal");
+    if (modal) {
+      modal.classList.add("active");
     }
   }
 
+  function copyParticipantID() {
+    const copySuccess = () => {
+      hasCopiedID = true;
+      const statusMsg = document.getElementById("copyStatusText");
+      if (statusMsg) {
+        statusMsg.className = "copy-status-msg ready";
+        statusMsg.innerHTML = '<i class="fa-solid fa-circle-check"></i> <strong>已成功复制到剪贴板！</strong> 请切换回问卷主页面粘贴。';
+      }
+
+      const copyBtn = document.getElementById("btnCopyID");
+      if (copyBtn) {
+        copyBtn.innerHTML = '<i class="fa-solid fa-check"></i> 已复制';
+        copyBtn.style.background = "#16a34a";
+      }
+    };
+
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(currentPID).then(copySuccess).catch(() => fallbackCopy(copySuccess));
+    } else {
+      fallbackCopy(copySuccess);
+    }
+  }
+
+  function fallbackCopy(callback) {
+    const tempInput = document.createElement("input");
+    tempInput.value = currentPID;
+    document.body.appendChild(tempInput);
+    tempInput.select();
+    try {
+      document.execCommand("copy");
+    } catch(e) {}
+    document.body.removeChild(tempInput);
+    callback();
+  }
+
   function returnToHomePage() {
+    if (!hasCopiedID) {
+      alert("请先点击上方蓝色「复制ID」按钮复制识别码，再返回问卷主页！");
+      return;
+    }
     window.location.href = RETURN_HOME_URL;
   }
 
   function updatePriceFilter(val) {
-    document.getElementById("priceRangeLabel").innerText = `最高 HK$ ${parseInt(val).toLocaleString()}`;
+    const lbl = document.getElementById("priceRangeLabel");
+    if (lbl) lbl.innerText = `最高 HK$ ${parseInt(val).toLocaleString()}`;
     filterRestaurants();
   }
 
   function filterRestaurants() {
-    if (!Array.isArray(restaurantsData)) return;
+    const dataList = (typeof restaurantsData !== 'undefined' && Array.isArray(restaurantsData)) ? restaurantsData : [];
+    if (dataList.length === 0) return;
 
-    const max = parseInt(document.getElementById("priceRange").value) || 5000;
+    const slider = document.getElementById("priceRange");
+    const max = slider ? (parseInt(slider.value) || 2000) : 2000;
     const keywordInput = document.getElementById("keywordInput");
     const keyword = keywordInput ? keywordInput.value.trim().toLowerCase() : "";
 
@@ -709,34 +977,21 @@
     const som = getChecked("filterSommelier");
     const sus = getChecked("filterSustainable");
 
-    currentRestaurants = restaurantsData.filter(r => {
+    currentRestaurants = dataList.filter(r => {
       if (!r) return false;
       if (r.price > max) return false;
 
-      // 关键词过滤
       if (keyword) {
         const nameMatch = r.name && r.name.toLowerCase().includes(keyword);
         const locMatch = r.location && r.location.toLowerCase().includes(keyword);
-        const styleMatch = r.menus?.[0]?.style?.toLowerCase().includes(keyword);
-        if (!nameMatch && !locMatch && !styleMatch) return false;
+        const cuiMatch = r.cuisine && r.cuisine.toLowerCase().includes(keyword);
+        if (!nameMatch && !locMatch && !cuiMatch) return false;
       }
 
-      // 星级
       if (starCbs.length && !starCbs.includes(r.stars)) return false;
+      if (regCbs.length && !regCbs.includes(r.region)) return false;
+      if (cuiCbs.length && !cuiCbs.includes(r.cuisine)) return false;
 
-      // 大区过滤（香港岛 / 九龙 / 新界）
-      if (regCbs.length) {
-        const rReg = getRegionByLocation(r.location);
-        if (!regCbs.includes(rReg)) return false;
-      }
-
-      // 菜系过滤
-      if (cuiCbs.length) {
-        const cCat = getCuisineCategory(r.menus?.[0]?.style);
-        if (!cuiCbs.includes(cCat)) return false;
-      }
-
-      // 设施过滤
       if (pRoom && !r.hasPrivateRoom) return false;
       if (wSeat && !r.hasWindowSeat) return false;
       if (park && !r.hasParking) return false;
@@ -744,20 +999,21 @@
       if (sus && !r.hasSustainable) return false;
       return true;
     });
+
     renderRestaurantList(currentRestaurants);
   }
 
   function resetFilters() {
     const slider = document.getElementById("priceRange");
-    if (slider) slider.value = 5000;
+    if (slider) slider.value = 2000;
     const priceLbl = document.getElementById("priceRangeLabel");
-    if (priceLbl) priceLbl.innerText = "最高 HK$ 5,000";
+    if (priceLbl) priceLbl.innerText = "最高 HK$ 2,000";
 
     const kwInput = document.getElementById("keywordInput");
     if (kwInput) kwInput.value = "";
 
     document.querySelectorAll('input[type="checkbox"]').forEach(c => c.checked = false);
-    currentRestaurants = Array.isArray(restaurantsData) ? [...restaurantsData] : [];
+    currentRestaurants = (typeof restaurantsData !== 'undefined' && Array.isArray(restaurantsData)) ? [...restaurantsData] : [];
     renderRestaurantList(currentRestaurants);
   }
 
@@ -765,19 +1021,21 @@
     document.querySelectorAll(".sort-btn").forEach(b => b.classList.remove("active"));
     if (btn) btn.classList.add("active");
     if (type === 'priceAsc') currentRestaurants.sort((a,b) => a.price - b.price);
-  else if (type === 'priceDesc') currentRestaurants.sort((a,b) => b.price - a.price);
-  else if (type === 'rating') currentRestaurants.sort((a,b) => b.rating - a.rating);
-  else currentRestaurants.sort((a,b) => (a.id === AI_RECOMMENDED_ID ? -1 : b.id === AI_RECOMMENDED_ID ? 1 : 0));
+    else if (type === 'priceDesc') currentRestaurants.sort((a,b) => b.price - a.price);
+    else if (type === 'rating') currentRestaurants.sort((a,b) => b.rating - a.rating);
+    else currentRestaurants.sort((a,b) => (a.id === AI_RECOMMENDED_ID ? -1 : b.id === AI_RECOMMENDED_ID ? 1 : 0));
     renderRestaurantList(currentRestaurants);
   }
 
+  // DOM 載入時立即渲染完整 80 間餐廳，確保畫面不空白
   window.addEventListener("DOMContentLoaded", () => {
     if (typeof restaurantsData !== 'undefined' && Array.isArray(restaurantsData)) {
+      currentRestaurants = [...restaurantsData];
       updateFilterCounts();
-      renderRestaurantList(restaurantsData);
+      renderRestaurantList(currentRestaurants);
       setupAiModals();
     } else {
-      console.error("未能找到 restaurantsData 阵列，请检查 restaurants_data.js 是否在同一目录下引入。");
+      console.error("未能找到 restaurantsData 阵列，请确认 restaurants_data.js 是否被正确引入。");
     }
   });
 </script>

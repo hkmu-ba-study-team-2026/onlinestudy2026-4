@@ -1,4 +1,5 @@
 const GEMINI_API_KEY = (process.env.GEMINI_API_KEY || "").trim();
+// 修正為官方標準有效的模型名稱
 const MODEL_NAME = "gemini-3.5-flash";
 
 async function getAiRecommendationsFromGemini(restaurantsList, preferences) {
@@ -6,28 +7,43 @@ async function getAiRecommendationsFromGemini(restaurantsList, preferences) {
         throw new Error("Missing GEMINI_API_KEY in environment variables.");
     }
 
-    // 1. 簡化輸入物件，防止 token 浪費與無效結構
+    // 1. 簡化輸入物件，並確保將 ecoAward 欄位包含進去供 AI 判讀
     const simplifiedRestaurants = (restaurantsList || []).map(r => ({
         id: r.id,
         name: r.name,
-        district: r.district,
+        region: r.region,
+        location: r.location,
         stars: r.stars,
         price: r.price,
-        style: r.menus?.[0]?.style || 'Fine Dining'
+        cuisine: r.cuisine || r.menus?.[0]?.style || 'Fine Dining',
+        ecoAward: r.ecoAward || null // 環保/綠星認證標籤
     }));
 
+    // 2. 針對「必須具備環保認證」修改 Prompt 規則
     const prompt = `
-You are a fine dining recommendation assistant.
-Based on the user's survey preferences:
-${JSON.stringify(preferences)}
+You are a professional fine dining Michelin recommendation assistant.
 
-Choose the best matching restaurant from this list:
+[MANDATORY CONSTRAINT]:
+The recommended restaurant MUST have an eco-friendly certification or award (meaning its "ecoAward" property is NOT null). Never recommend a restaurant without an ecoAward.
+
+[USER PREFERENCES]:
+- Target Budget: HK$ ${preferences.budget_tier || 'Any'}
+- Desired Accolade / Level: ${preferences.star_tier ? preferences.star_tier + ' Stars' : 'Any'}
+- Desired Region: ${preferences.preferred_region || 'Any'}
+- Desired Cuisine: ${preferences.preferred_cuisine || 'Any'}
+- Desired Facilities / Perks: ${JSON.stringify(preferences.facility_highlights || [])}
+
+[CANDIDATE RESTAURANTS]:
 ${JSON.stringify(simplifiedRestaurants)}
 
-Respond ONLY in valid JSON format matching this schema without markdown code blocks:
+[TASK]:
+1. Filter candidates that strictly possess an "ecoAward" (ecoAward != null).
+2. From those eco-certified restaurants, select the ONE restaurant that best aligns with the user's cuisine, region, budget, and star tier preferences.
+3. Write a personalized, persuasive 1-2 sentence recommendation reason ("nudge_text") in Simplified Chinese (简体中文). The reason should naturally weave in its eco-friendly credentials (e.g. Michelin Green Star, zero-waste, sustainable sourcing, organic farms) and why it matches the user's tastes.
+
+Respond ONLY in valid JSON matching this schema without markdown code blocks:
 {
-  "recommend_hotel_id": <number (matching restaurant ID)>,
-  "nudge_text": "<A concise 1-2 sentence recommendation reason in Traditional Chinese>"
+  "recommend_hotel_id": <number (matching restaurant ID)>
 }
 `;
 
@@ -87,8 +103,8 @@ Respond ONLY in valid JSON format matching this schema without markdown code blo
     const parsed = JSON.parse(cleanJsonText);
 
     return {
-        recommend_hotel_id: parsed.recommend_hotel_id || 42,
-        nudge_text: parsed.nudge_text || "為您量身挑選的精選米芝蓮餐廳。"
+        recommend_hotel_id: parsed.recommend_hotel_id || 1,
+        nudge_text: parsed.nudge_text || "为您精选荣获环保可持续认证的米其林绿色餐厅。"
     };
 }
 
@@ -104,17 +120,14 @@ module.exports = async (req, res) => {
     if (req.method === "GET") {
         return res.status(200).json({
             status: "ok",
-            message: "Gemini Handler Ready",
+            message: "Gemini Eco-Recommendation Handler Ready",
             has_key: Boolean(GEMINI_API_KEY),
-            key_preview: GEMINI_API_KEY ? `${GEMINI_API_KEY.substring(0, 6)}...${GEMINI_API_KEY.slice(-4)}` : "None",
-            key_length: GEMINI_API_KEY.length,
             model: MODEL_NAME
         });
     }
 
     if (req.method === "POST") {
         try {
-            // 同時兼容前端傳入的 restaurants 或 products 命名
             const { restaurants, products, preferences = {} } = req.body || {};
             const list = restaurants || products || [];
 
@@ -132,10 +145,11 @@ module.exports = async (req, res) => {
 
         } catch (err) {
             console.error("[Backend Gemini Call Failed]:", err.message);
+            // 本地環保餐廳保底（Fallback 必須是具備 ecoAward 的餐廳，例如 ID 1 Amber 或 ID 6 Caprice）
             return res.status(500).json({
                 error: err.message,
-                recommend_hotel_id: 42,
-                nudge_text: "根據您對星級評級與優質餐飲體驗的偏好，為您推薦精選餐廳。",
+                recommend_hotel_id: 1,
+                nudge_text: "根据您的用餐偏好，为您特别甄选荣获米其林绿星殊荣的置地文华东方酒店 Amber，践行有机与低碳美馔。",
                 source: "Fallback_Due_To_Error"
             });
         }
