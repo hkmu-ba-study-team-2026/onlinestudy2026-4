@@ -393,10 +393,10 @@
     <!-- 3. 四大正交菜系筛选 (各20间) -->
     <div class="filter-group">
       <div class="filter-title"><span>菜系风味 (各20间)</span></div>
-      <label class="filter-checkbox"><input type="checkbox" name="cuisine" value="粤菜/中菜" onchange="filterRestaurants()"><span>粤菜 / 精细中菜</span><span class="count" id="count-cui-canton"></span></label>
-      <label class="filter-checkbox"><input type="checkbox" name="cuisine" value="法式料理" onchange="filterRestaurants()"><span>经典法餐</span><span class="count" id="count-cui-french"></span></label>
+      <label class="filter-checkbox"><input type="checkbox" name="cuisine" value="粤菜/中菜" onchange="filterRestaurants()"><span>中式料理</span><span class="count" id="count-cui-canton"></span></label>
+      <label class="filter-checkbox"><input type="checkbox" name="cuisine" value="法式料理" onchange="filterRestaurants()"><span>法式料理</span><span class="count" id="count-cui-french"></span></label>
       <label class="filter-checkbox"><input type="checkbox" name="cuisine" value="日本料理" onchange="filterRestaurants()"><span>日本料理</span><span class="count" id="count-cui-japan"></span></label>
-      <label class="filter-checkbox"><input type="checkbox" name="cuisine" value="意式料理" onchange="filterRestaurants()"><span>传统与现代意餐</span><span class="count" id="count-cui-italian"></span></label>
+      <label class="filter-checkbox"><input type="checkbox" name="cuisine" value="意式料理" onchange="filterRestaurants()"><span>意式料理</span><span class="count" id="count-cui-italian"></span></label>
     </div>
 
     <!-- 4. 特色设施 (每项严控在 32~44 间) -->
@@ -405,7 +405,7 @@
       <label class="filter-checkbox"><input type="checkbox" id="filterPrivateRoom" onchange="filterRestaurants()"><span>私密独立包厢</span><span class="count" id="count-privateRoom"></span></label>
       <label class="filter-checkbox"><input type="checkbox" id="filterWindowSeat" onchange="filterRestaurants()"><span>靠窗景观 / 夜景席</span><span class="count" id="count-windowSeat"></span></label>
       <label class="filter-checkbox"><input type="checkbox" id="filterParking" onchange="filterRestaurants()"><span>代客泊车 / 免费停车</span><span class="count" id="count-parking"></span></label>
-      <label class="filter-checkbox"><input type="checkbox" id="filterSommelier" onchange="filterRestaurants()"><span>专业侍酒师 / 餐酒搭配</span><span class="count" id="count-sommelier"></span></label>
+      <label class="filter-checkbox"><input type="checkbox" id="filterSommelier" onchange="filterRestaurants()"><span>餐酒搭配佐餐</span><span class="count" id="count-sommelier"></span></label>
       <label class="filter-checkbox"><input type="checkbox" id="filterSustainable" onchange="filterRestaurants()"><span>有机食材认证</span><span class="count" id="count-sustainable"></span></label>
     </div>
   </aside>
@@ -786,10 +786,12 @@
     document.getElementById("modalRestTitle").innerText = selectedRest.name;
     document.getElementById("modalRestSubtitle").innerText = `${selectedRest.region} (${selectedRest.location || ''}) • ${selectedRest.address || ''}`;
 
+    // 取得該餐廳的主圖，確保彈窗左側圖片與餐廳自身圖片完全一致
+    const restImgUrl = (selectedRest.images && selectedRest.images[0]) ? selectedRest.images[0] : uniqueRestaurantImages[0];
+
     const menus = (selectedRest.menus && selectedRest.menus.length > 0) ? selectedRest.menus : [{
       id: `m_${selectedRest.id}_default`,
       name: `${selectedRest.name} 经典品鉴套餐`,
-      image: (selectedRest.images && selectedRest.images[0]) ? selectedRest.images[0] : '',
       style: selectedRest.cuisine,
       seating: "优选雅致席位",
       drinks: "精选佐餐饮品",
@@ -798,7 +800,8 @@
 
     document.getElementById("modalMenuList").innerHTML = menus.map(m => `
       <div style="border:1px solid #e2e8f0;border-radius:8px;display:flex;overflow:hidden;">
-        <img src="${m.image || ''}" style="width:180px;object-fit:cover;">
+        <!-- 改為使用餐廳本身的圖片 restImgUrl -->
+        <img src="${restImgUrl}" alt="${selectedRest.name}" style="width:180px;height:140px;object-fit:cover;">
         <div style="padding:1rem;flex:1;display:flex;flex-direction:column;justify-content:space-between;">
           <div>
             <h4 style="font-weight:700;">${m.name}</h4>
