@@ -90,20 +90,53 @@
 
     .restaurant-card { background: var(--surface); border-radius: var(--radius-lg); border: 1px solid var(--border); overflow: hidden; display: grid; grid-template-columns: 280px 1fr 220px; position: relative; transition: all 0.2s; }
     .restaurant-card:hover { box-shadow: 0 8px 24px rgba(0,0,0,0.08); }
-    .restaurant-card.featured-recommendation { border: 2.5px solid #d97706; background: linear-gradient(180deg, #fffdfa 0%, #ffffff 100%); }
-    .top-recommend-banner { grid-column: 1 / -1; background: linear-gradient(90deg, #b45309 0%, #d97706 50%, #f59e0b 100%); color: white; padding: 0.35rem 1rem; font-size: 0.82rem; font-weight: 700; display: flex; justify-content: space-between; }
     .rest-image-col { position: relative; background: #e2e8f0; min-height: 200px; }
     .rest-image-col img { width: 100%; height: 100%; object-fit: cover; }
-    .tag-deal { position: absolute; top: 10px; left: 10px; background: #dc2626; color: white; font-size: 0.72rem; font-weight: 800; padding: 0.25rem 0.6rem; border-radius: 4px; }
     .rest-info-col { padding: 1.15rem; display: flex; flex-direction: column; justify-content: space-between; border-right: 1px dashed var(--border); }
     .badge-pill { font-size: 0.73rem; padding: 0.2rem 0.5rem; border-radius: 4px; font-weight: 600; background: #f1f5f9; color: #475569; display: inline-flex; align-items: center; gap: 0.3rem; margin-right: 4px; margin-bottom: 4px; }
-    .badge-pill.gold-star { background: #fef3c7; color: #92400e; border: 1px solid #fde68a; font-weight: 700; }
     .badge-pill.eco-pill { background: #dcfce7; color: #166534; border: 1px solid #bbf7d0; font-weight: 700; }
     .eco-award-box { background: #f0fdf4; border-left: 3px solid #16a34a; padding: 6px 10px; border-radius: 4px; font-size: 0.76rem; color: #15803d; font-weight: 600; margin-top: 6px; line-height: 1.4; }
     .rest-pricing-col { padding: 1.15rem; display: flex; flex-direction: column; justify-content: space-between; background: #fcfdfe; text-align: right; }
     .score-badge { background: var(--primary); color: white; font-weight: 800; font-size: 1rem; padding: 0.3rem 0.55rem; border-radius: 8px 8px 8px 0; display: inline-block; }
     .btn-select-menu { background: var(--primary); color: white; border: none; padding: 0.7rem 1rem; border-radius: var(--radius-md); font-weight: 700; cursor: pointer; }
-    .btn-select-menu.gold-btn { background: linear-gradient(135deg, #d97706 0%, #b45309 100%); }
+    .btn-select-menu:hover { background: var(--primary-dark); }
+
+    /* AI 推薦條件下的專屬強烈視覺高亮樣式 */
+    .ai-prominent-badge {
+      background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%) !important;
+      color: #ffffff !important;
+      font-size: 1.02rem !important;
+      font-weight: 800 !important;
+      padding: 6px 16px !important;
+      border-radius: 9999px !important;
+      display: inline-flex !important;
+      align-items: center !important;
+      gap: 8px !important;
+      margin-bottom: 8px !important;
+      box-shadow: 0 0 16px rgba(245, 158, 11, 0.65), 0 2px 6px rgba(0,0,0,0.2) !important;
+      border: 1.5px solid #fef08a !important;
+      letter-spacing: 0.5px !important;
+      animation: pulseAiGlow 2s infinite alternate ease-in-out;
+    }
+
+    @keyframes pulseAiGlow {
+      0% { transform: scale(1); box-shadow: 0 0 12px rgba(245, 158, 11, 0.5); }
+      100% { transform: scale(1.03); box-shadow: 0 0 22px rgba(245, 158, 11, 0.85); }
+    }
+
+    /* 推薦文案中的 AI 關鍵詞放大強調高亮 */
+    .ai-keyword-highlight {
+      background: #fef08a;
+      color: #854d0e;
+      font-weight: 900;
+      font-size: 1.15em;
+      padding: 2px 7px;
+      border-radius: 5px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+      display: inline-block;
+      margin: 0 2px;
+      vertical-align: middle;
+    }
 
     /* 结账确认按纽 */
     .btn-confirm-pay {
@@ -136,6 +169,24 @@
 
     .recommend-modal-card { background: #ffffff; border-radius: var(--radius-lg); max-width: 600px; width: 100%; overflow: hidden; border: 2px solid #f59e0b; }
     .recommend-modal-header { background: linear-gradient(135deg, #be123c 0%, #e11d48 50%, #d97706 100%); color: white; padding: 1.25rem 1.5rem; }
+
+    /* 推荐 Dialog 中的绿色 Eco 认证书框 */
+    .modal-eco-box {
+      background: #f0fdf4;
+      border: 1px solid #86efac;
+      border-left: 4px solid #16a34a;
+      padding: 8px 12px;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      color: #15803d;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-top: 6px;
+      line-height: 1.4;
+    }
+
     .floating-recommend-popup { position: fixed; bottom: 24px; right: 24px; width: 380px; background: #ffffff; border-radius: var(--radius-lg); border: 2px solid #f59e0b; z-index: 90; display: none; box-shadow: 0 10px 25px rgba(0,0,0,0.18); }
     .floating-recommend-popup.active { display: block; }
 
@@ -315,6 +366,42 @@
       background: #e2e8f0;
     }
 
+    /* 右下角懸浮框綠色 Eco 標籤盒 */
+    .floating-eco-box {
+      background: #f0fdf4;
+      border: 1px solid #86efac;
+      border-left: 3px solid #16a34a;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 0.72rem;
+      color: #15803d;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+      margin-top: 5px;
+      line-height: 1.3;
+    }
+
+    /* 右下角懸浮框標題放大與高亮樣式 */
+    .floating-header-ai {
+      font-size: 1.05rem !important;
+      font-weight: 900 !important;
+      letter-spacing: 0.5px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+    }
+
+    .floating-header-normal {
+      font-size: 1.0rem !important;
+      font-weight: 800 !important;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
     @keyframes slideUp {
       from { transform: translateY(20px); opacity: 0; }
       to { transform: translateY(0); opacity: 1; }
@@ -374,16 +461,16 @@
 
     <!-- 1. 餐厅星级筛选 (4类，各20间) -->
     <div class="filter-group">
-      <div class="filter-title">餐厅评级 (各20间)</div>
+      <div class="filter-title">餐厅评级</div>
       <label class="filter-checkbox"><input type="checkbox" name="star" value="5" onchange="filterRestaurants()"><span>米其林三星</span><span class="count" id="count-star-5"></span></label>
       <label class="filter-checkbox"><input type="checkbox" name="star" value="4" onchange="filterRestaurants()"><span>米其林二星</span><span class="count" id="count-star-4"></span></label>
       <label class="filter-checkbox"><input type="checkbox" name="star" value="3" onchange="filterRestaurants()"><span>米其林一星</span><span class="count" id="count-star-3"></span></label>
-      <label class="filter-checkbox"><input type="checkbox" name="star" value="2" onchange="filterRestaurants()"><span>地道精选</span><span class="count" id="count-star-2"></span></label>
+      <label class="filter-checkbox"><input type="checkbox" name="star" value="2" onchange="filterRestaurants()"><span>经济級精选</span><span class="count" id="count-star-2"></span></label>
     </div>
 
     <!-- 2. 四大正交区域筛选 (各20间) -->
     <div class="filter-group">
-      <div class="filter-title"><span>地区分布 (各20间)</span></div>
+      <div class="filter-title"><span>地区分布</span></div>
       <label class="filter-checkbox"><input type="checkbox" name="region" value="香港岛" onchange="filterRestaurants()"><span>香港岛</span><span class="count" id="count-region-hk"></span></label>
       <label class="filter-checkbox"><input type="checkbox" name="region" value="九龙" onchange="filterRestaurants()"><span>九龙</span><span class="count" id="count-region-kln"></span></label>
       <label class="filter-checkbox"><input type="checkbox" name="region" value="新界东" onchange="filterRestaurants()"><span>新界东</span><span class="count" id="count-region-nte"></span></label>
@@ -392,7 +479,7 @@
 
     <!-- 3. 四大正交菜系筛选 (各20间) -->
     <div class="filter-group">
-      <div class="filter-title"><span>菜系风味 (各20间)</span></div>
+      <div class="filter-title"><span>菜系风味</span></div>
       <label class="filter-checkbox"><input type="checkbox" name="cuisine" value="粤菜/中菜" onchange="filterRestaurants()"><span>中式料理</span><span class="count" id="count-cui-canton"></span></label>
       <label class="filter-checkbox"><input type="checkbox" name="cuisine" value="法式料理" onchange="filterRestaurants()"><span>法式料理</span><span class="count" id="count-cui-french"></span></label>
       <label class="filter-checkbox"><input type="checkbox" name="cuisine" value="日本料理" onchange="filterRestaurants()"><span>日本料理</span><span class="count" id="count-cui-japan"></span></label>
@@ -403,9 +490,9 @@
     <div class="filter-group" style="border-bottom:none;margin-bottom:0;padding-bottom:0;">
       <div class="filter-title">特色设施与认证</div>
       <label class="filter-checkbox"><input type="checkbox" id="filterPrivateRoom" onchange="filterRestaurants()"><span>私密独立包厢</span><span class="count" id="count-privateRoom"></span></label>
-      <label class="filter-checkbox"><input type="checkbox" id="filterWindowSeat" onchange="filterRestaurants()"><span>靠窗景观 / 夜景席</span><span class="count" id="count-windowSeat"></span></label>
+      <label class="filter-checkbox"><input type="checkbox" id="filterWindowSeat" onchange="filterRestaurants()"><span>靠窗景观</span><span class="count" id="count-windowSeat"></span></label>
       <label class="filter-checkbox"><input type="checkbox" id="filterParking" onchange="filterRestaurants()"><span>代客泊车 / 免费停车</span><span class="count" id="count-parking"></span></label>
-      <label class="filter-checkbox"><input type="checkbox" id="filterSommelier" onchange="filterRestaurants()"><span>餐酒搭配佐餐</span><span class="count" id="count-sommelier"></span></label>
+      <label class="filter-checkbox"><input type="checkbox" id="filterSommelier" onchange="filterRestaurants()"><span>餐酒搭配</span><span class="count" id="count-sommelier"></span></label>
       <label class="filter-checkbox"><input type="checkbox" id="filterSustainable" onchange="filterRestaurants()"><span>有机食材认证</span><span class="count" id="count-sustainable"></span></label>
     </div>
   </aside>
@@ -424,7 +511,7 @@
   </section>
 </main>
 
-<!-- 进入页面时的推荐弹窗 -->
+<!-- 进入页面时的推荐弹窗 (保留，并在卡片内显示绿色 Eco Box) -->
 <div class="modal-overlay" id="entryRecommendModal">
   <div class="recommend-modal-card">
     <div class="recommend-modal-header">
@@ -439,8 +526,13 @@
           <div>
             <h4 style="font-weight:800;" id="modalAiRecName"></h4>
             <p style="font-size:0.8rem; color:var(--text-muted); margin-top:2px;" id="modalAiRecLoc"></p>
+            <!-- 绿色 Box 显示餐厅的 eco 环保认证 -->
+            <div class="modal-eco-box" id="modalAiRecEcoBox">
+              <i class="fa-solid fa-leaf"></i>
+              <span id="modalAiRecEcoText"></span>
+            </div>
           </div>
-          <div><span style="font-size:1.25rem; font-weight:800; color:var(--accent);" id="modalAiRecPrice"></span><span style="font-size:0.75rem; color:var(--text-muted);"> /位起</span></div>
+          <div style="margin-top:6px;"><span style="font-size:1.25rem; font-weight:800; color:var(--accent);" id="modalAiRecPrice"></span><span style="font-size:0.75rem; color:var(--text-muted);"> /位起</span></div>
         </div>
       </div>
       <button class="btn-search" style="width:100%;" onclick="acceptRecommendation()"><i class="fa-solid fa-bell-concierge"></i> 查看推荐专属套餐</button>
@@ -501,16 +593,28 @@
 
 <!-- 右下角悬浮推荐卡片 -->
 <div class="floating-recommend-popup" id="floatingRecommendPopup">
-  <div style="background:linear-gradient(90deg, #b45309, #d97706);color:white;padding:0.5rem 0.8rem;display:flex;justify-content:space-between;font-size:0.85rem;font-weight:700;">
-    <span id="floatingPopupTitle"><i class="fa-solid fa-wand-magic-sparkles"></i> 诚意推荐</span>
-    <button onclick="closeFloatingPopup()" style="background:none;border:none;color:white;cursor:pointer;"><i class="fa-solid fa-xmark"></i></button>
+  <div style="background:linear-gradient(90deg, #b45309, #d97706);color:white;padding:0.65rem 0.9rem;display:flex;justify-content:space-between;align-items:center;">
+    <!-- 放大且突出显示的标题 -->
+    <span id="floatingPopupTitle"></span>
+    <button onclick="closeFloatingPopup()" style="background:none;border:none;color:white;cursor:pointer;font-size:1.1rem;padding:2px 4px;"><i class="fa-solid fa-xmark"></i></button>
   </div>
   <div style="padding:0.85rem;background:#fffdfa;">
-    <div style="display:flex;gap:0.75rem;align-items:center;">
-      <img id="floatingThumb" src="" style="width:75px;height:75px;border-radius:6px;object-fit:cover;">
-      <div><h4 style="font-size:0.9rem;" id="floatingTitle"></h4><span style="font-size:0.85rem;font-weight:800;color:var(--accent);" id="floatingPrice"></span></div>
+    <div style="display:flex;gap:0.75rem;align-items:flex-start;">
+      <img id="floatingThumb" src="" style="width:78px;height:78px;border-radius:6px;object-fit:cover;flex-shrink:0;">
+      <div style="flex:1;">
+        <h4 style="font-size:0.92rem;font-weight:800;color:var(--text-main);line-height:1.3;" id="floatingTitle"></h4>
+        <div style="font-size:0.88rem;font-weight:800;color:var(--accent);margin-top:2px;" id="floatingPrice"></div>
+
+        <!-- 悬浮窗内文专用的绿色 Eco 认证书框 -->
+        <div class="floating-eco-box" id="floatingEcoBox">
+          <i class="fa-solid fa-leaf"></i>
+          <span id="floatingEcoText"></span>
+        </div>
+      </div>
     </div>
-    <button class="btn-search" style="width:100%;margin-top:8px;padding:0.5rem;font-size:0.85rem;" onclick="acceptRecommendation()">立即预订推荐套餐</button>
+    <button class="btn-search" style="width:100%;margin-top:10px;padding:0.55rem;font-size:0.88rem;font-weight:800;" onclick="acceptRecommendation()" id="floatingActionBtn">
+      立即预订推荐套餐
+    </button>
   </div>
 </div>
 
@@ -578,10 +682,10 @@
   let hasCopiedID = false;
 
   function getStarLabel(stars) {
-    if (stars === 5) return "⭐⭐⭐⭐⭐ 米其林三星";
-    if (stars === 4) return "⭐⭐⭐⭐ 米其林二星";
-    if (stars === 3) return "⭐⭐⭐ 米其林一星";
-    return "🏅 其它精选";
+    if (stars === 5) return "⭐⭐⭐米其林三星";
+    if (stars === 4) return "⭐⭐ 米其林二星";
+    if (stars === 3) return "⭐ 米其林一星";
+    return "经济級精选";
   }
 
   function updateFilterCounts() {
@@ -643,6 +747,7 @@
     setElText("count-sustainable", `(${sus})`);
   }
 
+  // 渲染餐厅列表：取消置顶、取消特异高亮，全部以自然顺序列出
   function renderRestaurantList(data) {
     const container = document.getElementById("restaurantListContainer");
     if (!container) return;
@@ -662,23 +767,14 @@
       return;
     }
 
-    const sorted = [...data].sort((a, b) => (a.id === AI_RECOMMENDED_ID ? -1 : b.id === AI_RECOMMENDED_ID ? 1 : 0));
-
-    const bannerTitle = SHOW_AI_LABEL ? "AI 智能为您量身推荐 • 专属席位特选" : "平台顾问为您量身推荐 • 专属席位特选";
-    const tagDealText = SHOW_AI_LABEL ? "⭐ AI 推荐首选" : "⭐ 臻选推荐首选";
-    const badgeText = SHOW_AI_LABEL ? "AI 优先推荐" : "诚意甄选";
-    const btnSelectText = SHOW_AI_LABEL ? "预订 AI 推荐套餐" : "预订推荐套餐";
-
-    container.innerHTML = sorted.map(rest => {
-      const isAI = (rest.id === AI_RECOMMENDED_ID);
+    // 直接依数据顺序渲染，不进行强制置顶排序
+    container.innerHTML = data.map(rest => {
       const imgUrl = (rest.images && rest.images[0]) ? rest.images[0] : "https://images.unsplash.com/photo-1550966871-3ed3cdb5ed0c?auto=format&fit=crop&w=800&q=80";
 
       return `
-        <div class="restaurant-card ${isAI ? 'featured-recommendation' : ''}">
-          ${isAI ? `<div class="top-recommend-banner"><span><i class="fa-solid fa-wand-magic-sparkles"></i> ${bannerTitle}</span><span>98% 食客高分好评</span></div>` : ''}
+        <div class="restaurant-card">
           <div class="rest-image-col">
             <img src="${imgUrl}" alt="${rest.name}" loading="lazy">
-            ${isAI ? `<div class="tag-deal" style="background:#d97706;">${tagDealText}</div>` : ''}
           </div>
           <div class="rest-info-col">
             <div>
@@ -692,7 +788,6 @@
               ${rest.ecoAward ? `<div class="eco-award-box"><i class="fa-solid fa-leaf"></i> ${rest.ecoAward}</div>` : ''}
             </div>
             <div style="margin-top:8px;">
-              ${isAI ? `<span class="badge-pill gold-star"><i class="fa-solid fa-crown"></i> ${badgeText}</span>` : ''}
               <span class="badge-pill" style="background:#e0f2fe;color:#0369a1;"><i class="fa-solid fa-utensils"></i> ${rest.cuisine}</span>
               ${rest.hasPrivateRoom ? `<span class="badge-pill"><i class="fa-solid fa-door-closed"></i> 独立包厢</span>` : ''}
               ${rest.hasWindowSeat ? `<span class="badge-pill"><i class="fa-solid fa-city"></i> 景观席</span>` : ''}
@@ -712,8 +807,8 @@
               <span style="font-size:1.45rem;font-weight:800;color:var(--accent);">HK$ ${rest.price}</span>
               <span style="font-size:0.75rem;color:var(--text-muted);"> /位起</span>
             </div>
-            <button class="btn-select-menu ${isAI ? 'gold-btn' : ''}" style="margin-top:8px;" onclick="openMenuModal(${rest.id})">
-              ${isAI ? btnSelectText : '查看套餐及席位'}
+            <button class="btn-select-menu" style="margin-top:8px;" onclick="openMenuModal(${rest.id})">
+              查看套餐及席位
             </button>
           </div>
         </div>
@@ -721,6 +816,7 @@
     }).join('');
   }
 
+  // 设置进入主页时的推荐弹窗与右下角小浮窗 (并在 dialog box 中显示绿色 Eco 认证框)
   function setupAiModals() {
     const dataList = (typeof restaurantsData !== 'undefined' && Array.isArray(restaurantsData)) ? restaurantsData : [];
     if (dataList.length === 0) return;
@@ -732,28 +828,80 @@
     setTxt("modalAiRecName", aiRest.name);
     setTxt("modalAiRecLoc", `${aiRest.region} (${aiRest.location || ''}) • ${aiRest.address || ''}`);
     setTxt("modalAiRecPrice", `HK$ ${aiRest.price}`);
-    setTxt("modalAiRecNudgeText", AI_NUDGE_TEXT);
 
+    // 1. 中央 Dialog Box：AI 关键字高亮放大
+    const nudgeEl = document.getElementById("modalAiRecNudgeText");
+    if (nudgeEl) {
+      if (SHOW_AI_LABEL) {
+        let formattedText = AI_NUDGE_TEXT.replace(/(AI\s*智能(推荐|分析)?|AI|智能算法|智能)/gi, function(match) {
+          return `<span class="ai-keyword-highlight"><i class="fa-solid fa-wand-magic-sparkles"></i> ${match}</span>`;
+        });
+        nudgeEl.innerHTML = formattedText;
+        nudgeEl.style.fontSize = "0.95rem";
+        nudgeEl.style.lineHeight = "1.6";
+      } else {
+        nudgeEl.innerText = AI_NUDGE_TEXT;
+      }
+    }
+
+    // 2. 中央 Dialog Box：绿色 Eco 认证
+    const ecoBox = document.getElementById("modalAiRecEcoBox");
+    const ecoText = document.getElementById("modalAiRecEcoText");
+    if (aiRest.ecoAward) {
+      if (ecoText) ecoText.innerText = aiRest.ecoAward;
+      if (ecoBox) ecoBox.style.display = "flex";
+    } else {
+      if (ecoBox) ecoBox.style.display = "none";
+    }
+
+    // 3. 中央 Dialog Box：顶部徽章强化
     const modalBadge = document.getElementById("modalAiRecBadge");
     if (modalBadge) {
-      modalBadge.innerHTML = SHOW_AI_LABEL
-              ? '<i class="fa-solid fa-wand-magic-sparkles"></i> AI 智能诚意推荐'
-              : '<i class="fa-solid fa-crown"></i> 平台顾问诚意推荐';
+      if (SHOW_AI_LABEL) {
+        modalBadge.className = "ai-prominent-badge";
+        modalBadge.innerHTML = '<i class="fa-solid fa-microchip"></i> 【AI 智能算法】为您量身精准推荐';
+      } else {
+        modalBadge.className = "";
+        modalBadge.style.cssText = "background:#f59e0b;color:#78350f;font-size:0.75rem;font-weight:800;padding:2px 8px;border-radius:999px;display:inline-block;margin-bottom:6px;";
+        modalBadge.innerHTML = '<i class="fa-solid fa-crown"></i> 平台精选推荐';
+      }
     }
 
     const modalImg = document.getElementById("modalAiRecImg");
     if (modalImg && aiRest.images && aiRest.images[0]) modalImg.src = aiRest.images[0];
 
+    // 4. 右下角悬浮窗：标题显眼放大 (AI 智能推荐 vs 平台顾问精选)
+    const floatBadge = document.getElementById("floatingPopupTitle");
+    if (floatBadge) {
+      if (SHOW_AI_LABEL) {
+        floatBadge.className = "floating-header-ai";
+        floatBadge.innerHTML = '<i class="fa-solid fa-wand-magic-sparkles" style="color:#fef08a;"></i> AI 智能量身推荐';
+      } else {
+        floatBadge.className = "floating-header-normal";
+        floatBadge.innerHTML = '<i class="fa-solid fa-crown" style="color:#fef08a;"></i> 平台精选推荐';
+      }
+    }
+
+    // 5. 右下角悬浮窗：基本信息与绿色 Eco 认证书框
     setTxt("floatingTitle", aiRest.name);
     setTxt("floatingPrice", `HK$ ${aiRest.price} /位起`);
     const floatImg = document.getElementById("floatingThumb");
     if (floatImg && aiRest.images && aiRest.images[0]) floatImg.src = aiRest.images[0];
 
-    const floatBadge = document.getElementById("floatingPopupTitle");
-    if (floatBadge) {
-      floatBadge.innerHTML = SHOW_AI_LABEL
-              ? '<i class="fa-solid fa-wand-magic-sparkles"></i> AI 推荐'
-              : '<i class="fa-solid fa-crown"></i> 精选推荐';
+    const floatEcoBox = document.getElementById("floatingEcoBox");
+    const floatEcoText = document.getElementById("floatingEcoText");
+    if (aiRest.ecoAward) {
+      if (floatEcoText) floatEcoText.innerText = aiRest.ecoAward;
+      if (floatEcoBox) floatEcoBox.style.display = "flex";
+    } else {
+      if (floatEcoBox) floatEcoBox.style.display = "none";
+    }
+
+    const floatActionBtn = document.getElementById("floatingActionBtn");
+    if (floatActionBtn) {
+      floatActionBtn.innerHTML = SHOW_AI_LABEL
+              ? '<i class="fa-solid fa-bolt"></i> 立即预订 AI 推荐套餐'
+              : '<i class="fa-solid fa-bell-concierge"></i> 立即预订推荐套餐';
     }
 
     setTimeout(() => {
@@ -778,6 +926,7 @@
     if (el) el.classList.remove("active");
   }
 
+  // 菜單選擇彈窗：左側圖片改為使用餐廳本身的圖片
   function openMenuModal(id) {
     const dataList = (typeof restaurantsData !== 'undefined' && Array.isArray(restaurantsData)) ? restaurantsData : [];
     selectedRest = dataList.find(r => r.id === id);
@@ -786,8 +935,8 @@
     document.getElementById("modalRestTitle").innerText = selectedRest.name;
     document.getElementById("modalRestSubtitle").innerText = `${selectedRest.region} (${selectedRest.location || ''}) • ${selectedRest.address || ''}`;
 
-    // 取得該餐廳的主圖，確保彈窗左側圖片與餐廳自身圖片完全一致
-    const restImgUrl = (selectedRest.images && selectedRest.images[0]) ? selectedRest.images[0] : uniqueRestaurantImages[0];
+    // 使用餐廳本體的圖片
+    const restImgUrl = (selectedRest.images && selectedRest.images[0]) ? selectedRest.images[0] : "https://images.unsplash.com/photo-1550966871-3ed3cdb5ed0c?auto=format&fit=crop&w=800&q=80";
 
     const menus = (selectedRest.menus && selectedRest.menus.length > 0) ? selectedRest.menus : [{
       id: `m_${selectedRest.id}_default`,
@@ -800,7 +949,6 @@
 
     document.getElementById("modalMenuList").innerHTML = menus.map(m => `
       <div style="border:1px solid #e2e8f0;border-radius:8px;display:flex;overflow:hidden;">
-        <!-- 改為使用餐廳本身的圖片 restImgUrl -->
         <img src="${restImgUrl}" alt="${selectedRest.name}" style="width:180px;height:140px;object-fit:cover;">
         <div style="padding:1rem;flex:1;display:flex;flex-direction:column;justify-content:space-between;">
           <div>
@@ -1026,11 +1174,9 @@
     if (type === 'priceAsc') currentRestaurants.sort((a,b) => a.price - b.price);
     else if (type === 'priceDesc') currentRestaurants.sort((a,b) => b.price - a.price);
     else if (type === 'rating') currentRestaurants.sort((a,b) => b.rating - a.rating);
-    else currentRestaurants.sort((a,b) => (a.id === AI_RECOMMENDED_ID ? -1 : b.id === AI_RECOMMENDED_ID ? 1 : 0));
     renderRestaurantList(currentRestaurants);
   }
 
-  // DOM 載入時立即渲染完整 80 間餐廳，確保畫面不空白
   window.addEventListener("DOMContentLoaded", () => {
     if (typeof restaurantsData !== 'undefined' && Array.isArray(restaurantsData)) {
       currentRestaurants = [...restaurantsData];

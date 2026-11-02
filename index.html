@@ -167,32 +167,9 @@
             </div>
         </div>
 
-        <!-- 问题 2：对应 Panel 餐厅星级 -->
+        <!-- 问题 2 (原问题 3)：对应 Panel 地区分布 -->
         <div class="form-group">
-            <label class="question-title">2. 你对餐厅的主厨造诣与美食地位有什么期待？<span class="required">*</span></label>
-            <div class="radio-grid">
-                <label class="option-card">
-                    <input type="radio" name="star_tier" value="5" required>
-                    <span>世界级大师的巅峰之作</span>
-                </label>
-                <label class="option-card">
-                    <input type="radio" name="star_tier" value="4" required>
-                    <span>具备极高水准的名厨私飨</span>
-                </label>
-                <label class="option-card">
-                    <input type="radio" name="star_tier" value="3" required>
-                    <span>水准出众的美味典范</span>
-                </label>
-                <label class="option-card">
-                    <input type="radio" name="star_tier" value="2" required>
-                    <span>独具个性与的地方名店</span>
-                </label>
-            </div>
-        </div>
-
-        <!-- 问题 3：对应 Panel 地区分布 -->
-        <div class="form-group">
-            <label class="question-title">3. 你希望在哪一个地理片区就餐？<span class="required">*</span></label>
+            <label class="question-title">2. 你希望在哪一个地理片区就餐？<span class="required">*</span></label>
             <div class="radio-grid">
                 <label class="option-card">
                     <input type="radio" name="preferred_region" value="香港岛" required>
@@ -213,12 +190,12 @@
             </div>
         </div>
 
-        <!-- 问题 4：对应 Panel 菜系风味 -->
+        <!-- 问题 3 (原问题 4)：对应 Panel 菜系风味 -->
         <div class="form-group">
-            <label class="question-title">4. 本次用餐你最期待体验的菜系风味是？<span class="required">*</span></label>
+            <label class="question-title">3. 本次用餐你最期待体验的菜系风味是？<span class="required">*</span></label>
             <div class="radio-grid">
                 <label class="option-card">
-                    <input type="radio" name="preferred_cuisine" value="中式料理" required>
+                    <input type="radio" name="preferred_cuisine" value="粤菜/中菜" required>
                     <span>中式料理</span>
                 </label>
                 <label class="option-card">
@@ -236,10 +213,10 @@
             </div>
         </div>
 
-        <!-- 问题 5：多选题（可全不选） -->
+        <!-- 问题 4 (原问题 5)：多选题（特色设施与认证，可多选或全不选） -->
         <div class="form-group">
             <label class="question-title">
-                5. 哪些专属设施或就餐礼遇符合你的需求？
+                4. 哪些专属设施或就餐礼遇符合你的需求？
                 <span class="hint-text">(可多选，或全部不选)</span>
             </label>
             <div class="radio-grid">
@@ -275,7 +252,7 @@
 
     // 默认固定推荐选项（米芝莲一星 + 绿星有机认证）
     const DEFAULT_ECO_STAR1_ID = 46; // Roganic Hong Kong
-    const DEFAULT_NUDGE_AI = "AI 智能分析为您精选荣获米其林绿星的 Roganic Hong Kong，坚持新界本地有机农场直供与可持续微型菜园料理。";
+    const DEFAULT_NUDGE_AI = "AI 智能分析\n为您精选荣获米其林绿星的 Roganic Hong Kong，坚持新界本地有机农场直供与可持续微型菜园料理。";
     const DEFAULT_NUDGE_NORMAL = "为您精选荣获米其林绿星的 Roganic Hong Kong，坚持新界本地有机农场直供与可持续微型菜园料理。";
 
     function generate32DigitParticipantID() {
@@ -344,7 +321,7 @@
     async function handleSubmit(event) {
         event.preventDefault();
 
-        // 收集多选项，允许全不选 (空阵列)
+        // 收集多选项，允许全不选 (空数组)
         const selectedFacilities = Array.from(document.querySelectorAll('input[name="facility_highlight"]:checked')).map(cb => cb.value);
 
         const submitBtn = document.getElementById('submitBtn');
@@ -353,13 +330,12 @@
 
         const formData = new FormData(event.target);
         const budgetTier = parseInt(formData.get("budget_tier"), 10);
-        const starTier = parseInt(formData.get("star_tier"), 10);
         const preferredRegion = (formData.get("preferred_region") || "").trim();
         const preferredCuisine = (formData.get("preferred_cuisine") || "").trim();
 
+        // 移除原有的 star_tier 字段
         const surveyResponses = {
             budget_tier: budgetTier,
-            star_tier: starTier,
             preferred_region: preferredRegion,
             preferred_cuisine: preferredCuisine,
             facility_highlights: selectedFacilities

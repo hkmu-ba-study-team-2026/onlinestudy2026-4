@@ -1,8 +1,8 @@
 {
-  "name": "online-study-2026",
+  "name": "online-restaurant-study",
   "version": "1.0.0",
   "description": "This is a web-based interface for user behavior experiments.",
-  "main": "script.js",
+  "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
