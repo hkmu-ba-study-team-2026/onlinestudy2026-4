@@ -149,19 +149,19 @@
             <label class="question-title">1. 这次就餐，你最契合哪种消费心境与用餐场景？<span class="required">*</span></label>
             <div class="radio-grid">
                 <label class="option-card">
-                    <input type="radio" name="budget_tier" value="500" required>
+                    <input type="radio" name="budget_tier" value="简单便餐" required>
                     <span>简单便餐</span>
                 </label>
                 <label class="option-card">
-                    <input type="radio" name="budget_tier" value="1000" required>
+                    <input type="radio" name="budget_tier" value="地道小馆" required>
                     <span>地道小馆</span>
                 </label>
                 <label class="option-card">
-                    <input type="radio" name="budget_tier" value="1500" required>
+                    <input type="radio" name="budget_tier" value="精致体验" required>
                     <span>精致体验</span>
                 </label>
                 <label class="option-card">
-                    <input type="radio" name="budget_tier" value="2000" required>
+                    <input type="radio" name="budget_tier" value="顶奢品鉴" required>
                     <span>顶奢品鉴</span>
                 </label>
             </div>
@@ -195,7 +195,7 @@
             <label class="question-title">3. 本次用餐你最期待体验的菜系风味是？<span class="required">*</span></label>
             <div class="radio-grid">
                 <label class="option-card">
-                    <input type="radio" name="preferred_cuisine" value="粤菜/中菜" required>
+                    <input type="radio" name="preferred_cuisine" value="中式料理" required>
                     <span>中式料理</span>
                 </label>
                 <label class="option-card">
@@ -221,23 +221,23 @@
             </label>
             <div class="radio-grid">
                 <label class="option-card">
-                    <input type="checkbox" name="facility_highlight" value="hasPrivateRoom">
+                    <input type="checkbox" name="facility_highlight" value="独立私密包厢">
                     <span>独立私密包厢</span>
                 </label>
                 <label class="option-card">
-                    <input type="checkbox" name="facility_highlight" value="hasWindowSeat">
+                    <input type="checkbox" name="facility_highlight" value="浪漫靠窗席位">
                     <span>浪漫靠窗席位</span>
                 </label>
                 <label class="option-card">
-                    <input type="checkbox" name="facility_highlight" value="hasParking">
+                    <input type="checkbox" name="facility_highlight" value="代客泊车或便利车位">
                     <span>代客泊车或便利车位</span>
                 </label>
                 <label class="option-card">
-                    <input type="checkbox" name="facility_highlight" value="hasSommelier">
+                    <input type="checkbox" name="facility_highlight" value="餐酒搭配佐餐">
                     <span>餐酒搭配佐餐</span>
                 </label>
                 <label class="option-card">
-                    <input type="checkbox" name="facility_highlight" value="hasSustainable">
+                    <input type="checkbox" name="facility_highlight" value="有机食材认证">
                     <span>有机食材认证</span>
                 </label>
             </div>
@@ -253,7 +253,7 @@
     // 默认固定推荐选项（米芝莲一星 + 绿星有机认证）
     const DEFAULT_ECO_STAR1_ID = 46; // Roganic Hong Kong
     const DEFAULT_NUDGE_AI = "AI 智能分析\n为您精选荣获米其林绿星的 Roganic Hong Kong，坚持新界本地有机农场直供与可持续微型菜园料理。";
-    const DEFAULT_NUDGE_NORMAL = "为您精选荣获米其林绿星的 Roganic Hong Kong，坚持新界本地有机农场直供与可持续微型菜园料理。";
+    const DEFAULT_NUDGE_NORMAL = "为您精心甄选的主推餐厅 Roganic Hong Kong，坚持新界本地有机农场直供与可持续微型菜园料理。";
 
     function generate32DigitParticipantID() {
         const now = new Date();
