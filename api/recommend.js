@@ -104,7 +104,7 @@ Respond ONLY in valid JSON matching this schema without markdown code blocks:
 
     return {
         recommend_hotel_id: parsed.recommend_hotel_id || 1,
-        nudge_text: parsed.nudge_text || "为您精选荣获环保可持续认证的米其林绿色餐厅。"
+        nudge_text: parsed.nudge_text || "为您精心甄选的主推餐厅。"
     };
 }
 
@@ -149,7 +149,7 @@ module.exports = async (req, res) => {
             return res.status(500).json({
                 error: err.message,
                 recommend_hotel_id: 1,
-                nudge_text: "根据您的用餐偏好，为您特别甄选荣获米其林绿星殊荣的置地文华东方酒店 Amber，践行有机与低碳美馔。",
+                nudge_text: "为您精心甄选的主推餐厅。",
                 source: "Fallback_Due_To_Error"
             });
         }
