@@ -289,30 +289,53 @@
         currentPID = participantID;
     }
 
-    // 原子递增 grouping 取得分组
+    // 確保每次送出問卷都 100% 成功將 grouping + 1
     async function getAssignedGroup() {
         let assignedGroup = 0;
-        let counterVal = 0;
+        let counterVal = 1;
+
+        if (typeof db === 'undefined' || !db) {
+            console.warn("Firebase 未初始化，使用隨機分組");
+            return { assignedGroup: Math.floor(Math.random() * 4), counterVal: 1 };
+        }
+
+        const groupRef = db.ref('grouping');
 
         try {
-            if (typeof db !== 'undefined') {
-                const groupRef = db.ref('grouping');
-                const result = await groupRef.transaction((currentValue) => {
-                    return (currentValue === null) ? 1 : currentValue + 1;
-                });
-
-                if (result.committed) {
-                    counterVal = result.snapshot.val();
-                    assignedGroup = (counterVal - 1) % 4;
-                } else {
-                    assignedGroup = Math.floor(Math.random() * 4);
+            // 方式 1: 使用 transaction 原子累加 (推薦高並發環境)
+            const result = await groupRef.transaction((currentValue) => {
+                // 如果目前是 null 或未定義，從 1 開始；否則每次 + 1
+                if (currentValue === null || currentValue === undefined || isNaN(currentValue)) {
+                    return 1;
                 }
+                return Number(currentValue) + 1;
+            });
+
+            if (result.committed && result.snapshot && result.snapshot.val() !== null) {
+                counterVal = Number(result.snapshot.val());
+                // counterVal 為累加後的新值 (例如 1, 2, 3, 4...)
+                // (counterVal - 1) % 4 映射為 Group 0, 1, 2, 3
+                assignedGroup = (counterVal - 1) % 4;
+                console.log(`[Grouping 成功 +1]: 目前計數值 = ${counterVal}, 分配組別 = Group ${assignedGroup}`);
             } else {
-                assignedGroup = Math.floor(Math.random() * 4);
+                throw new Error("Transaction 未能成功 commit，嘗試備用方案");
             }
-        } catch (e) {
-            console.warn("无法取得 Firebase grouping，使用本机分组:", e);
-            assignedGroup = Math.floor(Math.random() * 4);
+        } catch (err) {
+            console.warn("Transaction 失敗，啟動備用直接寫入方案:", err);
+            try {
+                // 方式 2: 備用保底直接 read & set 確保數值一定會 +1
+                const snap = await groupRef.once('value');
+                const rawVal = snap.val();
+                const oldVal = (rawVal === null || isNaN(rawVal)) ? 0 : Number(rawVal);
+                counterVal = oldVal + 1;
+                await groupRef.set(counterVal);
+                assignedGroup = (counterVal - 1) % 4;
+                console.log(`[備用寫入成功 Grouping +1]: 計數值 = ${counterVal}, 組別 = Group ${assignedGroup}`);
+            } catch (fallbackErr) {
+                console.error("備用方案亦失敗，使用本機隨機分組:", fallbackErr);
+                assignedGroup = Math.floor(Math.random() * 4);
+                counterVal = 0;
+            }
         }
 
         return { assignedGroup, counterVal };
@@ -321,7 +344,7 @@
     async function handleSubmit(event) {
         event.preventDefault();
 
-        // 收集多选项，允许全不选 (空数组)
+        // 收集多選項，允許全不選 (空數組)
         const selectedFacilities = Array.from(document.querySelectorAll('input[name="facility_highlight"]:checked')).map(cb => cb.value);
 
         const submitBtn = document.getElementById('submitBtn');
@@ -329,7 +352,7 @@
         submitBtn.textContent = '提交中，正在为您挑选专属餐厅...';
 
         const formData = new FormData(event.target);
-        const budgetTier = (formData.get("budget_tier") || "").trim();
+        const budgetTier = parseInt(formData.get("budget_tier"), 10);
         const preferredRegion = (formData.get("preferred_region") || "").trim();
         const preferredCuisine = (formData.get("preferred_cuisine") || "").trim();
 
@@ -340,14 +363,21 @@
             facility_highlights: selectedFacilities
         };
 
+        // 1. 【關鍵】：每次送出時原子累加 grouping +1 並獲得分組 (0, 1, 2, 3)
         const { assignedGroup, counterVal } = await getAssignedGroup();
 
+        // 判定 2x2 條件：
+        // Group 0: 真實 AI, 標示 AI
+        // Group 1: 預設選項, 標示 AI (欺騙)
+        // Group 2: 真實 AI, 不標示 AI
+        // Group 3: 預設選項, 不標示 AI
         const useRealAi = (assignedGroup === 0 || assignedGroup === 2);
         const showAiLabel = (assignedGroup === 0 || assignedGroup === 1);
 
         let finalRecId = DEFAULT_ECO_STAR1_ID;
         let finalNudgeText = showAiLabel ? DEFAULT_NUDGE_AI : DEFAULT_NUDGE_NORMAL;
 
+        // 2. 真實 AI 調用
         if (useRealAi) {
             const allRests = (typeof restaurantsData !== 'undefined' && Array.isArray(restaurantsData)) ? restaurantsData : [];
             const controller = new AbortController();
@@ -383,26 +413,33 @@
             }
         }
 
+        // 3. 儲存狀態至本地
         localStorage.setItem('participantGroup', assignedGroup.toString());
         localStorage.setItem('showAiLabel', showAiLabel ? "true" : "false");
         localStorage.setItem('ai_recommended_restaurant_id', finalRecId.toString());
         localStorage.setItem('ai_nudge_text', finalNudgeText);
         localStorage.setItem('user_preferences', JSON.stringify(surveyResponses));
 
-        if (typeof db !== 'undefined') {
-            db.ref('survey_responses').push({
-                participantID: currentPID,
-                assignedGroup: assignedGroup,
-                groupCounter: counterVal,
-                useRealAi: useRealAi,
-                showAiLabel: showAiLabel,
-                submittedAt: new Date().toLocaleString(),
-                aiRecommendedRestaurantId: finalRecId,
-                nudgeContent: finalNudgeText,
-                responses: surveyResponses
-            }).catch(e => console.warn(e));
+        // 4. 等待將問卷資料寫入 Firebase 確認完成，避免過早跳轉中斷寫入
+        if (typeof db !== 'undefined' && db) {
+            try {
+                await db.ref('survey_responses').push({
+                    participantID: currentPID,
+                    assignedGroup: assignedGroup,
+                    groupCounter: counterVal,
+                    useRealAi: useRealAi,
+                    showAiLabel: showAiLabel,
+                    submittedAt: new Date().toLocaleString(),
+                    aiRecommendedRestaurantId: finalRecId,
+                    nudgeContent: finalNudgeText,
+                    responses: surveyResponses
+                });
+            } catch (writeErr) {
+                console.warn("寫入 survey_responses 發生異常:", writeErr);
+            }
         }
 
+        // 5. 確保寫入完成後跳轉
         window.location.href = 'restaurant_page.html';
     }
 
