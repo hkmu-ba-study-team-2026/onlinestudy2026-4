@@ -307,11 +307,10 @@
 
                     // 问卷偏好作答 (5 题)
                     "Survey_Submitted_Time": "",
-                    "Q1_Budget_Tier_HK$": "",
-                    "Q2_Star_Tier_Rating": "",
-                    "Q3_Preferred_Region": "",
-                    "Q4_Preferred_Cuisine": "",
-                    "Q5_Selected_Facilities": "",
+                    "Q1_Budget_Tier": "",
+                    "Q2_Preferred_Region": "",
+                    "Q3_Preferred_Cuisine": "",
+                    "Q4_Selected_Facilities": "",
 
                     // 推荐系统决策
                     "Recommended_ID": "",
@@ -352,11 +351,10 @@
                     row["Show_AI_Label"] = s.showAiLabel ? "Yes" : "No";
 
                     if (s.responses) {
-                        row["Q1_Budget_Tier_HK$"] = s.responses.budget_tier || "";
-                        row["Q2_Star_Tier_Rating"] = s.responses.star_tier ? `${s.responses.star_tier}星` : "";
-                        row["Q3_Preferred_Region"] = s.responses.preferred_region || "";
-                        row["Q4_Preferred_Cuisine"] = s.responses.preferred_cuisine || "";
-                        row["Q5_Selected_Facilities"] = Array.isArray(s.responses.facility_highlights)
+                        row["Q1_Budget_Tier"] = s.responses.budget_tier || "";
+                        row["Q2_Preferred_Region"] = s.responses.preferred_region || "";
+                        row["Q3_Preferred_Cuisine"] = s.responses.preferred_cuisine || "";
+                        row["Q4_Selected_Facilities"] = Array.isArray(s.responses.facility_highlights)
                             ? s.responses.facility_highlights.join("; ")
                             : (s.responses.facility_highlight || "");
                     }
