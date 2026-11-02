@@ -314,23 +314,18 @@
                     "Q5_Selected_Facilities": "",
 
                     // 推荐系统决策
-                    "Recommended_Rest_ID": "",
-                    "Recommended_Rest_Name": "",
-                    "Recommended_Rest_Has_EcoAward": "",
-                    "Recommended_Rest_EcoAward_Details": "",
-                    "Recommendation_Nudge_Text": "",
+                    "Recommended_ID": "",
+                    "Recommended_Name": "",
 
                     // 最终餐厅预订行为
                     "Has_Completed_Booking": "No",
-                "Booking_Ref_Code": "",
                     "Booking_Confirmed_Time": "",
-                "Selected_Rest_ID": "",
-                "Selected_Rest_Name": "",
-                "Selected_Rest_Region": "",
-                    "Selected_Rest_Cuisine": "",
-                    "Selected_Menu_Name": "",
-                "Booking_Total_Amount": "",
-                "Is_Recommendation_Adopted": "No"
+                    "Selected_ID": "",
+                    "Selected_Name": "",
+                    "Selected_Region": "",
+                    "Selected_Cuisine": "",
+                    "Booking_Total_Amount": "",
+                    "Is_Recommendation_Adopted": "No"
             };
             });
 
@@ -367,12 +362,9 @@
                     }
 
                     const recId = s.aiRecommendedRestaurantId;
-                    row["Recommended_Rest_ID"] = recId || "";
+                    row["Recommended_ID"] = recId || "";
                     const recDetails = getRestDetailsById(recId);
-                    row["Recommended_Rest_Name"] = recDetails.name;
-                    row["Recommended_Rest_Has_EcoAward"] = recDetails.hasEco;
-                    row["Recommended_Rest_EcoAward_Details"] = recDetails.ecoAward;
-                    row["Recommendation_Nudge_Text"] = s.nudgeContent || "";
+                    row["Recommended_Name"] = recDetails.name;
                 }
             });
 
@@ -382,13 +374,11 @@
                 if (masterDataMap[pid]) {
                     const row = masterDataMap[pid];
                     row["Has_Completed_Booking"] = "Yes";
-                    row["Booking_Ref_Code"] = b.bookingRef || "";
                     row["Booking_Confirmed_Time"] = b.bookingTime || "";
-                    row["Selected_Rest_ID"] = b.selectedRestaurantId || "";
-                    row["Selected_Rest_Name"] = b.selectedRestaurantName || getRestDetailsById(b.selectedRestaurantId).name;
-                    row["Selected_Rest_Region"] = b.selectedRestaurantRegion || "";
-                    row["Selected_Rest_Cuisine"] = b.selectedRestaurantCuisine || "";
-                    row["Selected_Menu_Name"] = b.menuName || "";
+                    row["Selected_ID"] = b.selectedRestaurantId || "";
+                    row["Selected_Name"] = b.selectedRestaurantName || getRestDetailsById(b.selectedRestaurantId).name;
+                    row["Selected_Region"] = b.selectedRestaurantRegion || "";
+                    row["Selected_Cuisine"] = b.selectedRestaurantCuisine || "";
                     row["Booking_Total_Amount"] = b.totalAmount || "";
                     row["Is_Recommendation_Adopted"] = b.isAiRecommendedSelected ? "Yes" : "No";
                 }
