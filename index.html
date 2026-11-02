@@ -329,11 +329,10 @@
         submitBtn.textContent = '提交中，正在为您挑选专属餐厅...';
 
         const formData = new FormData(event.target);
-        const budgetTier = parseInt(formData.get("budget_tier"), 10);
+        const budgetTier = (formData.get("budget_tier") || "").trim();
         const preferredRegion = (formData.get("preferred_region") || "").trim();
         const preferredCuisine = (formData.get("preferred_cuisine") || "").trim();
 
-        // 移除原有的 star_tier 字段
         const surveyResponses = {
             budget_tier: budgetTier,
             preferred_region: preferredRegion,

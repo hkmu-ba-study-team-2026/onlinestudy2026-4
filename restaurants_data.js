@@ -91,11 +91,11 @@ const rawRestaurantsList = [
     // 1. 米其林三星 (stars: 5) — 共 20 间 (均价 $1480 ~ $2000)
     // =========================================================================
     // --- 三星 × 粤菜/中菜 (5 间) ---
-    { id: 1, name: "龙景轩 (香港四季酒店)", stars: 5, cuisine: "粤菜/中菜", region: "香港岛", location: "中西区", address: "中环金融街8号香港四季酒店4楼", price: 1980, rating: 9.8, ecoAward: "WWF 环保海鲜伙伴 • 100% 拒用鱼翅及支持可持续渔业认证", pRoom: true, wSeat: true, park: true, wine: true },
-    { id: 2, name: "唐阁 (香港朗廷酒店)", stars: 5, cuisine: "粤菜/中菜", region: "九龙", location: "油尖旺区", address: "尖沙咀北京道8号香港朗廷酒店1楼", price: 1880, rating: 9.6, ecoAward: "EarthCheck 白金级环保认证酒店餐厅 • 本地有机农场直采蔬菜", pRoom: true, wSeat: false, park: true, wine: true },
-    { id: 3, name: "沙田名家天禧粤宴", stars: 5, cuisine: "粤菜/中菜", region: "新界东", location: "沙田区", address: "沙田白石角科学园海滨长廊尊尚馆", price: 1680, rating: 9.5, ecoAward: "新界绿色有机农业联盟示范餐厅 • 全店低碳排能源管理", pRoom: false, wSeat: true, park: true, wine: false },
-    { id: 4, name: "荃湾南丰云锦私房粤膳", stars: 5, cuisine: "粤菜/中菜", region: "新界西", location: "荃湾区", address: "荃湾大河道100号海之恋高层全景馆", price: 1580, rating: 9.5, ecoAward: null, pRoom: true, wSeat: false, park: false, wine: false },
-    { id: 5, name: "大班楼 (The Chairman)", stars: 5, cuisine: "粤菜/中菜", region: "香港岛", location: "中西区", address: "中环威灵顿街198号The Wellington 3楼", price: 1920, rating: 9.9, ecoAward: "世界50最佳餐厅可持续食材典范 • 坚持新界本地有机农耕与本地渔民鲜捕", pRoom: false, wSeat: false, park: false, wine: true },
+    { id: 1, name: "龙景轩 (香港四季酒店)", stars: 5, cuisine: "中式料理", region: "香港岛", location: "中西区", address: "中环金融街8号香港四季酒店4楼", price: 1980, rating: 9.8, ecoAward: "WWF 环保海鲜伙伴 • 100% 拒用鱼翅及支持可持续渔业认证", pRoom: true, wSeat: true, park: true, wine: true },
+    { id: 2, name: "唐阁 (香港朗廷酒店)", stars: 5, cuisine: "中式料理", region: "九龙", location: "油尖旺区", address: "尖沙咀北京道8号香港朗廷酒店1楼", price: 1880, rating: 9.6, ecoAward: "EarthCheck 白金级环保认证酒店餐厅 • 本地有机农场直采蔬菜", pRoom: true, wSeat: false, park: true, wine: true },
+    { id: 3, name: "沙田名家天禧粤宴", stars: 5, cuisine: "中式料理", region: "新界东", location: "沙田区", address: "沙田白石角科学园海滨长廊尊尚馆", price: 1680, rating: 9.5, ecoAward: "新界绿色有机农业联盟示范餐厅 • 全店低碳排能源管理", pRoom: false, wSeat: true, park: true, wine: false },
+    { id: 4, name: "荃湾南丰云锦私房粤膳", stars: 5, cuisine: "中式料理", region: "新界西", location: "荃湾区", address: "荃湾大河道100号海之恋高层全景馆", price: 1580, rating: 9.5, ecoAward: null, pRoom: true, wSeat: false, park: false, wine: false },
+    { id: 5, name: "大班楼 (The Chairman)", stars: 5, cuisine: "中式料理", region: "香港岛", location: "中西区", address: "中环威灵顿街198号The Wellington 3楼", price: 1920, rating: 9.9, ecoAward: "世界50最佳餐厅可持续食材典范 • 坚持新界本地有机农耕与本地渔民鲜捕", pRoom: false, wSeat: false, park: false, wine: true },
 
     // --- 三星 × 法式料理 (5 间) ---
     { id: 6, name: "Caprice (香港四季酒店)", stars: 5, cuisine: "法式料理", region: "香港岛", location: "中西区", address: "中环金融街8号香港四季酒店6楼", price: 2000, rating: 9.8, ecoAward: "四季酒店可持续海产采购认证 • 法国有机农庄直供食材", pRoom: true, wSeat: true, park: true, wine: true },
@@ -122,11 +122,11 @@ const rawRestaurantsList = [
     // 2. 米其林二星 (stars: 4) — 共 20 间 (均价 $980 ~ $1450)
     // =========================================================================
     // --- 二星 × 粤菜/中菜 (5 间) ---
-    { id: 21, name: "文华厅 (香港文华东方酒店)", stars: 4, cuisine: "粤菜/中菜", region: "香港岛", location: "中西区", address: "中环干诺道中5号香港文华东方酒店25楼", price: 1450, rating: 9.4, ecoAward: "文华东方集团可持续淘汰一次性塑料及环保食材认证", pRoom: true, wSeat: true, park: true, wine: true },
-    { id: 22, name: "天龙轩 (九龙丽思卡尔顿)", stars: 4, cuisine: "粤菜/中菜", region: "九龙", location: "油尖旺区", address: "尖沙咀柯士甸道西1号环球贸易广场102楼", price: 1380, rating: 9.7, ecoAward: "万豪国际 Serve360 可持续发展认证 • 厨余转化生物能源项目", pRoom: true, wSeat: true, park: true, wine: true },
-    { id: 23, name: "沙田18 (香港沙田凯悦酒店)", stars: 4, cuisine: "粤菜/中菜", region: "新界东", location: "沙田区", address: "沙田泽祥街18号香港沙田凯悦酒店4楼", price: 1180, rating: 9.4, ecoAward: "凯悦 World of Care 环保认证 • 采用龙眼果木修枝再生燃料", pRoom: true, wSeat: true, park: true, wine: false },
-    { id: 24, name: "元朗屏山传统名家御宴", stars: 4, cuisine: "粤菜/中菜", region: "新界西", location: "元朗区", address: "元朗屏山塘坊村古迹文化径8号", price: 1050, rating: 9.2, ecoAward: null, pRoom: true, wSeat: false, park: false, wine: false },
-    { id: 25, name: "润 Rùn (香港瑞吉酒店)", stars: 4, cuisine: "粤菜/中菜", region: "香港岛", location: "湾仔区", address: "湾仔港湾径1号香港瑞吉酒店2楼", price: 1420, rating: 9.5, ecoAward: "瑞吉酒店绿色厨房认证 • 选用本地生态养殖家禽", pRoom: false, wSeat: false, park: true, wine: true },
+    { id: 21, name: "文华厅 (香港文华东方酒店)", stars: 4, cuisine: "中式料理", region: "香港岛", location: "中西区", address: "中环干诺道中5号香港文华东方酒店25楼", price: 1450, rating: 9.4, ecoAward: "文华东方集团可持续淘汰一次性塑料及环保食材认证", pRoom: true, wSeat: true, park: true, wine: true },
+    { id: 22, name: "天龙轩 (九龙丽思卡尔顿)", stars: 4, cuisine: "中式料理", region: "九龙", location: "油尖旺区", address: "尖沙咀柯士甸道西1号环球贸易广场102楼", price: 1380, rating: 9.7, ecoAward: "万豪国际 Serve360 可持续发展认证 • 厨余转化生物能源项目", pRoom: true, wSeat: true, park: true, wine: true },
+    { id: 23, name: "沙田18 (香港沙田凯悦酒店)", stars: 4, cuisine: "中式料理", region: "新界东", location: "沙田区", address: "沙田泽祥街18号香港沙田凯悦酒店4楼", price: 1180, rating: 9.4, ecoAward: "凯悦 World of Care 环保认证 • 采用龙眼果木修枝再生燃料", pRoom: true, wSeat: true, park: true, wine: false },
+    { id: 24, name: "元朗屏山传统名家御宴", stars: 4, cuisine: "中式料理", region: "新界西", location: "元朗区", address: "元朗屏山塘坊村古迹文化径8号", price: 1050, rating: 9.2, ecoAward: null, pRoom: true, wSeat: false, park: false, wine: false },
+    { id: 25, name: "润 Rùn (香港瑞吉酒店)", stars: 4, cuisine: "中式料理", region: "香港岛", location: "湾仔区", address: "湾仔港湾径1号香港瑞吉酒店2楼", price: 1420, rating: 9.5, ecoAward: "瑞吉酒店绿色厨房认证 • 选用本地生态养殖家禽", pRoom: false, wSeat: false, park: true, wine: true },
 
     // --- 二星 × 法式料理 (5 间) ---
     { id: 26, name: "Amber (置地文华东方酒店)", stars: 4, cuisine: "法式料理", region: "香港岛", location: "中西区", address: "中环皇后大道中15号置地文华东方酒店7楼", price: 1450, rating: 9.7, ecoAward: "米其林绿星奖 (Michelin Green Star) • 全植物基乳制品替代体系", pRoom: false, wSeat: false, park: true, wine: true },
@@ -153,11 +153,11 @@ const rawRestaurantsList = [
     // 3. 米其林一星 (stars: 3) — 共 20 间 (均价 $580 ~ $960)
     // =========================================================================
     // --- 一星 × 粤菜/中菜 (5 间) ---
-    { id: 41, name: "万豪金殿 (Man Ho)", stars: 3, cuisine: "粤菜/中菜", region: "香港岛", location: "中西区", address: "金钟道88号太古广场香港JW万豪酒店3楼", price: 960, rating: 9.3, ecoAward: "WWF 环保海鲜先锋餐厅 • 本地有机菇菌与茶园直采", pRoom: true, wSeat: true, park: true, wine: true },
-    { id: 42, name: "逸东轩 (Yat Tung Heen)", stars: 3, cuisine: "粤菜/中菜", region: "九龙", location: "油尖旺区", address: "佐敦弥敦道380号香港逸东酒店B2楼层", price: 820, rating: 9.2, ecoAward: "EarthCheck 认证 • 惜食堂厨余捐赠与有机食材伙伴", pRoom: true, wSeat: false, park: true, wine: false },
-    { id: 43, name: "六福菜馆 (西贡总店)", stars: 3, cuisine: "粤菜/中菜", region: "新界东", location: "西贡区", address: "西贡市场街49号地下至2楼", price: 780, rating: 9.2, ecoAward: "西贡休渔期生态保育支持商户 • 每日小艇低碳直采鲜鱼", pRoom: false, wSeat: true, park: false, wine: false },
-    { id: 44, name: "端记精致私房馆 (荃湾川龙)", stars: 3, cuisine: "粤菜/中菜", region: "新界西", location: "荃湾区", address: "荃湾荃锦公路川龙村57-58号", price: 650, rating: 9.1, ecoAward: "大帽山天然山泉水自家种植有机西洋菜 • 零碳排里程农庄餐厅", pRoom: false, wSeat: true, park: true, wine: false },
-    { id: 45, name: "启德邮轮海景名门国宴", stars: 3, cuisine: "粤菜/中菜", region: "九龙", location: "九龙城区", address: "启德承丰道33号启德邮轮码头顶层花园", price: 880, rating: 9.3, ecoAward: "香港绿建环评铂金级海景建筑低碳餐厅", pRoom: true, wSeat: true, park: true, wine: true },
+    { id: 41, name: "万豪金殿 (Man Ho)", stars: 3, cuisine: "中式料理", region: "香港岛", location: "中西区", address: "金钟道88号太古广场香港JW万豪酒店3楼", price: 960, rating: 9.3, ecoAward: "WWF 环保海鲜先锋餐厅 • 本地有机菇菌与茶园直采", pRoom: true, wSeat: true, park: true, wine: true },
+    { id: 42, name: "逸东轩 (Yat Tung Heen)", stars: 3, cuisine: "中式料理", region: "九龙", location: "油尖旺区", address: "佐敦弥敦道380号香港逸东酒店B2楼层", price: 820, rating: 9.2, ecoAward: "EarthCheck 认证 • 惜食堂厨余捐赠与有机食材伙伴", pRoom: true, wSeat: false, park: true, wine: false },
+    { id: 43, name: "六福菜馆 (西贡总店)", stars: 3, cuisine: "中式料理", region: "新界东", location: "西贡区", address: "西贡市场街49号地下至2楼", price: 780, rating: 9.2, ecoAward: "西贡休渔期生态保育支持商户 • 每日小艇低碳直采鲜鱼", pRoom: false, wSeat: true, park: false, wine: false },
+    { id: 44, name: "端记精致私房馆 (荃湾川龙)", stars: 3, cuisine: "中式料理", region: "新界西", location: "荃湾区", address: "荃湾荃锦公路川龙村57-58号", price: 650, rating: 9.1, ecoAward: "大帽山天然山泉水自家种植有机西洋菜 • 零碳排里程农庄餐厅", pRoom: false, wSeat: true, park: true, wine: false },
+    { id: 45, name: "启德邮轮海景名门国宴", stars: 3, cuisine: "中式料理", region: "九龙", location: "九龙城区", address: "启德承丰道33号启德邮轮码头顶层花园", price: 880, rating: 9.3, ecoAward: "香港绿建环评铂金级海景建筑低碳餐厅", pRoom: true, wSeat: true, park: true, wine: true },
 
     // --- 一星 × 法式料理 (5 间) ---
     { id: 46, name: "Roganic Hong Kong", stars: 3, cuisine: "法式料理", region: "香港岛", location: "湾仔区", address: "铜锣湾告士打道255号信和广场UG楼8号", price: 920, rating: 9.6, ecoAward: "米其林绿星奖 (Michelin Green Star) • 新界本地有机农场直供与零浪费微型菜园", pRoom: false, wSeat: false, park: true, wine: true },
@@ -184,11 +184,11 @@ const rawRestaurantsList = [
     // 4. 其它精选 (stars: 2) — 共 20 间 (均价 $200 ~ $550)
     // =========================================================================
     // --- 精选 × 粤菜/中菜 (5 间) ---
-    { id: 61, name: "何洪记名家私房宴", stars: 2, cuisine: "粤菜/中菜", region: "香港岛", location: "东区", address: "北角渣华道123号北角汇二期2楼", price: 450, rating: 9.1, ecoAward: null, pRoom: true, wSeat: true, park: false, wine: false },
-    { id: 62, name: "黄大仙志莲净苑荷花池畔素斋宴", stars: 2, cuisine: "粤菜/中菜", region: "九龙", location: "黄大仙区", address: "钻石山凤德道60号南莲园池龙门楼", price: 320, rating: 9.3, ecoAward: "100% 纯植物基低碳排健康饮食认证 • 园林雨水回收灌溉系统", pRoom: false, wSeat: true, park: true, wine: false },
-    { id: 63, name: "大埔林村有机农庄私房料理", stars: 2, cuisine: "粤菜/中菜", region: "新界东", location: "大埔区", address: "大埔林锦公路新塘段生态园12号", price: 280, rating: 9.0, ecoAward: "香港有机资源中心认证合作餐厅 • 100% 自家农田有机蔬果与厨余堆肥", pRoom: true, wSeat: false, park: true, wine: false },
-    { id: 64, name: "元朗朗屏百年围村风味私厨", stars: 2, cuisine: "粤菜/中菜", region: "新界西", location: "元朗区", address: "元朗朗屏宏乐街38号大生围渔村旁", price: 220, rating: 8.9, ecoAward: "元朗传统生态鱼塘无公害鲜鱼供销认证", pRoom: false, wSeat: false, park: false, wine: false },
-    { id: 65, name: "上水古洞有机生态园农庄御膳", stars: 2, cuisine: "粤菜/中菜", region: "新界东", location: "北区", address: "上水古洞河上乡排峰路生态庄园", price: 250, rating: 8.9, ecoAward: "北区低碳农业发展联盟成员 • 零化学农药水耕及有机走地鸡认证", pRoom: false, wSeat: true, park: true, wine: false },
+    { id: 61, name: "何洪记名家私房宴", stars: 2, cuisine: "中式料理", region: "香港岛", location: "东区", address: "北角渣华道123号北角汇二期2楼", price: 450, rating: 9.1, ecoAward: null, pRoom: true, wSeat: true, park: false, wine: false },
+    { id: 62, name: "黄大仙志莲净苑荷花池畔素斋宴", stars: 2, cuisine: "中式料理", region: "九龙", location: "黄大仙区", address: "钻石山凤德道60号南莲园池龙门楼", price: 320, rating: 9.3, ecoAward: "100% 纯植物基低碳排健康饮食认证 • 园林雨水回收灌溉系统", pRoom: false, wSeat: true, park: true, wine: false },
+    { id: 63, name: "大埔林村有机农庄私房料理", stars: 2, cuisine: "中式料理", region: "新界东", location: "大埔区", address: "大埔林锦公路新塘段生态园12号", price: 280, rating: 9.0, ecoAward: "香港有机资源中心认证合作餐厅 • 100% 自家农田有机蔬果与厨余堆肥", pRoom: true, wSeat: false, park: true, wine: false },
+    { id: 64, name: "元朗朗屏百年围村风味私厨", stars: 2, cuisine: "中式料理", region: "新界西", location: "元朗区", address: "元朗朗屏宏乐街38号大生围渔村旁", price: 220, rating: 8.9, ecoAward: "元朗传统生态鱼塘无公害鲜鱼供销认证", pRoom: false, wSeat: false, park: false, wine: false },
+    { id: 65, name: "上水古洞有机生态园农庄御膳", stars: 2, cuisine: "中式料理", region: "新界东", location: "北区", address: "上水古洞河上乡排峰路生态庄园", price: 250, rating: 8.9, ecoAward: "北区低碳农业发展联盟成员 • 零化学农药水耕及有机走地鸡认证", pRoom: false, wSeat: true, park: true, wine: false },
 
     // --- 精选 × 法式料理 (5 间) ---
     { id: 66, name: "太古坊糖厂街有机现代法欧餐厅", stars: 2, cuisine: "法式料理", region: "香港岛", location: "东区", address: "鲗鱼涌太古坊华兰路29号东隅酒店1楼", price: 520, rating: 9.2, ecoAward: "太古酒店 SD2030 可持续发展金奖 • 100% 厨余分解机转化肥料", pRoom: true, wSeat: false, park: true, wine: true },
