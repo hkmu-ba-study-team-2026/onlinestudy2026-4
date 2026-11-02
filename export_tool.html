@@ -484,7 +484,7 @@
             const timestamp = new Date().toISOString().replace(/[:.]/g, "-").slice(0, 19);
             XLSX.writeFile(wb, `DineReserve_Research_Data_${timestamp}.xlsx`);
 
-            showStatus(`✅ 导出成功！已包含 <strong>Recommendation_Nudge_Text</strong> 栏位，并生成 <strong>Master_Research_Data</strong> (${rowsArray.length} 行) 与 <strong>Condition Summary</strong> 统计总表。当前 Grouping 累计值为: <strong>${currentGroupingCounter}</strong>`, "success");
+            showStatus(`✅ 导出成功！`, "success");
         } catch(err) {
             console.error(err);
             showStatus(`❌ 导出失败: ${err.message}`, "error");
