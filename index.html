@@ -363,10 +363,9 @@
             facility_highlights: selectedFacilities
         };
 
-        // 1. 【關鍵】：每次送出時原子累加 grouping +1 並獲得分組 (0, 1, 2, 3)
+        // 1. 取得分組
         const { assignedGroup, counterVal } = await getAssignedGroup();
 
-        // 判定 2x2 條件：
         // Group 0: 真實 AI, 標示 AI
         // Group 1: 預設選項, 標示 AI (欺騙)
         // Group 2: 真實 AI, 不標示 AI
@@ -377,11 +376,43 @@
         let finalRecId = DEFAULT_ECO_STAR1_ID;
         let finalNudgeText = showAiLabel ? DEFAULT_NUDGE_AI : DEFAULT_NUDGE_NORMAL;
 
-        // 2. 真實 AI 調用
+        // 2. 若屬於真實 AI / 動態推薦組
         if (useRealAi) {
             const allRests = (typeof restaurantsData !== 'undefined' && Array.isArray(restaurantsData)) ? restaurantsData : [];
+
+            // ---【核心修正：正交本地精準匹配演算法 (強制篩選具備 ecoAward 餐廳)】---
+            const ecoCandidates = allRests.filter(r => Boolean(r.ecoAward));
+            const pool = ecoCandidates.length > 0 ? ecoCandidates : allRests;
+
+            let scoredRests = pool.map(r => {
+                let score = 0;
+                // 優先比對地區 (40分)
+                if (r.region === preferredRegion) score += 40;
+                // 次優先比對菜系 (35分)
+                if (r.cuisine === preferredCuisine) score += 35;
+                // 預算貼合度 (25分)
+                if (r.price <= budgetTier) score += 25;
+                else score -= Math.min(30, Math.round((r.price - budgetTier) / 50));
+                // 多選設施加分
+                selectedFacilities.forEach(fKey => {
+                    if (r[fKey]) score += 10;
+                });
+                return { rest: r, score: score };
+            });
+
+            scoredRests.sort((a, b) => b.score - a.score);
+            const bestLocalMatch = scoredRests[0] ? scoredRests[0].rest : null;
+
+            if (bestLocalMatch) {
+                finalRecId = bestLocalMatch.id;
+                finalNudgeText = showAiLabel
+                    ? `AI 智能分析\n根据您对「${preferredRegion}」及「${preferredCuisine}」的偏好，为您特别推荐荣获环保认证的 ${bestLocalMatch.name}。`
+                    : `根据您对「${preferredRegion}」及「${preferredCuisine}」的偏好，为您特别推荐荣获环保认证的 ${bestLocalMatch.name}。`;
+            }
+
+            // ---【嘗試調用後端 Gemini API，給予 5 秒充足緩衝時間】---
             const controller = new AbortController();
-            const timeout = setTimeout(() => controller.abort(), 2000);
+            const timeout = setTimeout(() => controller.abort(), 5000); // 延長至 5 秒
 
             try {
                 const response = await fetch("/api/recommend", {
@@ -407,7 +438,7 @@
                     }
                 }
             } catch (e) {
-                console.log("AI 调用超时或离线，使用正交备用推荐");
+                console.log("使用本地正交精準匹配餐廳:", finalRecId);
             } finally {
                 clearTimeout(timeout);
             }
@@ -420,7 +451,7 @@
         localStorage.setItem('ai_nudge_text', finalNudgeText);
         localStorage.setItem('user_preferences', JSON.stringify(surveyResponses));
 
-        // 4. 等待將問卷資料寫入 Firebase 確認完成，避免過早跳轉中斷寫入
+        // 4. 非阻塞寫入 Firebase
         if (typeof db !== 'undefined' && db) {
             try {
                 await db.ref('survey_responses').push({
@@ -435,11 +466,10 @@
                     responses: surveyResponses
                 });
             } catch (writeErr) {
-                console.warn("寫入 survey_responses 發生異常:", writeErr);
+                console.warn("写入 survey_responses 发生异常:", writeErr);
             }
         }
 
-        // 5. 確保寫入完成後跳轉
         window.location.href = 'restaurant_page.html';
     }
 
