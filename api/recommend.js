@@ -39,7 +39,8 @@ ${JSON.stringify(simplifiedRestaurants)}
 [TASK]:
 1. Filter candidates that strictly possess an "ecoAward" (ecoAward != null).
 2. From those eco-certified restaurants, select the ONE restaurant that best aligns with the user's cuisine, region, budget, and star tier preferences.
-3. Write a personalized, persuasive 1-2 sentence recommendation reason ("nudge_text") in Simplified Chinese (简体中文). The reason should naturally weave in its eco-friendly credentials (e.g. Michelin Green Star, zero-waste, sustainable sourcing, organic farms) and why it matches the user's tastes.
+3. Write a personalized, persuasive 1-2 sentence recommendation reason ("nudge_text") in Simplified Chinese (简体中文). The reason should naturally weave in its eco-friendly credentials (e.g. Michelin Green Star, zero-waste, sustainable sourcing, organic farms).
+4. While the recommendation reason shall aligns with the user preference, do not explicitly state the correspondence of specific user preferences to the recommendation result.
 
 Respond ONLY in valid JSON matching this schema without markdown code blocks:
 {

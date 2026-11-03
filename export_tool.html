@@ -8,11 +8,11 @@
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-    <!-- Firebase SDK (online-study-4) -->
+    <!-- Firebase SDK (online-study-4)[cite: 10] -->
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
 
-    <!-- 引入 80 间正交基底独立餐厅数据集 -->
+    <!-- 引入 80 间正交基底独立餐厅数据集[cite: 10] -->
     <script src="restaurants_data.js"></script>
 
     <script>
@@ -44,7 +44,7 @@
             --card-bg: #ffffff;
             --border: #e2e8f0;
         }
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans SC", sans-serif; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
         body {
             background-color: var(--bg);
             color: #1e293b;
@@ -56,7 +56,7 @@
         }
         .main-card {
             background: var(--card-bg);
-            max-width: 720px;
+            max-width: 760px;
             width: 100%;
             border-radius: 16px;
             box-shadow: 0 10px 25px -5px rgba(0,0,0,0.06), 0 8px 10px -6px rgba(0,0,0,0.01);
@@ -180,9 +180,10 @@
 <div class="main-card">
     <div class="header-section">
         <h1><i class="fa-solid fa-chart-pie" style="color:var(--accent);"></i> 实验数据统一导出与管理后台</h1>
+        <p>支持导出含受试者原始明细表 (Sheet 1) 与 2×2 实验组别统计总表 (Sheet 2) 的综合 Excel 分析报告。</p>
     </div>
 
-    <!-- 实时指标卡 -->
+    <!-- 实时指标卡[cite: 10] -->
     <div class="stat-banner">
         <div class="stat-item">
             <h4>当前 Grouping 计数</h4>
@@ -200,20 +201,20 @@
 
     <div class="action-box">
         <button id="exportBtn" class="btn btn-export" onclick="exportMasterData()">
-            <i class="fa-solid fa-file-excel"></i> 下载完整研究数据 Excel
+            <i class="fa-solid fa-file-excel"></i> 下载完整研究数据 Excel (包含 7 题问卷与 Condition Summary)
         </button>
     </div>
 
-    <!-- 管理员高危清空区域 (短语验证保护) -->
+    <!-- 管理员高危清空区域 (短语验证保护)[cite: 10] -->
     <div class="admin-danger-zone">
         <div class="danger-title">
-            <i class="fa-solid fa-triangle-exclamation"></i> 实验重置与数据清空
+            <i class="fa-solid fa-triangle-exclamation"></i> 实验重置与数据清空 (短语验证防误触)
         </div>
         <div class="danger-desc">
             此操作将彻底抹除数据库中的用户、问卷答卷、预订记录，<strong>并将 <code>grouping</code> 变量彻底归零重置为 0</strong>。操作前需输入安全校验短语。
         </div>
         <button id="resetBtn" class="btn btn-danger" onclick="handleSecureReset()">
-            <i class="fa-solid fa-trash-can"></i> 重置清空数据库
+            <i class="fa-solid fa-trash-can"></i> 重置清空数据库并归零 Grouping
         </button>
     </div>
 
@@ -221,7 +222,7 @@
 </div>
 
 <script>
-    // 指定的安全重置验证短语
+    // 指定的安全重置验证短语[cite: 10]
     const REQUIRED_CONFIRM_PHRASE = "DELETE-DATABASE";
 
     function getRestDetailsById(id) {
@@ -232,7 +233,7 @@
                     name: found.name,
                     region: found.region,
                     cuisine: found.cuisine,
-                    hasEco: found.hasSustainable ? "Yes" : "No",
+                    hasEco: (found.hasSustainable || found.ecoAward) ? "Yes" : "No",
                     ecoAward: found.ecoAward || "None"
                 };
             }
@@ -264,7 +265,7 @@
     }
 
     // ==========================================
-    // 导出数据：Sheet 1 (Master Data) + Sheet 2 (Condition Summary)
+    // 导出数据：Sheet 1 (Master Data) + Sheet 2 (Condition Summary)[cite: 10]
     // ==========================================
     async function exportMasterData() {
         const btn = document.getElementById("exportBtn");
@@ -284,7 +285,7 @@
             const surveys = surveySnap.val() ? Object.values(surveySnap.val()) : [];
             const bookings = bookingsSnap.val() ? Object.values(bookingsSnap.val()) : [];
 
-            // 搜集所有不重复的 32 位 Participant ID
+            // 搜集所有不重复的 32 位 Participant ID[cite: 10]
             const allPIDs = new Set([
                 ...users.map(u => u.participantID),
                 ...surveys.map(s => s.participantID),
@@ -293,7 +294,7 @@
 
             const masterDataMap = {};
 
-            // 定义 Sheet 1: Master_Research_Data 每行结构
+            // 定义 Sheet 1: Master_Research_Data 每行结构 (包含最新 7 道问卷题)
             allPIDs.forEach(pid => {
                 masterDataMap[pid] = {
                     "Participant_ID": pid,
@@ -303,25 +304,32 @@
                     "Show_AI_Label": "",
                     "Group_Counter_At_Entry": "",
 
-                    // 问卷偏好作答 (最新 4 题)
+                    // 问卷偏好作答 (7 题)
                     "Survey_Submitted_Time": "",
                     "Q1_Budget_Tier": "",
                     "Q2_Preferred_Region": "",
                     "Q3_Preferred_Cuisine": "",
                     "Q4_Selected_Facilities": "",
+                    "Q5_Friendly_Courteous": "",
+                    "Q6_Polite_Considerate": "",
+                    "Q7_Difficult_Admit_Mistakes": "",
 
                     // 推荐系统决策与 Nudge Text 记录
                     "Recommended_Rest_ID": "",
                     "Recommended_Rest_Name": "",
+                    "Recommended_Rest_Has_EcoAward": "",
+                    "Recommended_Rest_EcoAward_Details": "",
                     "Recommendation_Nudge_Text": "",
 
                     // 最终餐厅预订行为
                     "Has_Completed_Booking": "No",
+                    "Booking_Ref_Code": "",
                     "Booking_Confirmed_Time": "",
                     "Selected_Rest_ID": "",
                     "Selected_Rest_Name": "",
                     "Selected_Rest_Region": "",
                     "Selected_Rest_Cuisine": "",
+                    "Selected_Menu_Name": "",
                     "Booking_Total_Amount": "",
                     "Is_Recommendation_Adopted": "No"
                 };
@@ -356,29 +364,37 @@
                         row["Q4_Selected_Facilities"] = Array.isArray(s.responses.facility_highlights)
                             ? s.responses.facility_highlights.join("; ")
                             : (s.responses.facility_highlight || "");
+
+                        // 填充新增的 3 道量表题回答 (1~5)
+                        row["Q5_Friendly_Courteous"] = s.responses.q5_friendly !== undefined ? s.responses.q5_friendly : "";
+                        row["Q6_Polite_Considerate"] = s.responses.q6_polite !== undefined ? s.responses.q6_polite : "";
+                        row["Q7_Difficult_Admit_Mistakes"] = s.responses.q7_admit_mistakes !== undefined ? s.responses.q7_admit_mistakes : "";
                     }
 
                     const recId = s.aiRecommendedRestaurantId;
                     row["Recommended_Rest_ID"] = recId || "";
                     const recDetails = getRestDetailsById(recId);
                     row["Recommended_Rest_Name"] = recDetails.name;
+                    row["Recommended_Rest_Has_EcoAward"] = recDetails.hasEco;
+                    row["Recommended_Rest_EcoAward_Details"] = recDetails.ecoAward;
 
-                    // 兼容读取 nudge 推荐理由文字
                     row["Recommendation_Nudge_Text"] = s.nudgeContent || s.nudge_text || s.nudgeText || "";
                 }
             });
 
-            // 填充预订记录数据
+            // 填充预订记录数据[cite: 10]
             bookings.forEach(b => {
                 const pid = b.participantID;
                 if (masterDataMap[pid]) {
                     const row = masterDataMap[pid];
                     row["Has_Completed_Booking"] = "Yes";
+                    row["Booking_Ref_Code"] = b.bookingRef || "";
                     row["Booking_Confirmed_Time"] = b.bookingTime || "";
                     row["Selected_Rest_ID"] = b.selectedRestaurantId || "";
                     row["Selected_Rest_Name"] = b.selectedRestaurantName || getRestDetailsById(b.selectedRestaurantId).name;
                     row["Selected_Rest_Region"] = b.selectedRestaurantRegion || "";
                     row["Selected_Rest_Cuisine"] = b.selectedRestaurantCuisine || "";
+                    row["Selected_Menu_Name"] = b.menuName || "";
                     row["Booking_Total_Amount"] = b.totalAmount || "";
                     row["Is_Recommendation_Adopted"] = b.isAiRecommendedSelected ? "Yes" : "No";
                 }
@@ -387,7 +403,7 @@
             const rowsArray = Object.values(masterDataMap);
 
             // ==========================================
-            // 构建 Sheet 2: Condition Summary 分组统计总表
+            // 构建 Sheet 2: Condition Summary 分组统计总表[cite: 10]
             // ==========================================
             const conditionsConfig = [
                 { groupIndex: 0, label: "Group 0: 真实AI推荐 + 标示AI", realAi: "Yes", showAi: "Yes" },
@@ -407,7 +423,6 @@
                 const adoptionRateOfBookers = bookingCompleted > 0 ? ((recAdoptedCount / bookingCompleted) * 100).toFixed(1) + "%" : "0.0%";
                 const adoptionRateOfTotal = surveyCompleted > 0 ? ((recAdoptedCount / surveyCompleted) * 100).toFixed(1) + "%" : "0.0%";
 
-                // 计算平均预订金额 (提取数值)
                 const amounts = groupRows
                     .filter(r => r.Has_Completed_Booking === "Yes" && r.Booking_Total_Amount)
                     .map(r => {
@@ -434,7 +449,7 @@
                 };
             });
 
-            // 添加 Total 综合行
+            // 添加 Total 综合行[cite: 10]
             const totalSurvey = rowsArray.filter(r => r.Survey_Submitted_Time && r.Survey_Submitted_Time.trim() !== "").length;
             const totalBook = rowsArray.filter(r => r.Has_Completed_Booking === "Yes").length;
             const totalAdopt = rowsArray.filter(r => r.Is_Recommendation_Adopted === "Yes").length;
@@ -462,18 +477,17 @@
                 "Avg_Booking_Amount_HK$": overallAvgAmount
             });
 
-            // 建立多 Sheet 工作簿
+            // 建立多 Sheet 工作簿[cite: 10]
             const wb = XLSX.utils.book_new();
 
-            // Sheet 1: Master_Research_Data (被试全维单行宽表，包含 Nudge Text)
+            // Sheet 1: Master_Research_Data (包含 7 题问卷明细与 Nudge Text)[cite: 10]
             const wsMaster = XLSX.utils.json_to_sheet(rowsArray);
             XLSX.utils.book_append_sheet(wb, wsMaster, "Master_Research_Data");
 
-            // Sheet 2: Condition Summary (实验组别统计)
+            // Sheet 2: Condition Summary (实验组别统计)[cite: 10]
             const wsSummary = XLSX.utils.json_to_sheet(summaryRows);
             XLSX.utils.book_append_sheet(wb, wsSummary, "Condition Summary");
 
-            // 自动调整列宽
             const wscolsSummary = [
                 {wch: 32}, {wch: 20}, {wch: 16}, {wch: 16},
                 {wch: 18}, {wch: 18}, {wch: 18}, {wch: 24},
@@ -484,7 +498,7 @@
             const timestamp = new Date().toISOString().replace(/[:.]/g, "-").slice(0, 19);
             XLSX.writeFile(wb, `DineReserve_Research_Data_${timestamp}.xlsx`);
 
-            showStatus(`✅ 导出成功！`, "success");
+            showStatus(`✅ 导出成功！已包含 7 道问卷明细与 <strong>Recommendation_Nudge_Text</strong> 字段，生成 <strong>Master_Research_Data</strong> (${rowsArray.length} 行) 与 <strong>Condition Summary</strong> 统计总表。当前 Grouping 累计值为: <strong>${currentGroupingCounter}</strong>`, "success");
         } catch(err) {
             console.error(err);
             showStatus(`❌ 导出失败: ${err.message}`, "error");
@@ -495,7 +509,7 @@
     }
 
     // ==========================================
-    // 2. 短语验证重置逻辑 (清空数据并归零 Grouping)
+    // 2. 短语验证重置逻辑 (清空数据并归零 Grouping)[cite: 10]
     // ==========================================
     async function handleSecureReset() {
         const promptMsg = `⚠️【高危操作警告】\n\n此操作将抹除所有作答、预订记录并将 grouping 重置为 0！\n\n如确认重置，请在下方文本框中精确输入提示短语：\n${REQUIRED_CONFIRM_PHRASE}`;
