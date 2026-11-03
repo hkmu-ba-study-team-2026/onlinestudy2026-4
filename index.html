@@ -517,7 +517,7 @@
                 finalRecId = bestLocalMatch.id;
                 finalNudgeText = showAiLabel
                     ? `AI 智能分析\n根据您对「${preferredRegion}」及「${preferredCuisine}」的偏好，为您特别推荐荣获环保认证的 ${bestLocalMatch.name}。`
-                    : `根据您对「${preferredRegion}」及「${preferredCuisine}」的偏好，为您特别推荐荣获环保认证的 ${bestLocalMatch.name}。`;
+                    : `平台为您特别推荐荣获环保认证的 ${bestLocalMatch.name}。`;
             }
 
             // 嘗試呼叫後端 API
@@ -541,7 +541,7 @@
                     if (resData.nudge_text) {
                         let text = resData.nudge_text;
                         if (!showAiLabel) {
-                            text = text.replace(/AI\s*智能(推荐|分析)?/gi, "专家精心")
+                            text = text.replace(/AI\s*智能(推荐|分析)?/gi, "平台")
                                 .replace(/AI/gi, "精选");
                         }
                         finalNudgeText = text;
