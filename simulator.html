@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DineReserve 实验行为模拟器 (Participant Simulator)</title>
+
+    <!-- 直接引入原有的 80 间餐厅数据集 -->
+    <script src="restaurants_data.js"></script>
+
+    <!-- 引入 Firebase SDK (online-study-4) -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyB5OysrS98cHA7WXbObSGtUvfazPJStkRE",
+            authDomain: "online-study-4.firebaseapp.com",
+            databaseURL: "https://online-study-4-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "online-study-4",
+            storageBucket: "online-study-4.firebasestorage.app",
+            messagingSenderId: "597103940431",
+            appId: "1:597103940431:web:d854df1b51a7f76f2aeb3a"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+    </script>
+
+    <style>
+        :root {
+            --bg: #f8fafc;
+            --card: #ffffff;
+            --primary: #e11d48;
+            --primary-hover: #be123c;
+            --accent: #2563eb;
+            --success: #10b981;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --border: #e2e8f0;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans SC", sans-serif;
+            background: var(--bg);
+            color: var(--text-main);
+            padding: 24px;
+            display: flex;
+            justify-content: center;
+        }
+        .container {
+            background: var(--card);
+            max-width: 860px;
+            width: 100%;
+            border-radius: 16px;
+            padding: 32px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.06);
+            border: 1px solid var(--border);
+        }
+        h1 { font-size: 1.45rem; font-weight: 800; margin-bottom: 6px; display: flex; align-items: center; gap: 8px; }
+        p.desc { font-size: 0.9rem; color: var(--text-muted); margin-bottom: 20px; line-height: 1.5; }
+
+        .stat-badge-row {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 18px;
+        }
+        .stat-badge {
+            background: #f1f5f9;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 0.82rem;
+            font-weight: 700;
+            color: #334155;
+            border: 1px solid var(--border);
+        }
+        .stat-badge strong { color: var(--primary); }
+
+        .config-box {
+            background: #fafbfc;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 18px;
+            margin-bottom: 20px;
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 14px;
+        }
+        .config-item { display: flex; flex-direction: column; gap: 4px; }
+        .config-item label { font-size: 0.82rem; font-weight: 700; color: var(--text-main); }
+        .config-item select, .config-item input {
+            padding: 8px 10px;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            font-size: 0.88rem;
+            outline: none;
+        }
+        .config-item select:focus, .config-item input:focus { border-color: var(--primary); }
+
+        .progress-wrapper {
+            margin: 20px 0;
+        }
+        .progress-header {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.85rem;
+            font-weight: 700;
+            margin-bottom: 6px;
+        }
+        .progress-bar-bg {
+            width: 100%;
+            height: 12px;
+            background: #e2e8f0;
+            border-radius: 999px;
+            overflow: hidden;
+        }
+        .progress-bar-fill {
+            height: 100%;
+            width: 0%;
+            background: var(--primary);
+            transition: width 0.15s ease;
+        }
+
+        .btn-row { display: flex; gap: 12px; margin-bottom: 20px; }
+        .btn {
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            font-weight: 700;
+            border: none;
+            cursor: pointer;
+            flex: 1;
+            transition: all 0.2s;
+        }
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-primary:hover { background: var(--primary-hover); }
+        .btn-primary:disabled { background: #94a3b8; cursor: not-allowed; }
+
+        .log-box {
+            background: #0f172a;
+            color: #e2e8f0;
+            font-family: Consolas, Monaco, monospace;
+            font-size: 0.78rem;
+            padding: 14px;
+            border-radius: 10px;
+            height: 360px;
+            overflow-y: auto;
+            line-height: 1.6;
+        }
+        .log-line.success { color: #34d399; }
+        .log-line.info { color: #60a5fa; }
+        .log-line.warn { color: #fbbf24; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>DineReserve 实验参与者行为模拟器</h1>
+    <div class="stat-badge-row">
+        <div class="stat-badge">数据库餐厅总数: <strong id="restCountLabel">0</strong></div>
+        <div class="stat-badge">Eco 认证餐厅数: <strong id="ecoCountLabel">0</strong></div>
+        <div class="stat-badge">当前 Grouping 计数值: <strong id="currentGroupingLabel">--</strong></div>
+    </div>
+
+    <div class="config-box">
+        <div class="config-item">
+            <label>模拟受试者人数</label>
+            <input type="number" id="simCount" value="100" min="1" max="500">
+        </div>
+        <div class="config-item">
+            <label>完成预订行为转化率 (%)</label>
+            <input type="number" id="bookingRate" value="85" min="10" max="100">
+        </div>
+        <div class="config-item">
+            <label>标示为 AI 组（Group 0, 1）推荐采纳率 (%)</label>
+            <input type="number" id="probAiLabel" value="65" min="0" max="100">
+        </div>
+        <div class="config-item">
+            <label>不标示 AI 组（Group 2, 3）推荐采纳率 (%)</label>
+            <input type="number" id="probNoAiLabel" value="45" min="0" max="100">
+        </div>
+    </div>
+
+    <div class="btn-row">
+        <button id="startBtn" class="btn btn-primary" onclick="startSimulation()">
+            🚀 开始执行批量行为模拟
+        </button>
+    </div>
+
+    <div class="progress-wrapper">
+        <div class="progress-header">
+            <span id="progressStatus">等待启动</span>
+            <span id="progressPercent">0 / 100 (0%)</span>
+        </div>
+        <div class="progress-bar-bg">
+            <div class="progress-bar-fill" id="progressBar"></div>
+        </div>
+    </div>
+
+    <div class="log-box" id="logBox"></div>
+</div>
+
+<script>
+    // 1. 常量与选项
+    const BUDGET_OPTIONS = [500, 1000, 1500, 2000];
+    const REGION_OPTIONS = ["香港岛", "九龙", "新界东", "新界西"];
+    const CUISINE_OPTIONS = ["粤菜/中菜", "法式料理", "日本料理", "意式料理"];
+    const FACILITY_KEYS = ["hasPrivateRoom", "hasWindowSeat", "hasParking", "hasSommelier", "hasSustainable"];
+
+    // 餐厅数据集引用
+    const allRestaurants = (typeof restaurantsData !== 'undefined' && Array.isArray(restaurantsData)) ? restaurantsData : [];
+    const ecoRestaurants = allRestaurants.filter(r => Boolean(r.ecoAward) || Boolean(r.hasSustainable));
+
+    // 页面载入时更新徽章
+    window.addEventListener("DOMContentLoaded", async () => {
+        document.getElementById("restCountLabel").innerText = allRestaurants.length;
+        document.getElementById("ecoCountLabel").innerText = ecoRestaurants.length;
+        try {
+            const snap = await db.ref('grouping').once('value');
+            document.getElementById("currentGroupingLabel").innerText = snap.val() !== null ? snap.val() : 0;
+        } catch (e) {
+            console.warn(e);
+        }
+    });
+
+    function appendLog(msg, type = "") {
+        const box = document.getElementById("logBox");
+        const div = document.createElement("div");
+        div.className = `log-line ${type}`;
+        div.innerText = `[${new Date().toLocaleTimeString()}] ${msg}`;
+        box.appendChild(div);
+        box.scrollTop = box.scrollHeight;
+    }
+
+    function randomChoice(arr) {
+        return arr[Math.floor(Math.random() * arr.length)];
+    }
+
+    function randomInt(min, max) {
+        return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+
+    function generateSimulatedPID(dateObj, seqIndex) {
+        const pad = (n) => String(n).padStart(2, '0');
+        const ts14 = `${dateObj.getFullYear()}${pad(dateObj.getMonth() + 1)}${pad(dateObj.getDate())}${pad(dateObj.getHours())}${pad(dateObj.getMinutes())}${pad(dateObj.getSeconds())}`;
+        let rand18 = String(seqIndex).padStart(4, '0');
+        while (rand18.length < 18) {
+            rand18 += Math.floor(Math.random() * 10);
+        }
+        return ts14 + rand18;
+    }
+
+    // 正交匹配推荐演算法 (AI 组别)
+    function matchBestEcoRestaurant(survey) {
+        let scored = ecoRestaurants.map(r => {
+            let score = 0;
+            if (r.region === survey.preferred_region) score += 40;
+            if (r.cuisine === survey.preferred_cuisine) score += 35;
+            if (r.price <= survey.budget_tier) score += 25;
+            else score -= Math.min(30, Math.round((r.price - survey.budget_tier) / 50));
+
+            survey.facility_highlights.forEach(fKey => {
+                if (r[fKey]) score += 10;
+            });
+            return { rest: r, score };
+        });
+
+        scored.sort((a, b) => b.score - a.score);
+        return scored[0] ? scored[0].rest : ecoRestaurants[0];
+    }
+
+    // 获取并递增 Grouping 计数
+    function getAndAdvanceGrouping(count) {
+        return new Promise((resolve) => {
+            const groupingRef = db.ref('grouping');
+            groupingRef.transaction((currentValue) => {
+                return (currentValue || 0) + count;
+            }, (error, committed, snapshot) => {
+                if (error || !committed) {
+                    resolve(0);
+                } else {
+                    resolve(snapshot.val() - count);
+                }
+            });
+        });
+    }
+
+    // 主模拟流程
+    async function startSimulation() {
+        if (allRestaurants.length === 0) {
+            alert("❌ 未能加载 restaurants_data.js，请确认文件与 simulator.html 位于同一目录下！");
+            return;
+        }
+
+        const total = parseInt(document.getElementById("simCount").value, 10) || 100;
+        const bookingRate = parseFloat(document.getElementById("bookingRate").value) || 85;
+        const probAiLabel = parseFloat(document.getElementById("probAiLabel").value) || 65;
+        const probNoAiLabel = parseFloat(document.getElementById("probNoAiLabel").value) || 45;
+
+        const startBtn = document.getElementById("startBtn");
+        startBtn.disabled = true;
+        document.getElementById("logBox").innerHTML = "";
+        appendLog(`🚀 开始执行模拟：计划生成 ${total} 位受试者完整问卷与预订数据...`, "info");
+
+        // 一次性原子递增 grouping 预留编号
+        const startCounter = await getAndAdvanceGrouping(total);
+        document.getElementById("currentGroupingLabel").innerText = startCounter + total;
+        appendLog(`📌 Grouping 起始分配编号: ${startCounter + 1}，最终分配至: ${startCounter + total}`, "info");
+
+        const baseTime = new Date(Date.now() - total * 150000);
+
+        for (let i = 0; i < total; i++) {
+            const stepTime = new Date(baseTime.getTime() + i * 150000 + randomInt(1000, 20000));
+            const pid = generateSimulatedPID(stepTime, i + 1);
+            const currentCounter = startCounter + i + 1;
+            const assignedGroup = (currentCounter - 1) % 4;
+
+            const useRealAi = (assignedGroup === 0 || assignedGroup === 2);
+            const showAiLabel = (assignedGroup === 0 || assignedGroup === 1);
+
+            // 1. 生成 7 道问卷数据
+            const numFac = randomInt(0, 3);
+            const shuffledFac = [...FACILITY_KEYS].sort(() => 0.5 - Math.random());
+            const selectedFac = shuffledFac.slice(0, numFac);
+
+            const surveyResponses = {
+                budget_tier: randomChoice(BUDGET_OPTIONS),
+                preferred_region: randomChoice(REGION_OPTIONS),
+                preferred_cuisine: randomChoice(CUISINE_OPTIONS),
+                facility_highlights: selectedFac,
+                q5_friendly: randomInt(3, 5),
+                q6_polite: randomInt(3, 5),
+                q7_admit_mistakes: randomInt(1, 4)
+            };
+
+            // 2. 匹配推荐餐厅与生成话术
+            let recommendedRest = null;
+            let nudgeText = "";
+
+            if (useRealAi) {
+                // AI 组别：正交匹配
+                recommendedRest = matchBestEcoRestaurant(surveyResponses);
+                nudgeText = showAiLabel
+                    ? `AI 智能分析\n根据您对「${surveyResponses.preferred_region}」及「${surveyResponses.preferred_cuisine}」的偏好，为您特别推荐荣获环保认证的 ${recommendedRest.name}。`
+                    : `根据您对「${surveyResponses.preferred_region}」及「${surveyResponses.preferred_cuisine}」的偏好，为您特别推荐荣获环保认证的 ${recommendedRest.name}。`;
+            } else {
+                // 非 AI 组别：随机抽取 1 间 Eco 餐厅
+                recommendedRest = randomChoice(ecoRestaurants);
+                const ecoHighlight = recommendedRest.ecoAward || "可持续环保与有机认证";
+                nudgeText = showAiLabel
+                    ? `AI 智能分析\n为您精选荣获${ecoHighlight}的 ${recommendedRest.name}，坚持品质食材与可持续美馔体验。`
+                    : `为您精选荣获${ecoHighlight}的 ${recommendedRest.name}，坚持品质食材与可持续美馔体验。`;
+            }
+
+            const surveyTimeISO = new Date(stepTime.getTime() + 45000).toLocaleString();
+            const bookingTimeISO = new Date(stepTime.getTime() + 110000).toLocaleString();
+
+            const updates = {};
+
+            // 写入 /users/{pid}
+            updates[`users/${pid}`] = {
+                participantID: pid,
+                createdAt: stepTime.toISOString(),
+                timestamp: stepTime.getTime()
+            };
+
+            // 写入 /survey_responses (自动 Key 保持与正式系统格式一致)
+            const newSurveyKey = db.ref('survey_responses').push().key;
+            updates[`survey_responses/${newSurveyKey}`] = {
+                participantID: pid,
+                assignedGroup: assignedGroup,
+                groupCounter: currentCounter,
+                useRealAi: useRealAi,
+                showAiLabel: showAiLabel,
+                submittedAt: surveyTimeISO,
+                aiRecommendedRestaurantId: recommendedRest.id,
+                nudgeContent: nudgeText,
+                responses: surveyResponses
+            };
+
+            // 3. 模拟预订决策
+            const willBook = (Math.random() * 100) < bookingRate;
+            let isAdopted = false;
+            let chosenRest = null;
+
+            if (willBook) {
+                const adoptProb = showAiLabel ? probAiLabel : probNoAiLabel;
+                isAdopted = (Math.random() * 100) < adoptProb;
+
+                if (isAdopted) {
+                    chosenRest = recommendedRest;
+                } else {
+                    const otherRests = allRestaurants.filter(r => r.id !== recommendedRest.id);
+                    const sameRegionRests = otherRests.filter(r => r.region === surveyResponses.preferred_region);
+                    chosenRest = (sameRegionRests.length > 0 && Math.random() < 0.7)
+                        ? randomChoice(sameRegionRests)
+                        : randomChoice(otherRests);
+                }
+
+                const bookingRef = "BK-" + Math.floor(100000 + Math.random() * 900000);
+                const totalPaidStr = `HK$ ${Math.round(chosenRest.price * 2.2)}`;
+                const newBookingKey = db.ref('restaurant_bookings').push().key;
+
+                updates[`restaurant_bookings/${newBookingKey}`] = {
+                    bookingRef: bookingRef,
+                    participantID: pid,
+                    aiRecommendedRestaurantId: recommendedRest.id,
+                    selectedRestaurantId: chosenRest.id,
+                    selectedRestaurantName: chosenRest.name,
+                    selectedRestaurantRegion: chosenRest.region,
+                    selectedRestaurantCuisine: chosenRest.cuisine,
+                    isAiRecommendedSelected: (chosenRest.id === recommendedRest.id),
+                    menuName: `${chosenRest.name} 经典主厨品鉴套餐`,
+                    totalAmount: totalPaidStr,
+                    bookingTime: bookingTimeISO
+                };
+            }
+
+            // 执行原子级批量写入
+            await db.ref().update(updates);
+
+            // 更新进度条与日誌
+            const pct = Math.round(((i + 1) / total) * 100);
+            document.getElementById("progressBar").style.width = `${pct}%`;
+            document.getElementById("progressPercent").innerText = `${i + 1} / ${total} (${pct}%)`;
+            document.getElementById("progressStatus").innerText = `正在写入第 ${i + 1} 位受试者...`;
+
+            const groupDesc = `Group ${assignedGroup} (${useRealAi ? '真AI' : '非AI'}/${showAiLabel ? '标AI' : '未标'})`;
+            const bookLog = willBook
+                ? `预订: ${chosenRest.name} (${isAdopted ? '✓采纳推荐' : '✗自选其他'})`
+                : '未完成预订';
+
+            appendLog(
+                `#${String(i + 1).padStart(3, '0')} [${groupDesc}] 偏好:${surveyResponses.preferred_region}|${surveyResponses.preferred_cuisine} | 推荐:${recommendedRest.name} -> ${bookLog}`,
+                isAdopted ? "success" : (willBook ? "" : "warn")
+            );
+        }
+
+        document.getElementById("progressStatus").innerText = "✅ 模拟全部完成！";
+        appendLog(`🎉 成功完成 ${total} 位受试者的全流程数据模拟！现可在 export_tool.html 导出检验。`, "info");
+        startBtn.disabled = false;
+    }
+</script>
+</body>
+</html>
