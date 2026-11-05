@@ -28,7 +28,7 @@
         }
         .container {
             background-color: var(--card-bg);
-            max-width: 720px;
+            max-width: 820px;
             width: 100%;
             border-radius: 16px;
             box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.01);
@@ -72,12 +72,13 @@
             grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
             gap: 10px;
         }
+        /* 7 點量表專用網格排版 */
         .likert-grid {
             display: grid;
-            grid-template-columns: repeat(5, 1fr);
-            gap: 8px;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 6px;
         }
-        @media (max-width: 600px) {
+        @media (max-width: 768px) {
             .likert-grid {
                 grid-template-columns: 1fr;
             }
@@ -111,14 +112,15 @@
             align-items: center;
             justify-content: center;
             text-align: center;
-            padding: 10px 6px;
+            padding: 12px 4px;
             border: 1.5px solid var(--border-color);
             border-radius: 8px;
             cursor: pointer;
             background: #ffffff;
             transition: all 0.2s ease;
-            font-size: 0.82rem;
+            font-size: 0.78rem;
             font-weight: 600;
+            line-height: 1.3;
         }
         .likert-card:hover {
             border-color: #cbd5e1;
@@ -279,7 +281,7 @@
             </div>
         </div>
 
-        <!-- 问题 5 (新增): I always stay friendly and courteous with other people. -->
+        <!-- 问题 5 (7 级量表): I always stay friendly and courteous with other people. -->
         <div class="form-group">
             <label class="question-title">5. 我对待他人始终保持友好与礼貌。<span class="required">*</span></label>
             <div class="likert-grid">
@@ -293,20 +295,28 @@
                 </label>
                 <label class="likert-card">
                     <input type="radio" name="q5_friendly" value="3" required>
-                    <span>中立</span>
+                    <span>有点不同意</span>
                 </label>
                 <label class="likert-card">
                     <input type="radio" name="q5_friendly" value="4" required>
-                    <span>同意</span>
+                    <span>中立</span>
                 </label>
                 <label class="likert-card">
                     <input type="radio" name="q5_friendly" value="5" required>
+                    <span>有点同意</span>
+                </label>
+                <label class="likert-card">
+                    <input type="radio" name="q5_friendly" value="6" required>
+                    <span>同意</span>
+                </label>
+                <label class="likert-card">
+                    <input type="radio" name="q5_friendly" value="7" required>
                     <span>非常同意</span>
                 </label>
             </div>
         </div>
 
-        <!-- 问题 6 (新增): I am always polite and considerate of others. -->
+        <!-- 问题 6 (7 级量表): I am always polite and considerate of others. -->
         <div class="form-group">
             <label class="question-title">6. 我总是对他人彬彬有礼、体贴周到。<span class="required">*</span></label>
             <div class="likert-grid">
@@ -320,20 +330,28 @@
                 </label>
                 <label class="likert-card">
                     <input type="radio" name="q6_polite" value="3" required>
-                    <span>中立</span>
+                    <span>有点不同意</span>
                 </label>
                 <label class="likert-card">
                     <input type="radio" name="q6_polite" value="4" required>
-                    <span>同意</span>
+                    <span>中立</span>
                 </label>
                 <label class="likert-card">
                     <input type="radio" name="q6_polite" value="5" required>
+                    <span>有点同意</span>
+                </label>
+                <label class="likert-card">
+                    <input type="radio" name="q6_polite" value="6" required>
+                    <span>同意</span>
+                </label>
+                <label class="likert-card">
+                    <input type="radio" name="q6_polite" value="7" required>
                     <span>非常同意</span>
                 </label>
             </div>
         </div>
 
-        <!-- 问题 7 (新增): It is difficult to admit my mistakes openly to others. -->
+        <!-- 问题 7 (7 级量表): It is difficult to admit my mistakes openly to others. -->
         <div class="form-group">
             <label class="question-title">7. 坦诚地向他人承认自己的错误对我来说很难。<span class="required">*</span></label>
             <div class="likert-grid">
@@ -347,14 +365,22 @@
                 </label>
                 <label class="likert-card">
                     <input type="radio" name="q7_admit_mistakes" value="3" required>
-                    <span>中立</span>
+                    <span>有点不同意</span>
                 </label>
                 <label class="likert-card">
                     <input type="radio" name="q7_admit_mistakes" value="4" required>
-                    <span>同意</span>
+                    <span>中立</span>
                 </label>
                 <label class="likert-card">
                     <input type="radio" name="q7_admit_mistakes" value="5" required>
+                    <span>有点同意</span>
+                </label>
+                <label class="likert-card">
+                    <input type="radio" name="q7_admit_mistakes" value="6" required>
+                    <span>同意</span>
+                </label>
+                <label class="likert-card">
+                    <input type="radio" name="q7_admit_mistakes" value="7" required>
                     <span>非常同意</span>
                 </label>
             </div>
@@ -468,7 +494,7 @@
         const preferredRegion = (formData.get("preferred_region") || "").trim();
         const preferredCuisine = (formData.get("preferred_cuisine") || "").trim();
 
-        // 获取新增的 3 道量表题回答 (1~5)
+        // 提取 7 级量表回答 (1~7)
         const q5Friendly = parseInt(formData.get("q5_friendly"), 10);
         const q6Polite = parseInt(formData.get("q6_polite"), 10);
         const q7AdmitMistakes = parseInt(formData.get("q7_admit_mistakes"), 10);
@@ -494,7 +520,7 @@
         let finalNudgeText = "";
 
         if (useRealAi) {
-            // === 真實 AI 組 (Group 0 & 2)：正交偏好最佳配對 ===
+            // === 真实 AI 组 (Group 0 & 2)：正交最佳匹配 ===
             const ecoCandidates = allRests.filter(r => Boolean(r.ecoAward) || Boolean(r.hasSustainable));
             const pool = ecoCandidates.length > 0 ? ecoCandidates : allRests;
 
@@ -517,10 +543,10 @@
                 finalRecId = bestLocalMatch.id;
                 finalNudgeText = showAiLabel
                     ? `AI 智能分析\n根据您对「${preferredRegion}」及「${preferredCuisine}」的偏好，为您特别推荐荣获环保认证的 ${bestLocalMatch.name}。`
-                    : `平台为您特别推荐荣获环保认证的 ${bestLocalMatch.name}。`;
+                    : `根据您对「${preferredRegion}」及「${preferredCuisine}」的偏好，为您特别推荐荣获环保认证的 ${bestLocalMatch.name}。`;
             }
 
-            // 嘗試呼叫後端 API
+            // 尝试呼叫后端 API
             const controller = new AbortController();
             const timeout = setTimeout(() => controller.abort(), 5000);
 
@@ -541,19 +567,19 @@
                     if (resData.nudge_text) {
                         let text = resData.nudge_text;
                         if (!showAiLabel) {
-                            text = text.replace(/AI\s*智能(推荐|分析)?/gi, "平台")
+                            text = text.replace(/AI\s*智能(推荐|分析)?/gi, "专家精心")
                                 .replace(/AI/gi, "精选");
                         }
                         finalNudgeText = text;
                     }
                 }
             } catch (e) {
-                console.log("使用本地正交精準匹配餐廳:", finalRecId);
+                console.log("使用本地正交精准匹配餐厅:", finalRecId);
             } finally {
                 clearTimeout(timeout);
             }
         } else {
-            // === 非 AI 推薦組 (Group 1 & 3)：自所有 Eco 餐廳中隨機抽選 1 間 ===
+            // === 非 AI 推荐组 (Group 1 & 3)：自所有 Eco 餐厅中随机挑选 1 间 ===
             const randomEcoRest = getRandomEcoRestaurant();
             finalRecId = randomEcoRest.id;
             const ecoHighlight = randomEcoRest.ecoAward || "可持续环保与有机认证";
@@ -563,14 +589,14 @@
                 : `为您精选荣获${ecoHighlight}的 ${randomEcoRest.name}，坚持品质食材与可持续美馔体验。`;
         }
 
-        // 保存狀態至本地
+        // 保存状态至本地
         localStorage.setItem('participantGroup', assignedGroup.toString());
         localStorage.setItem('showAiLabel', showAiLabel ? "true" : "false");
         localStorage.setItem('ai_recommended_restaurant_id', finalRecId.toString());
         localStorage.setItem('ai_nudge_text', finalNudgeText);
         localStorage.setItem('user_preferences', JSON.stringify(surveyResponses));
 
-        // 寫入 Firebase
+        // 写入 Firebase
         if (typeof db !== 'undefined' && db) {
             try {
                 await db.ref('survey_responses').push({
