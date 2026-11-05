@@ -392,6 +392,8 @@
 
 <script>
     let currentPID = "";
+    // 用戶進入問卷頁面的確切時間點 (ISO 格式)
+    const surveyEntryTime = new Date().toISOString();
 
     function generate32DigitParticipantID() {
         const now = new Date();
@@ -419,7 +421,7 @@
             if (typeof db !== 'undefined') {
                 db.ref('users/' + participantID).set({
                     participantID: participantID,
-                    createdAt: new Date().toISOString(),
+                    createdAt: surveyEntryTime,
                     timestamp: Date.now()
                 }).catch(err => console.warn(err));
             }
@@ -596,7 +598,11 @@
         localStorage.setItem('ai_nudge_text', finalNudgeText);
         localStorage.setItem('user_preferences', JSON.stringify(surveyResponses));
 
-        // 写入 Firebase
+        // 计算问卷作答耗时 (秒)
+        const submitDate = new Date();
+        const durationSec = Math.max(0, Math.round((submitDate.getTime() - new Date(surveyEntryTime).getTime()) / 1000));
+
+        // 写入 Firebase (包含 entryAt 与 submittedAt)
         if (typeof db !== 'undefined' && db) {
             try {
                 await db.ref('survey_responses').push({
@@ -605,7 +611,10 @@
                     groupCounter: counterVal,
                     useRealAi: useRealAi,
                     showAiLabel: showAiLabel,
-                    submittedAt: new Date().toLocaleString(),
+                    entryAt: surveyEntryTime,                         // 记录进入问卷的时间点
+                    submittedAt: submitDate.toLocaleString(),        // 提交时间 (格式化)
+                    submittedAtISO: submitDate.toISOString(),       // 提交时间 (ISO 格式)
+                    durationSeconds: durationSec,                   // 作答总耗时 (秒)
                     aiRecommendedRestaurantId: finalRecId,
                     nudgeContent: finalNudgeText,
                     responses: surveyResponses
