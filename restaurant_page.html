@@ -1,1231 +1,985 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>DineReserve - 香港米其林与精选餐厅预订平台</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DineReserve - Hong Kong Michelin & Signature Dining</title>
 
-  <!-- Firebase SDK -->
-  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
-  <script>
-    const firebaseConfig = {
-      apiKey: "AIzaSyB5OysrS98cHA7WXbObSGtUvfazPJStkRE",
-      authDomain: "online-study-4.firebaseapp.com",
-      databaseURL: "https://online-study-4-default-rtdb.asia-southeast1.firebasedatabase.app",
-      projectId: "online-study-4",
-      storageBucket: "online-study-4.firebasestorage.app",
-      messagingSenderId: "597103940431",
-      appId: "1:597103940431:web:d854df1b51a7f76f2aeb3a"
-    };
-    try {
-      firebase.initializeApp(firebaseConfig);
-      var db = firebase.database();
-    } catch(e) {
-      console.warn("Firebase 初始化跳过或在离线模式:", e);
-    }
-  </script>
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyB5OysrS98cHA7WXbObSGtUvfazPJStkRE",
+            authDomain: "online-study-4.firebaseapp.com",
+            databaseURL: "https://online-study-4-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "online-study-4",
+            storageBucket: "online-study-4.firebasestorage.app",
+            messagingSenderId: "597103940431",
+            appId: "1:597103940431:web:d854df1b51a7f76f2aeb3a"
+        };
+        try {
+            firebase.initializeApp(firebaseConfig);
+            var db = firebase.database();
+        } catch(e) {
+            console.warn("Firebase offline or skipped:", e);
+        }
+    </script>
 
-  <!-- 引入 80 间正交基底独立餐厅数据集 -->
-  <script src="restaurants_data.js"></script>
+    <!-- 引入支援兩文三語的餐廳資料集 -->
+    <script src="restaurants_data.js"></script>
 
-  <!-- 字体与 Font Awesome 图标库 -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Noto+Sans+SC:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- 字體與 Font Awesome 圖標庫 -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Noto+Sans+TC:wght@400;500;700&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-  <style>
-    :root {
-      --primary: #e11d48;
-      --primary-dark: #be123c;
-      --primary-light: #fff1f2;
-      --accent: #f59e0b;
-      --accent-hover: #d97706;
-      --bg: #f8fafc;
-      --surface: #ffffff;
-      --text-main: #0f172a;
-      --text-muted: #64748b;
-      --text-light: #94a3b8;
-      --border: #e2e8f0;
-      --star: #f59e0b;
-      --success: #10b981;
-      --radius-sm: 6px;
-      --radius-md: 10px;
-      --radius-lg: 16px;
-      --radius-full: 9999px;
-    }
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', 'Noto Sans SC', sans-serif; }
-    body { background-color: var(--bg); color: var(--text-main); line-height: 1.5; min-height: 100vh; display: flex; flex-direction: column; }
-    header { background-color: var(--surface); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 50; }
-    .navbar { max-width: 1280px; margin: 0 auto; padding: 0.75rem 1.5rem; display: flex; align-items: center; justify-content: space-between; }
-    .logo { font-size: 1.4rem; font-weight: 800; color: var(--primary); text-decoration: none; }
-    .logo span { color: var(--text-main); }
-    .hero-search-wrapper { background: linear-gradient(135deg, #be123c 0%, #e11d48 60%, #f43f5e 100%); padding: 2rem 1.5rem 2.8rem 1.5rem; color: white; }
-    .search-container { max-width: 1200px; margin: 0 auto; }
-    .hero-title { font-size: 1.7rem; font-weight: 800; margin-bottom: 0.4rem; }
-    .hero-subtitle { font-size: 0.92rem; opacity: 0.9; margin-bottom: 1.2rem; }
-    .search-box { background: white; padding: 0.75rem; border-radius: var(--radius-lg); box-shadow: 0 12px 28px rgba(0,0,0,0.18); display: grid; grid-template-columns: 2fr 1.6fr 1.6fr 1fr; gap: 0.6rem; align-items: center; }
-    .search-field { display: flex; align-items: center; gap: 0.75rem; padding: 0.6rem 0.9rem; border: 1.5px solid var(--border); border-radius: var(--radius-md); background: #fff; }
-    .search-field i { color: var(--primary); font-size: 1.15rem; min-width: 20px; }
-    .search-field-content { display: flex; flex-direction: column; flex: 1; }
-    .search-label { font-size: 0.72rem; font-weight: 700; color: var(--text-muted); }
-    .search-input { border: none; outline: none; font-size: 0.92rem; font-weight: 600; color: var(--text-main); width: 100%; }
-    .btn-search { background: var(--accent); color: white; border: none; font-size: 1.05rem; font-weight: 700; padding: 0.95rem 1.5rem; border-radius: var(--radius-md); cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.5rem; height: 100%; }
+    <style>
+        :root {
+            --primary: #e11d48;
+            --primary-dark: #be123c;
+            --accent: #f59e0b;
+            --accent-hover: #d97706;
+            --bg: #f8fafc;
+            --surface: #ffffff;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --text-light: #94a3b8;
+            --border: #e2e8f0;
+            --star: #f59e0b;
+            --radius-md: 10px;
+            --radius-lg: 16px;
+            --radius-full: 9999px;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', 'Noto Sans TC', 'Noto Sans SC', sans-serif; }
+        body { background-color: var(--bg); color: var(--text-main); line-height: 1.5; min-height: 100vh; display: flex; flex-direction: column; }
 
-    .main-layout { max-width: 1280px; margin: -1.5rem auto 3rem auto; padding: 0 1.5rem; display: grid; grid-template-columns: 290px 1fr; gap: 1.75rem; width: 100%; }
-    .filters-sidebar { background: var(--surface); border-radius: var(--radius-lg); padding: 1.25rem; border: 1px solid var(--border); position: sticky; top: 5rem; height: fit-content; max-height: calc(100vh - 6rem); overflow-y: auto; }
-    .filter-header { display: flex; justify-content: space-between; align-items: center; padding-bottom: 0.75rem; border-bottom: 1px solid var(--border); margin-bottom: 1rem; }
-    .filter-group { margin-bottom: 1.25rem; padding-bottom: 1.1rem; border-bottom: 1px solid #f1f5f9; }
-    .filter-title { font-size: 0.88rem; font-weight: 700; margin-bottom: 0.65rem; display: flex; justify-content: space-between; }
-    .filter-checkbox { display: flex; align-items: center; gap: 0.6rem; margin-bottom: 0.45rem; font-size: 0.84rem; cursor: pointer; }
-    .filter-checkbox .count { margin-left: auto; color: var(--text-light); font-size: 0.75rem; font-weight: 700; }
-    .price-range-slider { width: 100%; margin: 0.5rem 0; accent-color: var(--primary); }
+        header { background-color: var(--surface); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 50; }
+        .navbar { max-width: 1280px; margin: 0 auto; padding: 0.75rem 1.5rem; display: flex; align-items: center; justify-content: space-between; }
+        .logo { font-size: 1.4rem; font-weight: 800; color: var(--primary); text-decoration: none; }
+        .logo span { color: var(--text-main); }
 
-    .results-section { display: flex; flex-direction: column; gap: 1rem; }
-    .sort-bar { background: var(--surface); border-radius: var(--radius-md); padding: 0.75rem 1rem; display: flex; align-items: center; justify-content: space-between; border: 1px solid var(--border); font-size: 0.88rem; }
-    .sort-options { display: flex; gap: 0.5rem; }
-    .sort-btn { border: 1px solid var(--border); background: white; padding: 0.4rem 0.8rem; border-radius: var(--radius-full); font-size: 0.82rem; cursor: pointer; font-weight: 600; }
-    .sort-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
+        /* 兩文三語切換器 */
+        .lang-switcher { display: flex; align-items: center; gap: 4px; background: #f1f5f9; padding: 3px 6px; border-radius: 8px; border: 1px solid var(--border); }
+        .lang-btn { background: none; border: none; font-size: 0.78rem; font-weight: 700; color: #64748b; padding: 4px 10px; border-radius: 6px; cursor: pointer; transition: all 0.2s; }
+        .lang-btn.active { background: #ffffff; color: var(--primary); box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
 
-    .restaurant-card { background: var(--surface); border-radius: var(--radius-lg); border: 1px solid var(--border); overflow: hidden; display: grid; grid-template-columns: 280px 1fr 220px; position: relative; transition: all 0.2s; }
-    .restaurant-card:hover { box-shadow: 0 8px 24px rgba(0,0,0,0.08); }
-    .rest-image-col { position: relative; background: #e2e8f0; min-height: 200px; }
-    .rest-image-col img { width: 100%; height: 100%; object-fit: cover; }
-    .rest-info-col { padding: 1.15rem; display: flex; flex-direction: column; justify-content: space-between; border-right: 1px dashed var(--border); }
-    .badge-pill { font-size: 0.73rem; padding: 0.2rem 0.5rem; border-radius: 4px; font-weight: 600; background: #f1f5f9; color: #475569; display: inline-flex; align-items: center; gap: 0.3rem; margin-right: 4px; margin-bottom: 4px; }
-    .badge-pill.eco-pill { background: #dcfce7; color: #166534; border: 1px solid #bbf7d0; font-weight: 700; }
-    .eco-award-box { background: #f0fdf4; border-left: 3px solid #16a34a; padding: 6px 10px; border-radius: 4px; font-size: 0.76rem; color: #15803d; font-weight: 600; margin-top: 6px; line-height: 1.4; }
-    .rest-pricing-col { padding: 1.15rem; display: flex; flex-direction: column; justify-content: space-between; background: #fcfdfe; text-align: right; }
-    .score-badge { background: var(--primary); color: white; font-weight: 800; font-size: 1rem; padding: 0.3rem 0.55rem; border-radius: 8px 8px 8px 0; display: inline-block; }
-    .btn-select-menu { background: var(--primary); color: white; border: none; padding: 0.7rem 1rem; border-radius: var(--radius-md); font-weight: 700; cursor: pointer; }
-    .btn-select-menu:hover { background: var(--primary-dark); }
+        .hero-search-wrapper { background: linear-gradient(135deg, #be123c 0%, #e11d48 60%, #f43f5e 100%); padding: 2rem 1.5rem 2.8rem 1.5rem; color: white; }
+        .search-container { max-width: 1200px; margin: 0 auto; }
+        .hero-title { font-size: 1.7rem; font-weight: 800; margin-bottom: 0.4rem; }
+        .search-box { background: white; padding: 0.75rem; border-radius: var(--radius-lg); box-shadow: 0 12px 28px rgba(0,0,0,0.18); display: grid; grid-template-columns: 2fr 1.6fr 1.6fr 1fr; gap: 0.6rem; align-items: center; }
+        .search-field { display: flex; align-items: center; gap: 0.75rem; padding: 0.6rem 0.9rem; border: 1.5px solid var(--border); border-radius: var(--radius-md); background: #fff; }
+        .search-field i { color: var(--primary); font-size: 1.15rem; min-width: 20px; }
+        .search-field-content { display: flex; flex-direction: column; flex: 1; }
+        .search-label { font-size: 0.72rem; font-weight: 700; color: var(--text-muted); }
+        .search-input { border: none; outline: none; font-size: 0.92rem; font-weight: 600; color: var(--text-main); width: 100%; }
+        .btn-search { background: var(--accent); color: white; border: none; font-size: 1.05rem; font-weight: 700; padding: 0.95rem 1.5rem; border-radius: var(--radius-md); cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.5rem; height: 100%; }
 
-    /* AI 推薦條件下的專屬強烈視覺高亮樣式 */
-    .ai-prominent-badge {
-      background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%) !important;
-      color: #ffffff !important;
-      font-size: 1.02rem !important;
-      font-weight: 800 !important;
-      padding: 6px 16px !important;
-      border-radius: 9999px !important;
-      display: inline-flex !important;
-      align-items: center !important;
-      gap: 8px !important;
-      margin-bottom: 8px !important;
-      box-shadow: 0 0 16px rgba(245, 158, 11, 0.65), 0 2px 6px rgba(0,0,0,0.2) !important;
-      border: 1.5px solid #fef08a !important;
-      letter-spacing: 0.5px !important;
-      animation: pulseAiGlow 2s infinite alternate ease-in-out;
-    }
+        .main-layout { max-width: 1280px; margin: -1.5rem auto 3rem auto; padding: 0 1.5rem; display: grid; grid-template-columns: 290px 1fr; gap: 1.75rem; width: 100%; }
+        .filters-sidebar { background: var(--surface); border-radius: var(--radius-lg); padding: 1.25rem; border: 1px solid var(--border); position: sticky; top: 5rem; height: fit-content; max-height: calc(100vh - 6rem); overflow-y: auto; }
+        .filter-header { display: flex; justify-content: space-between; align-items: center; padding-bottom: 0.75rem; border-bottom: 1px solid var(--border); margin-bottom: 1rem; }
+        .filter-group { margin-bottom: 1.25rem; padding-bottom: 1.1rem; border-bottom: 1px solid #f1f5f9; }
+        .filter-title { font-size: 0.88rem; font-weight: 700; margin-bottom: 0.65rem; display: flex; justify-content: space-between; }
+        .filter-checkbox { display: flex; align-items: center; gap: 0.6rem; margin-bottom: 0.45rem; font-size: 0.84rem; cursor: pointer; }
+        .filter-checkbox .count { margin-left: auto; color: var(--text-light); font-size: 0.75rem; font-weight: 700; }
+        .price-range-slider { width: 100%; margin: 0.5rem 0; accent-color: var(--primary); }
 
-    @keyframes pulseAiGlow {
-      0% { transform: scale(1); box-shadow: 0 0 12px rgba(245, 158, 11, 0.5); }
-      100% { transform: scale(1.03); box-shadow: 0 0 22px rgba(245, 158, 11, 0.85); }
-    }
+        .results-section { display: flex; flex-direction: column; gap: 1rem; }
+        .sort-bar { background: var(--surface); border-radius: var(--radius-md); padding: 0.75rem 1rem; display: flex; align-items: center; justify-content: space-between; border: 1px solid var(--border); font-size: 0.88rem; }
+        .sort-options { display: flex; gap: 0.5rem; }
+        .sort-btn { border: 1px solid var(--border); background: white; padding: 0.4rem 0.8rem; border-radius: var(--radius-full); font-size: 0.82rem; cursor: pointer; font-weight: 600; }
+        .sort-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
 
-    /* 推薦文案中的 AI 關鍵詞放大強調高亮 */
-    .ai-keyword-highlight {
-      background: #fef08a;
-      color: #854d0e;
-      font-weight: 900;
-      font-size: 1.15em;
-      padding: 2px 7px;
-      border-radius: 5px;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.15);
-      display: inline-block;
-      margin: 0 2px;
-      vertical-align: middle;
-    }
+        .restaurant-card { background: var(--surface); border-radius: var(--radius-lg); border: 1px solid var(--border); overflow: hidden; display: grid; grid-template-columns: 280px 1fr 220px; position: relative; transition: all 0.2s; }
+        .restaurant-card:hover { box-shadow: 0 8px 24px rgba(0,0,0,0.08); }
+        .rest-image-col { position: relative; background: #e2e8f0; min-height: 200px; }
+        .rest-image-col img { width: 100%; height: 100%; object-fit: cover; }
+        .rest-info-col { padding: 1.15rem; display: flex; flex-direction: column; justify-content: space-between; border-right: 1px dashed var(--border); }
+        .badge-pill { font-size: 0.73rem; padding: 0.2rem 0.5rem; border-radius: 4px; font-weight: 600; background: #f1f5f9; color: #475569; display: inline-flex; align-items: center; gap: 0.3rem; margin-right: 4px; margin-bottom: 4px; }
+        .badge-pill.eco-pill { background: #dcfce7; color: #166534; border: 1px solid #bbf7d0; font-weight: 700; }
+        .eco-award-box { background: #f0fdf4; border-left: 3px solid #16a34a; padding: 6px 10px; border-radius: 4px; font-size: 0.76rem; color: #15803d; font-weight: 600; margin-top: 6px; line-height: 1.4; }
+        .rest-pricing-col { padding: 1.15rem; display: flex; flex-direction: column; justify-content: space-between; background: #fcfdfe; text-align: right; }
+        .score-badge { background: var(--primary); color: white; font-weight: 800; font-size: 1rem; padding: 0.3rem 0.55rem; border-radius: 8px 8px 8px 0; display: inline-block; }
+        .btn-select-menu { background: var(--primary); color: white; border: none; padding: 0.7rem 1rem; border-radius: var(--radius-md); font-weight: 700; cursor: pointer; }
+        .btn-select-menu:hover { background: var(--primary-dark); }
 
-    /* 结账确认按纽 */
-    .btn-confirm-pay {
-      background: var(--accent);
-      color: white;
-      border: none;
-      font-size: 1rem;
-      font-weight: 700;
-      padding: 0.85rem 1.2rem;
-      border-radius: var(--radius-md);
-      cursor: pointer;
-      display: block;
-      width: 100%;
-      margin-top: 1.2rem;
-      transition: all 0.2s;
-      box-shadow: 0 4px 10px rgba(245, 158, 11, 0.3);
-    }
-    .btn-confirm-pay:hover {
-      background: var(--accent-hover);
-      transform: translateY(-1px);
-    }
+        /* AI 高亮樣式與專屬 Nudge Box */
+        .ai-prominent-badge {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%) !important;
+            color: #ffffff !important;
+            font-size: 0.95rem !important;
+            font-weight: 800 !important;
+            padding: 6px 14px !important;
+            border-radius: 9999px !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            gap: 6px !important;
+            margin-bottom: 8px !important;
+            box-shadow: 0 0 16px rgba(245, 158, 11, 0.5) !important;
+        }
+        .modal-nudge-box {
+            background: #fefce8;
+            border: 1px solid #fef08a;
+            border-left: 4px solid #f59e0b;
+            padding: 12px 14px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            color: #854d0e;
+            line-height: 1.6;
+            display: flex;
+            align-items: flex-start;
+            gap: 0.6rem;
+        }
+        .ai-word-glow {
+            background: #fef08a;
+            color: #78350f;
+            padding: 1px 6px;
+            border-radius: 4px;
+            font-weight: 800;
+            display: inline-block;
+            margin: 0 2px;
+        }
+        .modal-eco-box {
+            background: #f0fdf4;
+            border: 1px solid #86efac;
+            border-left: 4px solid #16a34a;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            color: #15803d;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-top: 6px;
+        }
+        .floating-recommend-popup { position: fixed; bottom: 24px; right: 24px; width: 380px; background: #ffffff; border-radius: var(--radius-lg); border: 2px solid #f59e0b; z-index: 90; display: none; box-shadow: 0 10px 25px rgba(0,0,0,0.18); }
+        .floating-recommend-popup.active { display: block; }
+        .floating-eco-box { background: #f0fdf4; border: 1px solid #86efac; border-left: 3px solid #16a34a; padding: 4px 8px; border-radius: 4px; font-size: 0.72rem; color: #15803d; font-weight: 700; display: flex; align-items: center; gap: 0.35rem; margin-top: 5px; }
 
-    /* 弹窗通用基础样式 */
-    .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(15, 23, 42, 0.75); backdrop-filter: blur(4px); z-index: 100; display: none; align-items: center; justify-content: center; padding: 1.5rem; }
-    .modal-overlay.active { display: flex; }
-    .modal-container { background: white; border-radius: var(--radius-lg); width: 100%; max-width: 900px; max-height: 90vh; display: flex; flex-direction: column; overflow: hidden; }
-    .modal-header { padding: 1.25rem 1.75rem; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; background: #f8fafc; }
-    .modal-body { padding: 1.5rem 1.75rem; overflow-y: auto; display: flex; flex-direction: column; gap: 1.5rem; }
-    .btn-close-modal { background: none; border: none; font-size: 1.3rem; cursor: pointer; }
+        /* 彈窗樣式 */
+        .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(15, 23, 42, 0.75); backdrop-filter: blur(4px); z-index: 100; display: none; align-items: center; justify-content: center; padding: 1.5rem; }
+        .modal-overlay.active { display: flex; }
+        .modal-container { background: white; border-radius: var(--radius-lg); width: 100%; max-width: 900px; max-height: 90vh; display: flex; flex-direction: column; overflow: hidden; }
+        .modal-header { padding: 1.25rem 1.75rem; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; background: #f8fafc; }
+        .modal-body { padding: 1.5rem 1.75rem; overflow-y: auto; display: flex; flex-direction: column; gap: 1.5rem; }
+        .btn-close-modal { background: none; border: none; font-size: 1.3rem; cursor: pointer; }
+        .recommend-modal-card { background: #ffffff; border-radius: var(--radius-lg); max-width: 600px; width: 100%; overflow: hidden; border: 2px solid #f59e0b; }
+        .recommend-modal-header { background: linear-gradient(135deg, #be123c 0%, #e11d48 50%, #d97706 100%); color: white; padding: 1.25rem 1.5rem; }
+        .btn-confirm-pay { background: var(--accent); color: white; border: none; font-size: 1rem; font-weight: 700; padding: 0.85rem 1.2rem; border-radius: var(--radius-md); cursor: pointer; display: block; width: 100%; margin-top: 1.2rem; }
+        .btn-confirm-pay:hover { background: var(--accent-hover); }
 
-    .recommend-modal-card { background: #ffffff; border-radius: var(--radius-lg); max-width: 600px; width: 100%; overflow: hidden; border: 2px solid #f59e0b; }
-    .recommend-modal-header { background: linear-gradient(135deg, #be123c 0%, #e11d48 50%, #d97706 100%); color: white; padding: 1.25rem 1.5rem; }
-
-    /* 推荐 Dialog 中的绿色 Eco 认证书框 */
-    .modal-eco-box {
-      background: #f0fdf4;
-      border: 1px solid #86efac;
-      border-left: 4px solid #16a34a;
-      padding: 8px 12px;
-      border-radius: 6px;
-      font-size: 0.8rem;
-      color: #15803d;
-      font-weight: 700;
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      margin-top: 6px;
-      line-height: 1.4;
-    }
-
-    .floating-recommend-popup { position: fixed; bottom: 24px; right: 24px; width: 380px; background: #ffffff; border-radius: var(--radius-lg); border: 2px solid #f59e0b; z-index: 90; display: none; box-shadow: 0 10px 25px rgba(0,0,0,0.18); }
-    .floating-recommend-popup.active { display: block; }
-
-    /* 最终完成核验弹窗 */
-    .complete-modal-card {
-      background: #ffffff;
-      border-radius: 20px;
-      max-width: 620px;
-      width: 100%;
-      padding: 2.2rem 2rem;
-      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 1.15rem;
-      animation: slideUp 0.3s ease-out;
-    }
-
-    .complete-icon-wrapper {
-      width: 68px;
-      height: 68px;
-      border-radius: 50%;
-      background: #e0f2fe;
-      color: #2563eb;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 2rem;
-    }
-
-    .complete-title {
-      font-size: 1.55rem;
-      font-weight: 800;
-      color: #0f172a;
-      letter-spacing: -0.5px;
-      margin-top: -0.2rem;
-    }
-
-    .alert-warning-card {
-      width: 100%;
-      background: #fff5f5;
-      border: 1.5px solid #ef4444;
-      border-radius: 12px;
-      padding: 1.1rem 1.25rem;
-      text-align: left;
-    }
-
-    .alert-warning-title {
-      color: #b91c1c;
-      font-weight: 800;
-      font-size: 0.95rem;
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      margin-bottom: 0.5rem;
-    }
-
-    .alert-warning-list {
-      padding-left: 1.2rem;
-      font-size: 0.85rem;
-      color: #334155;
-      line-height: 1.6;
-    }
-
-    .alert-warning-list li {
-      margin-bottom: 0.25rem;
-    }
-
-    .alert-highlight-text {
-      color: #b91c1c;
-      font-weight: 700;
-      text-decoration: underline;
-    }
-
-    .id-section-wrapper {
-      width: 100%;
-      text-align: left;
-    }
-
-    .id-section-label {
-      font-size: 0.88rem;
-      font-weight: 700;
-      color: #1e293b;
-      margin-bottom: 0.5rem;
-      display: block;
-    }
-
-    .id-copy-container {
-      display: flex;
-      align-items: center;
-      background: #f8fafc;
-      border: 1.5px solid #cbd5e1;
-      border-radius: 8px;
-      padding: 0.45rem 0.6rem 0.45rem 1rem;
-    }
-
-    .id-display-text {
-      font-family: monospace;
-      font-size: 1.05rem;
-      font-weight: 700;
-      color: #1e3a8a;
-      letter-spacing: 0.5px;
-      flex: 1;
-      word-break: break-all;
-    }
-
-    .btn-blue-copy {
-      background: #2563eb;
-      color: white;
-      border: none;
-      padding: 0.6rem 1.1rem;
-      border-radius: 6px;
-      font-size: 0.88rem;
-      font-weight: 700;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 0.4rem;
-      transition: background 0.2s;
-      flex-shrink: 0;
-    }
-
-    .btn-blue-copy:hover {
-      background: #1d4ed8;
-    }
-
-    .copy-status-msg {
-      font-size: 0.82rem;
-      font-weight: 600;
-      margin-top: 0.45rem;
-    }
-    .copy-status-msg.unready { color: #dc2626; }
-    .copy-status-msg.ready { color: #16a34a; }
-
-    .summary-detail-box {
-      width: 100%;
-      background: #f8fafc;
-      border: 1px dashed #cbd5e1;
-      border-radius: 8px;
-      padding: 1rem 1.25rem;
-      font-size: 0.85rem;
-      line-height: 1.8;
-      text-align: left;
-      color: #475569;
-    }
-
-    .summary-detail-box strong {
-      color: #1e293b;
-      width: 115px;
-      display: inline-block;
-    }
-
-    .summary-price-highlight {
-      color: #ea580c;
-      font-weight: 800;
-      font-size: 1.05rem;
-    }
-
-    .btn-footer-instruction {
-      width: 100%;
-      background: #f1f5f9;
-      border: 1px solid #cbd5e1;
-      border-radius: 8px;
-      padding: 0.85rem;
-      font-size: 0.88rem;
-      font-weight: 600;
-      color: #334155;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 0.5rem;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-
-    .btn-footer-instruction:hover {
-      background: #e2e8f0;
-    }
-
-    /* 右下角懸浮框綠色 Eco 標籤盒 */
-    .floating-eco-box {
-      background: #f0fdf4;
-      border: 1px solid #86efac;
-      border-left: 3px solid #16a34a;
-      padding: 4px 8px;
-      border-radius: 4px;
-      font-size: 0.72rem;
-      color: #15803d;
-      font-weight: 700;
-      display: flex;
-      align-items: center;
-      gap: 0.35rem;
-      margin-top: 5px;
-      line-height: 1.3;
-    }
-
-    /* 右下角懸浮框標題放大與高亮樣式 */
-    .floating-header-ai {
-      font-size: 1.05rem !important;
-      font-weight: 900 !important;
-      letter-spacing: 0.5px;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
-    }
-
-    .floating-header-normal {
-      font-size: 1.0rem !important;
-      font-weight: 800 !important;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-
-    /* 推荐 Dialog Box 专用的 Nudge Text 提示框 */
-    .modal-nudge-box {
-      background: #fefce8;
-      border: 1px solid #fef08a;
-      border-left: 4px solid #f59e0b;
-      padding: 10px 14px;
-      border-radius: 8px;
-      font-size: 0.88rem;
-      color: #854d0e;
-      line-height: 1.6;
-      display: flex;
-      align-items: flex-start;
-      gap: 0.6rem;
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
-    }
-    .modal-nudge-box i {
-      color: #d97706;
-      font-size: 1rem;
-      margin-top: 3px;
-      flex-shrink: 0;
-    }
-
-    @keyframes slideUp {
-      from { transform: translateY(20px); opacity: 0; }
-      to { transform: translateY(0); opacity: 1; }
-    }
-  </style>
+        /* 完成核驗彈窗 */
+        .complete-modal-card { background: #ffffff; border-radius: 20px; max-width: 620px; width: 100%; padding: 2.2rem 2rem; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); display: flex; flex-direction: column; align-items: center; gap: 1.15rem; }
+        .alert-warning-card { width: 100%; background: #fff5f5; border: 1.5px solid #ef4444; border-radius: 12px; padding: 1.1rem 1.25rem; text-align: left; }
+        .id-copy-container { display: flex; align-items: center; background: #f8fafc; border: 1.5px solid #cbd5e1; border-radius: 8px; padding: 0.45rem 0.6rem 0.45rem 1rem; width: 100%; }
+        .id-display-text { font-family: monospace; font-size: 1.05rem; font-weight: 700; color: #1e3a8a; flex: 1; }
+        .btn-blue-copy { background: #2563eb; color: white; border: none; padding: 0.6rem 1.1rem; border-radius: 6px; font-size: 0.88rem; font-weight: 700; cursor: pointer; }
+        .summary-detail-box { width: 100%; background: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 8px; padding: 1rem 1.25rem; font-size: 0.85rem; line-height: 1.8; text-align: left; color: #475569; }
+    </style>
 </head>
 <body>
 
 <header>
-  <div class="navbar">
-    <a href="#" class="logo"><i class="fa-solid fa-utensils"></i> DineReserve<span>.com</span></a>
-  </div>
+    <div class="navbar">
+        <a href="#" class="logo"><i class="fa-solid fa-utensils"></i> DineReserve<span>.com</span></a>
+        <!-- 兩文三語切換器 (預設 en) -->
+        <div class="lang-switcher">
+            <button class="lang-btn active" onclick="switchLanguage('en')" id="btn-lang-en">English</button>
+            <button class="lang-btn" onclick="switchLanguage('zh-HK')" id="btn-lang-zh-HK">繁體中文</button>
+            <button class="lang-btn" onclick="switchLanguage('zh-CN')" id="btn-lang-zh-CN">简体中文</button>
+        </div>
+    </div>
 </header>
 
 <div class="hero-search-wrapper">
-  <div class="search-container">
-    <h1 class="hero-title">探索中国香港 80 间米其林与精选餐厅</h1>
-    <div class="search-box">
-      <div class="search-field">
-        <i class="fa-solid fa-location-dot"></i>
-        <div class="search-field-content">
-          <span class="search-label">地区 / 餐厅名称</span>
-          <input type="text" id="keywordInput" class="search-input" placeholder="输入餐厅名称或菜系" oninput="filterRestaurants()">
+    <div class="search-container">
+        <h1 class="hero-title" id="t_hero_title">Explore 80 Michelin & Signature Restaurants in Hong Kong</h1>
+        <div class="search-box">
+            <div class="search-field">
+                <i class="fa-solid fa-location-dot"></i>
+                <div class="search-field-content">
+                    <span class="search-label" id="t_label_district">District / Restaurant Name</span>
+                    <input type="text" id="keywordInput" class="search-input" placeholder="Search by name or cuisine" oninput="filterRestaurants()">
+                </div>
+            </div>
+            <div class="search-field">
+                <i class="fa-regular fa-clock"></i>
+                <div class="search-field-content">
+                    <span class="search-label" id="t_label_time">Dining Time</span>
+                    <input type="text" class="search-input" id="t_val_time" value="Jan 20, 2027 19:30 (Dinner)">
+                </div>
+            </div>
+            <div class="search-field">
+                <i class="fa-solid fa-user-group"></i>
+                <div class="search-field-content">
+                    <span class="search-label" id="t_label_guests">Guests</span>
+                    <input type="text" class="search-input" id="t_val_guests" value="2 Adults">
+                </div>
+            </div>
+            <button class="btn-search" onclick="filterRestaurants()"><i class="fa-solid fa-magnifying-glass"></i> <span id="t_btn_search">Search</span></button>
         </div>
-      </div>
-      <div class="search-field">
-        <i class="fa-regular fa-clock"></i>
-        <div class="search-field-content">
-          <span class="search-label">就餐时间</span>
-          <input type="text" class="search-input" value="2027年1月20日 19:30 (晚市)">
-        </div>
-      </div>
-      <div class="search-field">
-        <i class="fa-solid fa-user-group"></i>
-        <div class="search-field-content">
-          <span class="search-label">人数</span>
-          <input type="text" class="search-input" value="2 位成人">
-        </div>
-      </div>
-      <button class="btn-search" onclick="filterRestaurants()"><i class="fa-solid fa-magnifying-glass"></i> 搜索餐厅</button>
     </div>
-  </div>
 </div>
 
 <main class="main-layout">
-  <aside class="filters-sidebar">
-    <div class="filter-header">
-      <h3><i class="fa-solid fa-sliders"></i> 条件筛选</h3>
-      <button onclick="resetFilters()" style="border:none;background:none;color:var(--primary);cursor:pointer;font-weight:600;font-size:0.82rem;">重置所有</button>
-    </div>
+    <aside class="filters-sidebar">
+        <div class="filter-header">
+            <h3><i class="fa-solid fa-sliders"></i> <span id="t_filter_title">Filters</span></h3>
+            <button onclick="resetFilters()" style="border:none;background:none;color:var(--primary);cursor:pointer;font-weight:600;font-size:0.82rem;" id="t_filter_reset">Reset All</button>
+        </div>
 
-    <!-- 人均预算滑块 ($200 ~ $2000) -->
-    <div class="filter-group">
-      <div class="filter-title"><span>人均预算上限</span><span id="priceRangeLabel">最高 HK$ 2,000</span></div>
-      <input type="range" id="priceRange" class="price-range-slider" min="200" max="2000" step="50" value="2000" oninput="updatePriceFilter(this.value)">
-    </div>
+        <!-- 人均預算滑塊 -->
+        <div class="filter-group">
+            <div class="filter-title"><span id="t_budget_cap">Budget Limit</span><span id="priceRangeLabel">Max HK$ 2,000</span></div>
+            <input type="range" id="priceRange" class="price-range-slider" min="200" max="2000" step="50" value="2000" oninput="updatePriceFilter(this.value)">
+        </div>
 
-    <!-- 1. 餐厅星级筛选 (4类，各20间) -->
-    <div class="filter-group">
-      <div class="filter-title">餐厅评级</div>
-      <label class="filter-checkbox"><input type="checkbox" name="star" value="5" onchange="filterRestaurants()"><span>米其林三星</span><span class="count" id="count-star-5"></span></label>
-      <label class="filter-checkbox"><input type="checkbox" name="star" value="4" onchange="filterRestaurants()"><span>米其林二星</span><span class="count" id="count-star-4"></span></label>
-      <label class="filter-checkbox"><input type="checkbox" name="star" value="3" onchange="filterRestaurants()"><span>米其林一星</span><span class="count" id="count-star-3"></span></label>
-      <label class="filter-checkbox"><input type="checkbox" name="star" value="2" onchange="filterRestaurants()"><span>经济級精选</span><span class="count" id="count-star-2"></span></label>
-    </div>
+        <!-- 餐廳評級 -->
+        <div class="filter-group">
+            <div class="filter-title" id="t_rating_title">Restaurant Rating</div>
+            <label class="filter-checkbox"><input type="checkbox" name="star" value="5" onchange="filterRestaurants()"><span id="t_star_5">3 Michelin Stars</span><span class="count" id="count-star-5"></span></label>
+            <label class="filter-checkbox"><input type="checkbox" name="star" value="4" onchange="filterRestaurants()"><span id="t_star_4">2 Michelin Stars</span><span class="count" id="count-star-4"></span></label>
+            <label class="filter-checkbox"><input type="checkbox" name="star" value="3" onchange="filterRestaurants()"><span id="t_star_3">1 Michelin Star</span><span class="count" id="count-star-3"></span></label>
+            <label class="filter-checkbox"><input type="checkbox" name="star" value="2" onchange="filterRestaurants()"><span id="t_star_2">Selected Signature</span><span class="count" id="count-star-2"></span></label>
+        </div>
 
-    <!-- 2. 四大正交区域筛选 (各20间) -->
-    <div class="filter-group">
-      <div class="filter-title"><span>地区分布</span></div>
-      <label class="filter-checkbox"><input type="checkbox" name="region" value="香港岛" onchange="filterRestaurants()"><span>香港岛</span><span class="count" id="count-region-hk"></span></label>
-      <label class="filter-checkbox"><input type="checkbox" name="region" value="九龙" onchange="filterRestaurants()"><span>九龙</span><span class="count" id="count-region-kln"></span></label>
-      <label class="filter-checkbox"><input type="checkbox" name="region" value="新界东" onchange="filterRestaurants()"><span>新界东</span><span class="count" id="count-region-nte"></span></label>
-      <label class="filter-checkbox"><input type="checkbox" name="region" value="新界西" onchange="filterRestaurants()"><span>新界西</span><span class="count" id="count-region-ntw"></span></label>
-    </div>
+        <!-- 地區分佈 (動態依語言更新) -->
+        <div class="filter-group">
+            <div class="filter-title"><span id="t_region_title">Region</span></div>
+            <label class="filter-checkbox"><input type="checkbox" name="region" value="香港岛" onchange="filterRestaurants()"><span id="lbl_reg_hk">Hong Kong Island</span><span class="count" id="count-region-hk"></span></label>
+            <label class="filter-checkbox"><input type="checkbox" name="region" value="九龙" onchange="filterRestaurants()"><span id="lbl_reg_kln">Kowloon</span><span class="count" id="count-region-kln"></span></label>
+            <label class="filter-checkbox"><input type="checkbox" name="region" value="新界东" onchange="filterRestaurants()"><span id="lbl_reg_nte">New Territories East</span><span class="count" id="count-region-nte"></span></label>
+            <label class="filter-checkbox"><input type="checkbox" name="region" value="新界西" onchange="filterRestaurants()"><span id="lbl_reg_ntw">New Territories West</span><span class="count" id="count-region-ntw"></span></label>
+        </div>
 
-    <!-- 3. 四大正交菜系筛选 (各20间) -->
-    <div class="filter-group">
-      <div class="filter-title"><span>菜系风味</span></div>
-      <label class="filter-checkbox"><input type="checkbox" name="cuisine" value="中式料理" onchange="filterRestaurants()"><span>中式料理</span><span class="count" id="count-cui-canton"></span></label>
-      <label class="filter-checkbox"><input type="checkbox" name="cuisine" value="法式料理" onchange="filterRestaurants()"><span>法式料理</span><span class="count" id="count-cui-french"></span></label>
-      <label class="filter-checkbox"><input type="checkbox" name="cuisine" value="日本料理" onchange="filterRestaurants()"><span>日本料理</span><span class="count" id="count-cui-japan"></span></label>
-      <label class="filter-checkbox"><input type="checkbox" name="cuisine" value="意式料理" onchange="filterRestaurants()"><span>意式料理</span><span class="count" id="count-cui-italian"></span></label>
-    </div>
+        <!-- 菜系風味 (動態依語言更新) -->
+        <div class="filter-group">
+            <div class="filter-title"><span id="t_cuisine_title">Cuisine</span></div>
+            <label class="filter-checkbox"><input type="checkbox" name="cuisine" value="中式料理" onchange="filterRestaurants()"><span id="lbl_cui_chinese">Chinese Cuisine</span><span class="count" id="count-cui-canton"></span></label>
+            <label class="filter-checkbox"><input type="checkbox" name="cuisine" value="法式料理" onchange="filterRestaurants()"><span id="lbl_cui_french">French Fine Dining</span><span class="count" id="count-cui-french"></span></label>
+            <label class="filter-checkbox"><input type="checkbox" name="cuisine" value="日本料理" onchange="filterRestaurants()"><span id="lbl_cui_japanese">Japanese Cuisine</span><span class="count" id="count-cui-japan"></span></label>
+            <label class="filter-checkbox"><input type="checkbox" name="cuisine" value="意式料理" onchange="filterRestaurants()"><span id="lbl_cui_italian">Italian Cuisine</span><span class="count" id="count-cui-italian"></span></label>
+        </div>
 
-    <!-- 4. 特色设施 (每项严控在 32~44 间) -->
-    <div class="filter-group" style="border-bottom:none;margin-bottom:0;padding-bottom:0;">
-      <div class="filter-title">特色设施与认证</div>
-      <label class="filter-checkbox"><input type="checkbox" id="filterPrivateRoom" onchange="filterRestaurants()"><span>私密独立包厢</span><span class="count" id="count-privateRoom"></span></label>
-      <label class="filter-checkbox"><input type="checkbox" id="filterWindowSeat" onchange="filterRestaurants()"><span>靠窗景观</span><span class="count" id="count-windowSeat"></span></label>
-      <label class="filter-checkbox"><input type="checkbox" id="filterParking" onchange="filterRestaurants()"><span>代客泊车 / 免费停车</span><span class="count" id="count-parking"></span></label>
-      <label class="filter-checkbox"><input type="checkbox" id="filterSommelier" onchange="filterRestaurants()"><span>餐酒搭配</span><span class="count" id="count-sommelier"></span></label>
-      <label class="filter-checkbox"><input type="checkbox" id="filterSustainable" onchange="filterRestaurants()"><span>有机食材认证</span><span class="count" id="count-sustainable"></span></label>
-    </div>
-  </aside>
+        <!-- 特色設施與認證 -->
+        <div class="filter-group" style="border-bottom:none;margin-bottom:0;padding-bottom:0;">
+            <div class="filter-title" id="t_facility_title">Facilities & Badges</div>
+            <label class="filter-checkbox"><input type="checkbox" id="filterPrivateRoom" onchange="filterRestaurants()"><span id="t_fac_room">Private Dining Room</span><span class="count" id="count-privateRoom"></span></label>
+            <label class="filter-checkbox"><input type="checkbox" id="filterWindowSeat" onchange="filterRestaurants()"><span id="t_fac_window">Window / Scenery View</span><span class="count" id="count-windowSeat"></span></label>
+            <label class="filter-checkbox"><input type="checkbox" id="filterParking" onchange="filterRestaurants()"><span id="t_fac_park">Valet / Free Parking</span><span class="count" id="count-parking"></span></label>
+            <label class="filter-checkbox"><input type="checkbox" id="filterSommelier" onchange="filterRestaurants()"><span id="t_fac_wine">Sommelier Wine Pairing</span><span class="count" id="count-sommelier"></span></label>
+            <label class="filter-checkbox"><input type="checkbox" id="filterSustainable" onchange="filterRestaurants()"><span id="t_fac_eco">Organic & Eco Badge</span><span class="count" id="count-sustainable"></span></label>
+        </div>
+    </aside>
 
-  <section class="results-section">
-    <div class="sort-bar">
-      <div>搜索结果：<span style="font-weight:700;" id="restaurantCount">80 间精选餐厅</span></div>
-      <div class="sort-options">
-        <button class="sort-btn active" onclick="sortRestaurants('popular', this)">推荐排序</button>
-        <button class="sort-btn" onclick="sortRestaurants('priceAsc', this)">人均：低至高</button>
-        <button class="sort-btn" onclick="sortRestaurants('priceDesc', this)">人均：高至低</button>
-        <button class="sort-btn" onclick="sortRestaurants('rating', this)">评分最高</button>
-      </div>
-    </div>
-    <div id="restaurantListContainer" style="display: flex; flex-direction: column; gap: 1.15rem;"></div>
-  </section>
+    <section class="results-section">
+        <div class="sort-bar">
+            <div><span id="t_results_label">Results: </span><span style="font-weight:700;" id="restaurantCount">80 Fine Dining Restaurants</span></div>
+            <div class="sort-options">
+                <button class="sort-btn active" onclick="sortRestaurants('popular', this)" id="t_sort_recommend">Recommended</button>
+                <button class="sort-btn" onclick="sortRestaurants('priceAsc', this)" id="t_sort_price_asc">Price: Low to High</button>
+                <button class="sort-btn" onclick="sortRestaurants('priceDesc', this)" id="t_sort_price_desc">Price: High to Low</button>
+                <button class="sort-btn" onclick="sortRestaurants('rating', this)" id="t_sort_rating">Highest Rated</button>
+            </div>
+        </div>
+        <div id="restaurantListContainer" style="display: flex; flex-direction: column; gap: 1.15rem;"></div>
+    </section>
 </main>
 
-<!-- 进入页面时的推荐弹窗 (保留，并在卡片内显示绿色 Eco Box) -->
-<!-- 进入页面时的推荐弹窗 (带有专属 Nudge Text 提示框与绿色 Eco 框) -->
+<!-- 進入頁面時的主推薦對話框 -->
 <div class="modal-overlay" id="entryRecommendModal">
-  <div class="recommend-modal-card">
-    <div class="recommend-modal-header">
-      <div id="modalAiRecBadge" style="background:#f59e0b;color:#78350f;font-size:0.75rem;font-weight:800;padding:2px 8px;border-radius:999px;display:inline-block;margin-bottom:6px;">
-        <i class="fa-solid fa-wand-magic-sparkles"></i> 专属诚意推荐
-      </div>
-      <h2 style="font-size:1.35rem; font-weight:800; letter-spacing: -0.3px;" id="modalAiRecTitle"></h2>
-    </div>
-
-    <div style="padding:1.4rem 1.5rem; display:flex; flex-direction:column; gap:1.1rem;">
-
-      <!-- 专属 Nudge Text 提示框 -->
-      <div class="modal-nudge-box">
-        <i class="fa-solid fa-wand-magic-sparkles"></i>
-        <div id="modalAiRecNudgeText" style="flex:1;"></div>
-      </div>
-
-      <!-- 餐厅卡片信息展示 -->
-      <div style="display:grid; grid-template-columns: 180px 1fr; gap:1rem; border-radius:8px; overflow:hidden; background:#f8fafc; border:1px solid var(--border);">
-        <img id="modalAiRecImg" src="" style="width:100%; height:140px; object-fit:cover;">
-        <div style="padding:0.75rem; display:flex; flex-direction:column; justify-content:space-between;">
-          <div>
-            <h4 style="font-weight:800; font-size:1.05rem;" id="modalAiRecName"></h4>
-            <p style="font-size:0.8rem; color:var(--text-muted); margin-top:2px;" id="modalAiRecLoc"></p>
-
-            <!-- 绿色 Box 显示餐厅的 eco 环保认证 -->
-            <div class="modal-eco-box" id="modalAiRecEcoBox">
-              <i class="fa-solid fa-leaf"></i>
-              <span id="modalAiRecEcoText"></span>
-            </div>
-          </div>
-          <div style="margin-top:6px;">
-            <span style="font-size:1.25rem; font-weight:800; color:var(--accent);" id="modalAiRecPrice"></span>
-            <span style="font-size:0.75rem; color:var(--text-muted);"> /位起</span>
-          </div>
+    <div class="recommend-modal-card">
+        <div class="recommend-modal-header">
+            <div id="modalAiRecBadge" class="ai-prominent-badge"></div>
+            <h2 style="font-size:1.35rem; font-weight:800;" id="modalAiRecTitle"></h2>
         </div>
-      </div>
-
-      <!-- 操作按钮 -->
-      <button class="btn-search" style="width:100%;" onclick="acceptRecommendation()">
-        <i class="fa-solid fa-bell-concierge"></i> 查看推荐专属套餐
-      </button>
-      <button onclick="dismissRecommendation()" style="background:transparent;border:1px solid #cbd5e1;padding:0.6rem;border-radius:8px;cursor:pointer;color:var(--text-muted);font-weight:600;font-size:0.85rem;">
-        浏览全部餐厅清单
-      </button>
+        <div style="padding:1.4rem 1.5rem; display:flex; flex-direction:column; gap:1.1rem;">
+            <!-- 專屬多語言 Nudge Text 提示框 -->
+            <div class="modal-nudge-box">
+                <i class="fa-solid fa-wand-magic-sparkles" style="color:#d97706; margin-top:3px;"></i>
+                <div id="modalAiRecNudgeText" style="flex:1;"></div>
+            </div>
+            <div style="display:grid; grid-template-columns: 180px 1fr; gap:1rem; border-radius:8px; overflow:hidden; background:#f8fafc; border:1px solid var(--border);">
+                <img id="modalAiRecImg" src="" style="width:100%; height:140px; object-fit:cover;">
+                <div style="padding:0.75rem; display:flex; flex-direction:column; justify-content:space-between;">
+                    <div>
+                        <h4 style="font-weight:800; font-size:1.05rem;" id="modalAiRecName"></h4>
+                        <p style="font-size:0.8rem; color:var(--text-muted); margin-top:2px;" id="modalAiRecLoc"></p>
+                        <div class="modal-eco-box" id="modalAiRecEcoBox">
+                            <i class="fa-solid fa-leaf"></i>
+                            <span id="modalAiRecEcoText"></span>
+                        </div>
+                    </div>
+                    <div style="margin-top:6px;"><span style="font-size:1.25rem; font-weight:800; color:var(--accent);" id="modalAiRecPrice"></span><span style="font-size:0.75rem; color:var(--text-muted);" id="t_per_person"> /person</span></div>
+                </div>
+            </div>
+            <button class="btn-search" style="width:100%;" onclick="acceptRecommendation()" id="t_btn_view_rec">
+                <i class="fa-solid fa-bell-concierge"></i> View Recommended Menu
+            </button>
+            <button onclick="dismissRecommendation()" style="background:transparent;border:1px solid #cbd5e1;padding:0.6rem;border-radius:8px;cursor:pointer;color:var(--text-muted);font-weight:600;font-size:0.85rem;" id="t_btn_dismiss">
+                Browse All Restaurants
+            </button>
+        </div>
     </div>
-  </div>
 </div>
 
-<!-- 弹窗 1：菜单与席位选择 -->
+<!-- 彈窗 1：菜單與席位選擇 -->
 <div class="modal-overlay" id="menuModal">
-  <div class="modal-container">
-    <div class="modal-header">
-      <div><h2 class="modal-header-title" id="modalRestTitle"></h2><p style="font-size:0.8rem;color:var(--text-muted);" id="modalRestSubtitle"></p></div>
-      <button class="btn-close-modal" onclick="closeMenuModal()"><i class="fa-solid fa-xmark"></i></button>
+    <div class="modal-container">
+        <div class="modal-header">
+            <div><h2 class="modal-header-title" id="modalRestTitle"></h2><p style="font-size:0.8rem;color:var(--text-muted);" id="modalRestSubtitle"></p></div>
+            <button class="btn-close-modal" onclick="closeMenuModal()"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div class="modal-body"><div id="modalMenuList" style="display:flex;flex-direction:column;gap:1rem;"></div></div>
     </div>
-    <div class="modal-body"><div id="modalMenuList" style="display:flex;flex-direction:column;gap:1rem;"></div></div>
-  </div>
 </div>
 
-<!-- 弹窗 2：结账确认 -->
+<!-- 彈窗 2：結賬確認 -->
 <div class="modal-overlay" id="checkoutModal">
-  <div class="modal-container" style="max-width: 780px;">
-    <div class="modal-header">
-      <h2 class="modal-header-title">
-        <i class="fa-solid fa-shield-halved" style="color:var(--primary);"></i> 锁定餐位与预订确认
-      </h2>
-      <button class="btn-close-modal" onclick="closeCheckoutModal()">
-        <i class="fa-solid fa-xmark"></i>
-      </button>
-    </div>
-    <div class="modal-body" style="padding: 1.75rem;">
-      <div style="display:grid; grid-template-columns: 1.2fr 1fr; gap:1.5rem; align-items: start;">
-        <div>
-          <h4 style="margin-bottom:0.8rem; font-size: 0.95rem;">预订人资料</h4>
-          <input type="text" id="guestName" value="Alex Wong" style="width:100%;padding:0.65rem;border:1px solid #cbd5e1;border-radius:6px;margin-bottom:0.8rem;font-size:0.9rem;">
-          <input type="email" id="guestEmail" value="alex.wong@example.com" style="width:100%;padding:0.65rem;border:1px solid #cbd5e1;border-radius:6px;margin-bottom:0.8rem;font-size:0.9rem;">
-          <input type="tel" id="guestPhone" value="+852 9123 4567" style="width:100%;padding:0.65rem;border:1px solid #cbd5e1;border-radius:6px;font-size:0.9rem;">
+    <div class="modal-container" style="max-width: 780px;">
+        <div class="modal-header">
+            <h2 class="modal-header-title" id="t_checkout_header"><i class="fa-solid fa-shield-halved" style="color:var(--primary);"></i> Reserve Table & Confirm Booking</h2>
+            <button class="btn-close-modal" onclick="closeCheckoutModal()"><i class="fa-solid fa-xmark"></i></button>
         </div>
-        <div style="background:#f8fafc;padding:1.25rem;border-radius:10px;border:1px solid var(--border);display:flex;flex-direction:column;justify-content:space-between;">
-          <div>
-            <h4 id="checkoutRestName" style="font-size: 1.05rem; font-weight: 800; color: var(--text-main);"></h4>
-            <p id="checkoutMenuName" style="font-size:0.82rem;color:var(--text-muted);margin:8px 0 16px 0;line-height:1.4;"></p>
-
-            <div style="display:flex;justify-content:space-between;align-items:baseline;border-top:1px dashed #cbd5e1;padding-top:12px;">
-              <span style="font-size:0.85rem;font-weight:600;color:var(--text-secondary);">实付总额 (2位含服务费)</span>
-              <span style="color:var(--accent);font-size:1.35rem;font-weight:800;" id="checkoutTotalPrice">HK$ 0</span>
+        <div class="modal-body" style="padding: 1.75rem;">
+            <div style="display:grid; grid-template-columns: 1.2fr 1fr; gap:1.5rem; align-items: start;">
+                <div>
+                    <h4 style="margin-bottom:0.8rem; font-size: 0.95rem;" id="t_guest_info_title">Guest Information</h4>
+                    <input type="text" id="guestName" value="Alex Wong" style="width:100%;padding:0.65rem;border:1px solid #cbd5e1;border-radius:6px;margin-bottom:0.8rem;font-size:0.9rem;">
+                    <input type="email" id="guestEmail" value="alex.wong@example.com" style="width:100%;padding:0.65rem;border:1px solid #cbd5e1;border-radius:6px;margin-bottom:0.8rem;font-size:0.9rem;">
+                    <input type="tel" id="guestPhone" value="+852 9123 4567" style="width:100%;padding:0.65rem;border:1px solid #cbd5e1;border-radius:6px;font-size:0.9rem;">
+                </div>
+                <div style="background:#f8fafc;padding:1.25rem;border-radius:10px;border:1px solid var(--border);display:flex;flex-direction:column;justify-content:space-between;">
+                    <div>
+                        <h4 id="checkoutRestName" style="font-size: 1.05rem; font-weight: 800; color: var(--text-main);"></h4>
+                        <p id="checkoutMenuName" style="font-size:0.82rem;color:var(--text-muted);margin:8px 0 16px 0;line-height:1.4;"></p>
+                        <div style="display:flex;justify-content:space-between;align-items:baseline;border-top:1px dashed #cbd5e1;padding-top:12px;">
+                            <span style="font-size:0.85rem;font-weight:600;color:var(--text-secondary);" id="t_total_paid_label">Total Paid (2 guests incl. service fee)</span>
+                            <span style="color:var(--accent);font-size:1.35rem;font-weight:800;" id="checkoutTotalPrice">HK$ 0</span>
+                        </div>
+                    </div>
+                    <button class="btn-confirm-pay" type="button" onclick="confirmBooking()" id="t_btn_confirm_pay">Confirm & Secure Table</button>
+                </div>
             </div>
-          </div>
-
-          <button class="btn-confirm-pay" type="button" onclick="confirmBooking()">
-            确认并锁定餐位
-          </button>
         </div>
-      </div>
     </div>
-  </div>
 </div>
 
-<!-- 右下角悬浮推荐卡片 -->
+<!-- 右下角懸浮推薦卡片 -->
 <div class="floating-recommend-popup" id="floatingRecommendPopup">
-  <div style="background:linear-gradient(90deg, #b45309, #d97706);color:white;padding:0.65rem 0.9rem;display:flex;justify-content:space-between;align-items:center;">
-    <!-- 放大且突出显示的标题 -->
-    <span id="floatingPopupTitle"></span>
-    <button onclick="closeFloatingPopup()" style="background:none;border:none;color:white;cursor:pointer;font-size:1.1rem;padding:2px 4px;"><i class="fa-solid fa-xmark"></i></button>
-  </div>
-  <div style="padding:0.85rem;background:#fffdfa;">
-    <div style="display:flex;gap:0.75rem;align-items:flex-start;">
-      <img id="floatingThumb" src="" style="width:78px;height:78px;border-radius:6px;object-fit:cover;flex-shrink:0;">
-      <div style="flex:1;">
-        <h4 style="font-size:0.92rem;font-weight:800;color:var(--text-main);line-height:1.3;" id="floatingTitle"></h4>
-        <div style="font-size:0.88rem;font-weight:800;color:var(--accent);margin-top:2px;" id="floatingPrice"></div>
-
-        <!-- 悬浮窗内文专用的绿色 Eco 认证书框 -->
-        <div class="floating-eco-box" id="floatingEcoBox">
-          <i class="fa-solid fa-leaf"></i>
-          <span id="floatingEcoText"></span>
-        </div>
-      </div>
+    <div style="background:linear-gradient(90deg, #b45309, #d97706);color:white;padding:0.65rem 0.9rem;display:flex;justify-content:space-between;align-items:center;">
+        <span id="floatingPopupTitle" style="font-weight:800;font-size:0.92rem;"></span>
+        <button onclick="closeFloatingPopup()" style="background:none;border:none;color:white;cursor:pointer;font-size:1.1rem;"><i class="fa-solid fa-xmark"></i></button>
     </div>
-    <button class="btn-search" style="width:100%;margin-top:10px;padding:0.55rem;font-size:0.88rem;font-weight:800;" onclick="acceptRecommendation()" id="floatingActionBtn">
-      立即预订推荐套餐
-    </button>
-  </div>
+    <div style="padding:0.85rem;background:#fffdfa;">
+        <div style="display:flex;gap:0.75rem;align-items:flex-start;">
+            <img id="floatingThumb" src="" style="width:78px;height:78px;border-radius:6px;object-fit:cover;flex-shrink:0;">
+            <div style="flex:1;">
+                <h4 style="font-size:0.92rem;font-weight:800;color:var(--text-main);line-height:1.3;" id="floatingTitle"></h4>
+                <div style="font-size:0.88rem;font-weight:800;color:var(--accent);margin-top:2px;" id="floatingPrice"></div>
+                <div class="floating-eco-box" id="floatingEcoBox">
+                    <i class="fa-solid fa-leaf"></i>
+                    <span id="floatingEcoText"></span>
+                </div>
+            </div>
+        </div>
+        <button class="btn-search" style="width:100%;margin-top:10px;padding:0.55rem;font-size:0.88rem;font-weight:800;" onclick="acceptRecommendation()" id="t_btn_floating_book">Book Recommended Menu</button>
+    </div>
 </div>
 
-<!-- 弹窗 3：预订完成提示与警告核验弹窗 (严格对照截图) -->
+<!-- 彈窗 3：預訂完成與複製 ID 核驗彈窗 -->
 <div class="modal-overlay" id="exitIdModal">
-  <div class="complete-modal-card">
-
-    <div class="complete-icon-wrapper">
-      <i class="fa-solid fa-clipboard-check"></i>
+    <div class="complete-modal-card">
+        <div style="width:64px;height:64px;border-radius:50%;background:#e0f2fe;color:#2563eb;display:flex;align-items:center;justify-content:center;font-size:2rem;">
+            <i class="fa-solid fa-clipboard-check"></i>
+        </div>
+        <h2 style="font-size:1.5rem;font-weight:800;" id="t_exit_title">Reservation Successfully Completed</h2>
+        <div class="alert-warning-card">
+            <div style="color:#b91c1c;font-weight:800;margin-bottom:0.4rem;" id="t_exit_warn_title"><i class="fa-solid fa-triangle-exclamation"></i> [IMPORTANT] Verification Steps Required</div>
+            <ol style="padding-left:1.2rem;font-size:0.85rem;color:#334155;line-height:1.6;" id="t_exit_warn_list">
+                <li>Please make sure to click below to <strong>copy your Participant ID</strong>.</li>
+                <li>Switch back to your <strong>original survey tab</strong>, paste this ID into the corresponding field, and complete the survey.</li>
+            </ol>
+        </div>
+        <div style="width:100%;">
+            <span style="font-size:0.88rem;font-weight:700;display:block;margin-bottom:0.4rem;" id="t_exit_id_label">Your 32-Digit Participant ID:</span>
+            <div class="id-copy-container">
+                <span class="id-display-text" id="exitParticipantIDText">Loading ID...</span>
+                <button class="btn-blue-copy" type="button" id="btnCopyID" onclick="copyParticipantID()"><i class="fa-regular fa-copy"></i> <span id="t_btn_copy">Copy ID</span></button>
+            </div>
+        </div>
+        <div class="summary-detail-box">
+            <div><strong id="t_sum_rest">Selected Restaurant:</strong> <span id="summaryRestName">--</span></div>
+            <div><strong id="t_sum_menu">Selected Tasting Menu:</strong> <span id="summaryMenuName">--</span></div>
+            <div><strong id="t_sum_ref">Booking Reference:</strong> <span id="summaryBookingRef" style="font-family: monospace; font-weight:700;">--</span></div>
+            <div><strong id="t_sum_paid">Total Paid:</strong> <span style="color:#ea580c;font-weight:800;" id="summaryTotalPaid">--</span></div>
+        </div>
     </div>
-
-    <h2 class="complete-title">模拟预订已成功完成</h2>
-
-    <div class="alert-warning-card">
-      <div class="alert-warning-title">
-        <i class="fa-solid fa-triangle-exclamation"></i>
-        <span>【重要警告】必须完成以下核验步骤</span>
-      </div>
-      <ol class="alert-warning-list">
-        <li>请务必点击下方按钮<strong>复制您的专属个人 ID</strong>。</li>
-        <li>请<strong>自行切换回原本的问卷主页分页面</strong>，在相应题目中<strong>贴上此 ID</strong> 继续完成作答。</li>
-      </ol>
-      <div style="font-size: 0.82rem; margin-top: 0.4rem; line-height: 1.5;">
-        <span class="alert-highlight-text">特别声明：若未在问卷中贴上正确 ID，系统将无法核验您的实验记录，本次作答将被视为无效，且绝不会发放任何相关报酬或实验奖励！</span>
-      </div>
-    </div>
-
-    <div class="id-section-wrapper">
-      <span class="id-section-label">您的 32 位个人识别码 (Participant ID):</span>
-      <div class="id-copy-container">
-        <span class="id-display-text" id="exitParticipantIDText">Loading ID...</span>
-        <button class="btn-blue-copy" type="button" id="btnCopyID" onclick="copyParticipantID()">
-          <i class="fa-regular fa-copy"></i> 复制ID
-        </button>
-      </div>
-      <div class="copy-status-msg unready" id="copyStatusText">
-        * 尚未复制：请先点击上方蓝色「复制ID」按钮
-      </div>
-    </div>
-
-    <div class="summary-detail-box">
-      <div><strong>最终选定餐厅：</strong><span id="summaryRestName">--</span></div>
-      <div><strong>所选品鉴套餐：</strong><span id="summaryMenuName">--</span></div>
-      <div><strong>订单确认编号：</strong><span id="summaryBookingRef" style="font-family: monospace; font-weight:700;">--</span></div>
-      <div><strong>模拟实付金额：</strong><span class="summary-price-highlight" id="summaryTotalPaid">--</span></div>
-    </div>
-  </div>
 </div>
 
 <script>
-  const RETURN_HOME_URL = "index.html";
+    const RETURN_HOME_URL = "index.html";
+    // 預設語言為英文 en
+    let currentLang = localStorage.getItem("site_lang") || "en";
 
-  let currentPID = localStorage.getItem("participantID") || "Anonymous";
-  let AI_RECOMMENDED_ID = parseInt(localStorage.getItem("ai_recommended_restaurant_id"), 10) || 46;
-  let AI_NUDGE_TEXT = localStorage.getItem("ai_nudge_text") || "为您精心甄选的主推餐厅。";
-  const SHOW_AI_LABEL = (localStorage.getItem("showAiLabel") === "true");
-
-  let currentRestaurants = [];
-  let selectedRest = null;
-  let selectedMenu = null;
-  let hasCopiedID = false;
-
-  function getStarLabel(stars) {
-    if (stars === 5) return "⭐⭐⭐米其林三星";
-    if (stars === 4) return "⭐⭐ 米其林二星";
-    if (stars === 3) return "⭐ 米其林一星";
-    return "经济級精选";
-  }
-
-  function updateFilterCounts() {
-    let s5 = 0, s4 = 0, s3 = 0, s2 = 0;
-    let rHk = 0, rKln = 0, rNte = 0, rNtw = 0;
-    let cCanton = 0, cFrench = 0, cJapan = 0, cItalian = 0;
-    let pR = 0, wS = 0, pk = 0, som = 0, sus = 0;
-
-    const dataList = (typeof restaurantsData !== 'undefined' && Array.isArray(restaurantsData)) ? restaurantsData : [];
-
-    dataList.forEach(r => {
-      if (!r) return;
-      if (r.stars === 5) s5++;
-      else if (r.stars === 4) s4++;
-      else if (r.stars === 3) s3++;
-      else if (r.stars === 2) s2++;
-
-      if (r.region === "香港岛") rHk++;
-      else if (r.region === "九龙") rKln++;
-      else if (r.region === "新界东") rNte++;
-      else if (r.region === "新界西") rNtw++;
-
-      if (r.cuisine === "中式料理") cCanton++;
-      else if (r.cuisine === "法式料理") cFrench++;
-      else if (r.cuisine === "日本料理") cJapan++;
-      else if (r.cuisine === "意式料理") cItalian++;
-
-      if (r.hasPrivateRoom) pR++;
-      if (r.hasWindowSeat) wS++;
-      if (r.hasParking) pk++;
-      if (r.hasSommelier) som++;
-      if (r.hasSustainable) sus++;
-    });
-
-    const setElText = (id, txt) => {
-      const el = document.getElementById(id);
-      if (el) el.innerText = txt;
+    // 全站兩文三語翻譯字典
+    const UI_TEXT = {
+        "hero_title": { "en": "Explore 80 Michelin & Signature Restaurants in Hong Kong", "zh-HK": "探索中國香港 80 間米芝蓮與精選餐廳", "zh-CN": "探索中国香港 80 间米其林与精选餐厅" },
+        "label_district": { "en": "District / Restaurant Name", "zh-HK": "地區 / 餐廳名稱", "zh-CN": "地区 / 餐厅名称" },
+        "search_placeholder": { "en": "Search by name or cuisine", "zh-HK": "輸入餐廳名稱或菜系", "zh-CN": "输入餐厅名称或菜系" },
+        "label_time": { "en": "Dining Time", "zh-HK": "用餐時間", "zh-CN": "就餐时间" },
+        "val_time": { "en": "Jan 20, 2027 19:30 (Dinner)", "zh-HK": "2027年1月20日 19:30 (晚市)", "zh-CN": "2027年1月20日 19:30 (晚市)" },
+        "label_guests": { "en": "Guests", "zh-HK": "人數", "zh-CN": "人数" },
+        "val_guests": { "en": "2 Adults", "zh-HK": "2 位成人", "zh-CN": "2 位成人" },
+        "btn_search": { "en": "Search", "zh-HK": "搜尋餐廳", "zh-CN": "搜索餐厅" },
+        "filter_title": { "en": "Filters", "zh-HK": "條件篩選", "zh-CN": "条件筛选" },
+        "filter_reset": { "en": "Reset All", "zh-HK": "重置所有", "zh-CN": "重置所有" },
+        "budget_cap": { "en": "Budget Limit", "zh-HK": "人均預算上限", "zh-CN": "人均预算上限" },
+        "budget_prefix": { "en": "Max HK$", "zh-HK": "最高 HK$", "zh-CN": "最高 HK$" },
+        "rating_title": { "en": "Restaurant Rating", "zh-HK": "餐廳評級", "zh-CN": "餐厅评级" },
+        "star_5": { "en": "3 Michelin Stars", "zh-HK": "米芝蓮三星", "zh-CN": "米其林三星" },
+        "star_4": { "en": "2 Michelin Stars", "zh-HK": "米芝蓮二星", "zh-CN": "米其林二星" },
+        "star_3": { "en": "1 Michelin Star", "zh-HK": "米芝蓮一星", "zh-CN": "米其林一星" },
+        "star_2": { "en": "Selected Signature", "zh-HK": "經濟級精選", "zh-CN": "经济级精选" },
+        "region_title": { "en": "Region", "zh-HK": "地區分佈", "zh-CN": "地区分布" },
+        // 地區選項 (連動左側 Panel)
+        "reg_hk": { "en": "Hong Kong Island", "zh-HK": "香港島", "zh-CN": "香港岛" },
+        "reg_kln": { "en": "Kowloon", "zh-HK": "九龍", "zh-CN": "九龙" },
+        "reg_nte": { "en": "New Territories East", "zh-HK": "新界東", "zh-CN": "新界东" },
+        "reg_ntw": { "en": "New Territories West", "zh-HK": "新界西", "zh-CN": "新界西" },
+        "cuisine_title": { "en": "Cuisine", "zh-HK": "菜系風味", "zh-CN": "菜系风味" },
+        // 菜系選項 (連動左側 Panel)
+        "cui_chinese": { "en": "Chinese Cuisine", "zh-HK": "中式料理", "zh-CN": "中式料理" },
+        "cui_french": { "en": "French Fine Dining", "zh-HK": "法式料理", "zh-CN": "法式料理" },
+        "cui_japanese": { "en": "Japanese Cuisine", "zh-HK": "日本料理", "zh-CN": "日本料理" },
+        "cui_italian": { "en": "Italian Cuisine", "zh-HK": "意式料理", "zh-CN": "意式料理" },
+        "facility_title": { "en": "Facilities & Badges", "zh-HK": "特色設施與認證", "zh-CN": "特色设施与认证" },
+        "fac_room": { "en": "Private Dining Room", "zh-HK": "私密獨立包廂", "zh-CN": "私密独立包厢" },
+        "fac_window": { "en": "Window / Scenery View", "zh-HK": "靠窗景觀席", "zh-CN": "靠窗景观" },
+        "fac_park": { "en": "Valet / Free Parking", "zh-HK": "代客泊車 / 免費停車", "zh-CN": "代客泊车 / 免费停车" },
+        "fac_wine": { "en": "Sommelier Wine Pairing", "zh-HK": "餐酒搭配佐餐", "zh-CN": "餐酒搭配" },
+        "fac_eco": { "en": "Organic & Eco Badge", "zh-HK": "有機食材與環保認證", "zh-CN": "有机食材认证" },
+        "results_label": { "en": "Results: ", "zh-HK": "搜尋結果：", "zh-CN": "搜索结果：" },
+        "sort_recommend": { "en": "Recommended", "zh-HK": "推薦排序", "zh-CN": "推荐排序" },
+        "sort_price_asc": { "en": "Price: Low to High", "zh-HK": "人均：低至高", "zh-CN": "人均：低至高" },
+        "sort_price_desc": { "en": "Price: High to Low", "zh-HK": "人均：高至低", "zh-CN": "人均：高至低" },
+        "sort_rating": { "en": "Highest Rated", "zh-HK": "評分最高", "zh-CN": "评分最高" },
+        "btn_book_menu": { "en": "View Menus & Tables", "zh-HK": "查看套餐及席位", "zh-CN": "查看套餐及席位" },
+        "btn_order_menu": { "en": "Book This Menu", "zh-HK": "預訂此套餐", "zh-CN": "预订此套餐" },
+        "reviews_count": { "en": "reviews", "zh-HK": "條評價", "zh-CN": "条评价" },
+        "per_person": { "en": " /person", "zh-HK": " /位起", "zh-CN": " /位起" },
+        "btn_view_rec": { "en": "View Recommended Menu", "zh-HK": "查看推薦專屬套餐", "zh-CN": "查看推荐专属套餐" },
+        "btn_dismiss": { "en": "Browse All Restaurants", "zh-HK": "瀏覽全部餐廳清單", "zh-CN": "浏览全部餐厅清单" },
+        "checkout_header": { "en": "Reserve Table & Confirm Booking", "zh-HK": "鎖定餐位與預訂確認", "zh-CN": "锁定餐位与预订确认" },
+        "guest_info_title": { "en": "Guest Information", "zh-HK": "預訂人資料", "zh-CN": "预订人资料" },
+        "total_paid_label": { "en": "Total Paid (2 guests incl. service fee)", "zh-HK": "實付總額 (2位含服務費)", "zh-CN": "实付总额 (2位含服务费)" },
+        "btn_confirm_pay": { "en": "Confirm & Secure Table", "zh-HK": "確認並鎖定餐位", "zh-CN": "确认并锁定餐位" },
+        "btn_floating_book": { "en": "Book Recommended Menu", "zh-HK": "立即預訂推薦套餐", "zh-CN": "立即预订推荐套餐" },
+        "exit_title": { "en": "Reservation Successfully Completed", "zh-HK": "模擬預訂已成功完成", "zh-CN": "模拟预订已成功完成" },
+        "exit_warn_title": { "en": "[IMPORTANT] Verification Steps Required", "zh-HK": "【重要警告】必須完成以下核驗步驟", "zh-CN": "【重要警告】必须完成以下核验步骤" },
+        "exit_warn_1": { "en": "Please make sure to click below to <strong>copy your Participant ID</strong>.", "zh-HK": "請務必點擊下方按鈕<strong>複製您的專屬個人 ID</strong>。", "zh-CN": "请务必点击下方按钮<strong>复制您的专属个人 ID</strong>。" },
+        "exit_warn_2": { "en": "Switch back to your <strong>original survey tab</strong>, paste this ID into the corresponding field, and complete the survey.", "zh-HK": "請<strong>自行切換回原本的問卷主頁分頁面</strong>，在相應題目中<strong>貼上此 ID</strong> 繼續完成作答。", "zh-CN": "请<strong>自行切换回原本的问卷主页分页面</strong>，在相应题目中<strong>贴上此 ID</strong> 继续完成作答。" },
+        "exit_id_label": { "en": "Your 32-Digit Participant ID:", "zh-HK": "您的 32 位個人識別碼 (Participant ID):", "zh-CN": "您的 32 位个人识别码 (Participant ID):" },
+        "btn_copy": { "en": "Copy ID", "zh-HK": "複製ID", "zh-CN": "复制ID" },
+        "sum_rest": { "en": "Selected Restaurant:", "zh-HK": "最終選定餐廳：", "zh-CN": "最终选定餐厅：" },
+        "sum_menu": { "en": "Selected Menu:", "zh-HK": "所選品鑑套餐：", "zh-CN": "所选品鉴套餐：" },
+        "sum_ref": { "en": "Booking Reference:", "zh-HK": "訂單確認編號：", "zh-CN": "订单确认编号：" },
+        "sum_paid": { "en": "Total Paid:", "zh-HK": "模擬實付金額：", "zh-CN": "模拟实付金额：" },
+        "btn_return": { "en": "After copying ID, switch back to the survey tab to continue.", "zh-HK": "已複製 ID 後，請在瀏覽器上方切換回問卷主頁面繼續作答。", "zh-CN": "已复制 ID 后，请在浏览器上方切换回问卷主页面继续作答。" }
     };
 
-    setElText("count-star-5", `(${s5})`);
-    setElText("count-star-4", `(${s4})`);
-    setElText("count-star-3", `(${s3})`);
-    setElText("count-star-2", `(${s2})`);
-
-    setElText("count-region-hk", `(${rHk})`);
-    setElText("count-region-kln", `(${rKln})`);
-    setElText("count-region-nte", `(${rNte})`);
-    setElText("count-region-ntw", `(${rNtw})`);
-
-    setElText("count-cui-canton", `(${cCanton})`);
-    setElText("count-cui-french", `(${cFrench})`);
-    setElText("count-cui-japan", `(${cJapan})`);
-    setElText("count-cui-italian", `(${cItalian})`);
-
-    setElText("count-privateRoom", `(${pR})`);
-    setElText("count-windowSeat", `(${wS})`);
-    setElText("count-parking", `(${pk})`);
-    setElText("count-sommelier", `(${som})`);
-    setElText("count-sustainable", `(${sus})`);
-  }
-
-  // 渲染餐厅列表：取消置顶、取消特异高亮，全部以自然顺序列出
-  function renderRestaurantList(data) {
-    const container = document.getElementById("restaurantListContainer");
-    if (!container) return;
-
-    const countEl = document.getElementById("restaurantCount");
-    if (countEl) countEl.innerText = `${data.length} 间香港精选餐厅`;
-
-    if (!data || data.length === 0) {
-      container.innerHTML = `
-        <div style="background:white; padding:3.5rem 1.5rem; border-radius:12px; text-align:center; border:1px solid #e2e8f0;">
-          <i class="fa-solid fa-utensils" style="font-size:3rem; color:#cbd5e1; margin-bottom:1rem;"></i>
-          <h3 style="font-size:1.15rem; font-weight:700; color:#475569;">未找到符合当前条件的餐厅</h3>
-          <p style="font-size:0.85rem; color:#94a3b8; margin-top:0.4rem;">请尝试调高预算上限或重置筛选条件</p>
-          <button class="sort-btn active" style="margin-top:1rem;" onclick="resetFilters()">重置所有筛选条件</button>
-        </div>
-      `;
-      return;
+    function getI18nVal(obj) {
+        if (!obj) return "";
+        if (typeof obj === 'string') return obj;
+        return obj[currentLang] || obj["en"] || obj["zh-HK"] || obj["zh-CN"] || "";
     }
 
-    // 直接依数据顺序渲染，不进行强制置顶排序
-    container.innerHTML = data.map(rest => {
-      const imgUrl = (rest.images && rest.images[0]) ? rest.images[0] : "https://images.unsplash.com/photo-1550966871-3ed3cdb5ed0c?auto=format&fit=crop&w=800&q=80";
+    function switchLanguage(lang) {
+        currentLang = lang;
+        localStorage.setItem("site_lang", lang);
+        document.querySelectorAll(".lang-btn").forEach(b => b.classList.remove("active"));
+        const activeBtn = document.getElementById(`btn-lang-${lang}`);
+        if (activeBtn) activeBtn.classList.add("active");
 
-      return `
+        applyI18nTranslations();
+        filterRestaurants();
+        setupAiModals();
+    }
+
+    function applyI18nTranslations() {
+        const setT = (id, key) => {
+            const el = document.getElementById(id);
+            if (el && UI_TEXT[key]) el.innerText = UI_TEXT[key][currentLang];
+        };
+        const setH = (id, key) => {
+            const el = document.getElementById(id);
+            if (el && UI_TEXT[key]) el.innerHTML = UI_TEXT[key][currentLang];
+        };
+
+        setT("t_hero_title", "hero_title");
+        setT("t_label_district", "label_district");
+        const kwInput = document.getElementById("keywordInput");
+        if (kwInput) kwInput.placeholder = UI_TEXT["search_placeholder"][currentLang];
+        setT("t_label_time", "label_time");
+        const valTime = document.getElementById("t_val_time");
+        if (valTime) valTime.value = UI_TEXT["val_time"][currentLang];
+        setT("t_label_guests", "label_guests");
+        const valGuests = document.getElementById("t_val_guests");
+        if (valGuests) valGuests.value = UI_TEXT["val_guests"][currentLang];
+        setT("t_btn_search", "btn_search");
+        setT("t_filter_title", "filter_title");
+        setT("t_filter_reset", "filter_reset");
+        setT("t_budget_cap", "budget_cap");
+
+        const slider = document.getElementById("priceRange");
+        if (slider) {
+            document.getElementById("priceRangeLabel").innerText = `${UI_TEXT["budget_prefix"][currentLang]} ${parseInt(slider.value).toLocaleString()}`;
+        }
+
+        setT("t_rating_title", "rating_title");
+        setT("t_star_5", "star_5");
+        setT("t_star_4", "star_4");
+        setT("t_star_3", "star_3");
+        setT("t_star_2", "star_2");
+
+        // 【核心修復 1】：完整連動左側 Panel 的地區選項標籤
+        setT("t_region_title", "region_title");
+        setT("lbl_reg_hk", "reg_hk");
+        setT("lbl_reg_kln", "reg_kln");
+        setT("lbl_reg_nte", "reg_nte");
+        setT("lbl_reg_ntw", "reg_ntw");
+
+        // 【核心修復 2】：完整連動左側 Panel 的菜系選項標籤
+        setT("t_cuisine_title", "cuisine_title");
+        setT("lbl_cui_chinese", "cui_chinese");
+        setT("lbl_cui_french", "cui_french");
+        setT("lbl_cui_japanese", "cui_japanese");
+        setT("lbl_cui_italian", "cui_italian");
+
+        setT("t_facility_title", "facility_title");
+        setT("t_fac_room", "fac_room");
+        setT("t_fac_window", "fac_window");
+        setT("t_fac_park", "fac_park");
+        setT("t_fac_wine", "fac_wine");
+        setT("t_fac_eco", "fac_eco");
+
+        setT("t_results_label", "results_label");
+        setT("t_sort_recommend", "sort_recommend");
+        setT("t_sort_price_asc", "sort_price_asc");
+        setT("t_sort_price_desc", "sort_price_desc");
+        setT("t_sort_rating", "sort_rating");
+
+        setH("t_btn_view_rec", "btn_view_rec");
+        setT("t_btn_dismiss", "btn_dismiss");
+
+        setH("t_checkout_header", "checkout_header");
+        setT("t_guest_info_title", "guest_info_title");
+        setT("t_total_paid_label", "total_paid_label");
+        setT("t_btn_confirm_pay", "btn_confirm_pay");
+        setT("t_btn_floating_book", "btn_floating_book");
+
+        setT("t_exit_title", "exit_title");
+        setH("t_exit_warn_title", "exit_warn_title");
+        const warnList = document.getElementById("t_exit_warn_list");
+        if (warnList) {
+            warnList.innerHTML = `<li>${UI_TEXT["exit_warn_1"][currentLang]}</li><li>${UI_TEXT["exit_warn_2"][currentLang]}</li>`;
+        }
+        setT("t_exit_id_label", "exit_id_label");
+        setT("t_btn_copy", "btn_copy");
+        setT("t_sum_rest", "sum_rest");
+        setT("t_sum_menu", "sum_menu");
+        setT("t_sum_ref", "sum_ref");
+        setT("t_sum_paid", "sum_paid");
+        setH("t_btn_return", "btn_return");
+    }
+
+    let currentPID = localStorage.getItem("participantID") || "Anonymous";
+    let AI_RECOMMENDED_ID = parseInt(localStorage.getItem("ai_recommended_restaurant_id"), 10) || 46;
+    const SHOW_AI_LABEL = (localStorage.getItem("showAiLabel") === "true");
+
+    let currentRestaurants = [];
+    let selectedRest = null;
+    let selectedMenu = null;
+    let hasCopiedID = false;
+
+    function renderRestaurantList(data) {
+        const container = document.getElementById("restaurantListContainer");
+        if (!container) return;
+
+        const countEl = document.getElementById("restaurantCount");
+        if (countEl) countEl.innerText = `${data.length} ${currentLang === 'en' ? 'Fine Dining Restaurants' : (currentLang === 'zh-HK' ? '間精選餐廳' : '间精选餐厅')}`;
+
+        container.innerHTML = data.map(rest => {
+            const restName = getI18nVal(rest.name);
+            const restReg = getI18nVal(rest.region_i18n || rest.region);
+            const restLoc = getI18nVal(rest.location);
+            const restCui = getI18nVal(rest.cuisine_i18n || rest.cuisine);
+            const restAddr = getI18nVal(rest.address);
+            const restEco = getI18nVal(rest.ecoAward);
+            const restVerdict = getI18nVal(rest.verdict);
+            const imgUrl = (rest.images && rest.images[0]) ? rest.images[0] : uniqueRestaurantImages[0];
+
+            return `
         <div class="restaurant-card">
           <div class="rest-image-col">
-            <img src="${imgUrl}" alt="${rest.name}" loading="lazy">
+            <img src="${imgUrl}" alt="${restName}" loading="lazy">
           </div>
           <div class="rest-info-col">
             <div>
               <div style="color:var(--star);font-size:0.78rem;font-weight:700;">
-                ${getStarLabel(rest.stars)} • <span style="color:#0284c7;">${rest.region} (${rest.location || ''})</span>
+                ⭐ ${rest.stars} • <span style="color:#0284c7;">${restReg} (${restLoc})</span>
               </div>
-              <h2 style="font-size:1.15rem;font-weight:800;margin-top:3px;">${rest.name}</h2>
+              <h2 style="font-size:1.15rem;font-weight:800;margin-top:3px;">${restName}</h2>
               <p style="font-size:0.8rem;color:var(--text-muted);margin-top:2px;">
-                <i class="fa-solid fa-location-dot" style="color:var(--primary);"></i> ${rest.address || ''}
+                <i class="fa-solid fa-location-dot" style="color:var(--primary);"></i> ${restAddr}
               </p>
-              ${rest.ecoAward ? `<div class="eco-award-box"><i class="fa-solid fa-leaf"></i> ${rest.ecoAward}</div>` : ''}
+              ${restEco ? `<div class="eco-award-box"><i class="fa-solid fa-leaf"></i> ${restEco}</div>` : ''}
             </div>
             <div style="margin-top:8px;">
-              <span class="badge-pill" style="background:#e0f2fe;color:#0369a1;"><i class="fa-solid fa-utensils"></i> ${rest.cuisine}</span>
-              ${rest.hasPrivateRoom ? `<span class="badge-pill"><i class="fa-solid fa-door-closed"></i> 独立包厢</span>` : ''}
-              ${rest.hasWindowSeat ? `<span class="badge-pill"><i class="fa-solid fa-city"></i> 景观席</span>` : ''}
-              ${rest.hasParking ? `<span class="badge-pill"><i class="fa-solid fa-car"></i> 泊车服务</span>` : ''}
-              ${rest.hasSommelier ? `<span class="badge-pill"><i class="fa-solid fa-wine-glass"></i> 侍酒师配酒</span>` : ''}
-              ${rest.hasSustainable ? `<span class="badge-pill eco-pill"><i class="fa-solid fa-seedling"></i> 环保永续认证</span>` : ''}
+              <span class="badge-pill" style="background:#e0f2fe;color:#0369a1;"><i class="fa-solid fa-utensils"></i> ${restCui}</span>
+              ${rest.hasPrivateRoom ? `<span class="badge-pill"><i class="fa-solid fa-door-closed"></i> ${UI_TEXT["fac_room"][currentLang]}</span>` : ''}
+              ${rest.hasWindowSeat ? `<span class="badge-pill"><i class="fa-solid fa-city"></i> ${UI_TEXT["fac_window"][currentLang]}</span>` : ''}
+              ${rest.hasParking ? `<span class="badge-pill"><i class="fa-solid fa-car"></i> ${UI_TEXT["fac_park"][currentLang]}</span>` : ''}
+              ${rest.hasSommelier ? `<span class="badge-pill"><i class="fa-solid fa-wine-glass"></i> ${UI_TEXT["fac_wine"][currentLang]}</span>` : ''}
+              ${rest.hasSustainable ? `<span class="badge-pill eco-pill"><i class="fa-solid fa-seedling"></i> ${UI_TEXT["fac_eco"][currentLang]}</span>` : ''}
             </div>
           </div>
           <div class="rest-pricing-col">
             <div>
-              <div style="font-size:0.8rem;font-weight:700;color:var(--primary);">${rest.verdict || '精选推荐'}</div>
-              <span style="font-size:0.72rem;color:var(--text-muted);">${rest.reviewCount || 999} 条评价</span>
-              <span class="score-badge">${rest.rating || 9.0}</span>
+              <div style="font-size:0.8rem;font-weight:700;color:var(--primary);">${restVerdict}</div>
+              <span style="font-size:0.72rem;color:var(--text-muted);">${rest.reviewCount} ${UI_TEXT["reviews_count"][currentLang]}</span>
+              <span class="score-badge">${rest.rating}</span>
             </div>
             <div style="margin-top:auto;">
-              <div style="text-decoration:line-through;font-size:0.78rem;color:var(--text-light);">HK$ ${rest.originalPrice || Math.round(rest.price * 1.15)}</div>
+              <div style="text-decoration:line-through;font-size:0.78rem;color:var(--text-light);">HK$ ${rest.originalPrice}</div>
               <span style="font-size:1.45rem;font-weight:800;color:var(--accent);">HK$ ${rest.price}</span>
-              <span style="font-size:0.75rem;color:var(--text-muted);"> /位起</span>
+              <span style="font-size:0.75rem;color:var(--text-muted);">${UI_TEXT["per_person"][currentLang]}</span>
             </div>
             <button class="btn-select-menu" style="margin-top:8px;" onclick="openMenuModal(${rest.id})">
-              查看套餐及席位
+              ${UI_TEXT["btn_book_menu"][currentLang]}
             </button>
           </div>
         </div>
       `;
-    }).join('');
-  }
-
-  // 设置进入主页时的推荐弹窗与右下角小浮窗 (并在 dialog box 中显示绿色 Eco 认证框)
-  function setupAiModals() {
-    const dataList = (typeof restaurantsData !== 'undefined' && Array.isArray(restaurantsData)) ? restaurantsData : [];
-    if (dataList.length === 0) return;
-    const aiRest = dataList.find(r => r.id === AI_RECOMMENDED_ID) || dataList[0];
-    if (!aiRest) return;
-
-    const setTxt = (id, t) => { const el = document.getElementById(id); if (el) el.innerText = t; };
-    setTxt("modalAiRecTitle", aiRest.name);
-    setTxt("modalAiRecName", aiRest.name);
-    setTxt("modalAiRecLoc", `${aiRest.region} (${aiRest.location || ''}) • ${aiRest.address || ''}`);
-    setTxt("modalAiRecPrice", `HK$ ${aiRest.price}`);
-
-    // 1. 中央 Dialog Box：AI 关键字高亮放大
-    const nudgeEl = document.getElementById("modalAiRecNudgeText");
-    if (nudgeEl) {
-      if (SHOW_AI_LABEL) {
-        let formattedText = AI_NUDGE_TEXT.replace(/(AI\s*智能(推荐|分析)?|AI|智能算法|智能)/gi, function(match) {
-          return `<span class="ai-keyword-highlight"><i class="fa-solid fa-wand-magic-sparkles"></i> ${match}</span>`;
-        });
-        nudgeEl.innerHTML = formattedText;
-        nudgeEl.style.fontSize = "0.95rem";
-        nudgeEl.style.lineHeight = "1.6";
-      } else {
-        nudgeEl.innerText = AI_NUDGE_TEXT;
-      }
+        }).join('');
     }
 
-    // 2. 中央 Dialog Box：绿色 Eco 认证
-    const ecoBox = document.getElementById("modalAiRecEcoBox");
-    const ecoText = document.getElementById("modalAiRecEcoText");
-    if (aiRest.ecoAward) {
-      if (ecoText) ecoText.innerText = aiRest.ecoAward;
-      if (ecoBox) ecoBox.style.display = "flex";
-    } else {
-      if (ecoBox) ecoBox.style.display = "none";
+    // 【核心修復 3】：支援三語 Nudge Text 解析與當前語言即時渲染
+    function setupAiModals() {
+        const dataList = (typeof restaurantsData !== 'undefined' && Array.isArray(restaurantsData)) ? restaurantsData : [];
+        if (dataList.length === 0) return;
+        const aiRest = dataList.find(r => r.id === AI_RECOMMENDED_ID) || dataList[0];
+        if (!aiRest) return;
+
+        const restName = getI18nVal(aiRest.name);
+        const restReg = getI18nVal(aiRest.region_i18n || aiRest.region);
+        const restLoc = getI18nVal(aiRest.location);
+        const restAddr = getI18nVal(aiRest.address);
+        const restEco = getI18nVal(aiRest.ecoAward);
+
+        document.getElementById("modalAiRecTitle").innerText = restName;
+        document.getElementById("modalAiRecName").innerText = restName;
+        document.getElementById("modalAiRecLoc").innerText = `${restReg} (${restLoc}) • ${restAddr}`;
+        document.getElementById("modalAiRecPrice").innerText = `HK$ ${aiRest.price}`;
+
+        const ecoBox = document.getElementById("modalAiRecEcoBox");
+        const ecoText = document.getElementById("modalAiRecEcoText");
+        if (restEco) {
+            ecoText.innerText = restEco;
+            ecoBox.style.display = "flex";
+        } else {
+            ecoBox.style.display = "none";
+        }
+
+        const badgeEl = document.getElementById("modalAiRecBadge");
+        if (badgeEl) {
+            if (SHOW_AI_LABEL) {
+                badgeEl.className = "ai-prominent-badge";
+                badgeEl.innerHTML = currentLang === 'en'
+                    ? '<i class="fa-solid fa-microchip"></i> 【AI Tailored Recommendation】'
+                    : (currentLang === 'zh-HK' ? '<i class="fa-solid fa-microchip"></i> 【AI 核心智能演算法】為您量身精準推薦' : '<i class="fa-solid fa-microchip"></i> 【AI 智能算法】为您量身精准推荐');
+            } else {
+                badgeEl.className = "";
+                badgeEl.style.cssText = "background:#f59e0b;color:#78350f;font-size:0.75rem;font-weight:800;padding:2px 8px;border-radius:999px;display:inline-block;margin-bottom:6px;";
+                badgeEl.innerHTML = currentLang === 'en' ? '<i class="fa-solid fa-crown"></i> Curated Recommendation' : (currentLang === 'zh-HK' ? '<i class="fa-solid fa-crown"></i> 顧問精選推薦' : '<i class="fa-solid fa-crown"></i> 平台精选推荐');
+            }
+        }
+
+        // 解析來自 localStorage 的三語 Nudge Text 物件
+        let rawNudge = "";
+        try {
+            const storedJson = localStorage.getItem('ai_nudge_text_json');
+            if (storedJson) {
+                const parsed = JSON.parse(storedJson);
+                rawNudge = parsed[currentLang] || parsed["en"] || parsed["zh-HK"] || parsed["zh-CN"];
+            }
+        } catch(e) {}
+
+        // 保底使用一般存儲或依當前語言動態合成預設推薦文案
+        if (!rawNudge) {
+            rawNudge = localStorage.getItem('ai_nudge_text');
+        }
+        if (!rawNudge || rawNudge.includes("为您精心甄选") && currentLang !== "zh-CN") {
+            const awardTxt = restEco || (currentLang === 'en' ? 'Certified Sustainable Dining' : '獲香港可持續發展綠色餐飲最高級別環保認證');
+            if (SHOW_AI_LABEL) {
+                rawNudge = currentLang === 'en'
+                    ? `AI Smart Analysis\\nTailored specifically for you: ${restName}, recognized with ${awardTxt}, prioritizing exceptional quality and eco-friendly fine dining.`
+                    : (currentLang === 'zh-HK'
+                        ? `AI 智能分析\\n為您量身精選：${restName}，榮獲${awardTxt}，堅持卓越品質與可持續美食體驗。`
+                        : `AI 智能分析\\n为您量身精选：${restName}，荣获${awardTxt}，坚持卓越品质与可持续美食体验。`);
+            } else {
+                rawNudge = currentLang === 'en'
+                    ? `Specially curated for you: ${restName}, recognized with ${awardTxt}, prioritizing exceptional quality and eco-friendly fine dining.`
+                    : (currentLang === 'zh-HK'
+                        ? `為您精選：${restName}，榮獲${awardTxt}，堅持卓越品質與可持續美食體驗。`
+                        : `为您精选：${restName}，荣获${awardTxt}，坚持卓越品质与可持续美食体验。`);
+            }
+        }
+
+        // 處理段落換行與 AI 關鍵字高亮
+        const nudgeEl = document.getElementById("modalAiRecNudgeText");
+        if (nudgeEl) {
+            let formattedText = rawNudge.replace(/\\n/g, '<br>');
+            if (SHOW_AI_LABEL) {
+                formattedText = formattedText.replace(/(AI\s*Smart|AI\s*智能(推荐|分析)?|AI|智能算法|智能)/gi, function(match) {
+                    return `<span class="ai-word-glow"><i class="fa-solid fa-wand-magic-sparkles"></i> ${match}</span>`;
+                });
+            }
+            nudgeEl.innerHTML = formattedText;
+        }
+
+        const modalImg = document.getElementById("modalAiRecImg");
+        if (modalImg && aiRest.images && aiRest.images[0]) modalImg.src = aiRest.images[0];
+
+        // 右下角懸浮窗
+        document.getElementById("floatingTitle").innerText = restName;
+        document.getElementById("floatingPrice").innerText = `HK$ ${aiRest.price} ${UI_TEXT["per_person"][currentLang]}`;
+        const floatThumb = document.getElementById("floatingThumb");
+        if (floatThumb && aiRest.images && aiRest.images[0]) floatThumb.src = aiRest.images[0];
+
+        const floatEcoBox = document.getElementById("floatingEcoBox");
+        const floatEcoText = document.getElementById("floatingEcoText");
+        if (restEco) {
+            floatEcoText.innerText = restEco;
+            floatEcoBox.style.display = "flex";
+        } else {
+            floatEcoBox.style.display = "none";
+        }
+
+        const floatBadge = document.getElementById("floatingPopupTitle");
+        if (floatBadge) {
+            floatBadge.innerHTML = SHOW_AI_LABEL
+                ? (currentLang === 'en' ? '<i class="fa-solid fa-wand-magic-sparkles"></i> AI Recommendation' : (currentLang === 'zh-HK' ? '<i class="fa-solid fa-wand-magic-sparkles"></i> AI 智能推薦' : '<i class="fa-solid fa-wand-magic-sparkles"></i> AI 智能推荐'))
+                : (currentLang === 'en' ? '<i class="fa-solid fa-crown"></i> Curated' : (currentLang === 'zh-HK' ? '<i class="fa-solid fa-crown"></i> 精選推薦' : '<i class="fa-solid fa-crown"></i> 精选推荐'));
+        }
+
+        setTimeout(() => {
+            const entryModal = document.getElementById("entryRecommendModal");
+            const floatPopup = document.getElementById("floatingRecommendPopup");
+            if (entryModal) entryModal.classList.add("active");
+            if (floatPopup) floatPopup.classList.add("active");
+        }, 400);
     }
 
-    // 3. 中央 Dialog Box：顶部徽章强化
-    const modalBadge = document.getElementById("modalAiRecBadge");
-    if (modalBadge) {
-      if (SHOW_AI_LABEL) {
-        modalBadge.className = "ai-prominent-badge";
-        modalBadge.innerHTML = '<i class="fa-solid fa-microchip"></i> 【AI 智能算法】为您量身精准推荐';
-      } else {
-        modalBadge.className = "";
-        modalBadge.style.cssText = "background:#f59e0b;color:#78350f;font-size:0.75rem;font-weight:800;padding:2px 8px;border-radius:999px;display:inline-block;margin-bottom:6px;";
-        modalBadge.innerHTML = '<i class="fa-solid fa-crown"></i> 平台精选推荐';
-      }
+    function acceptRecommendation() {
+        dismissRecommendation();
+        closeFloatingPopup();
+        openMenuModal(AI_RECOMMENDED_ID);
+    }
+    function dismissRecommendation() {
+        const el = document.getElementById("entryRecommendModal");
+        if (el) el.classList.remove("active");
+    }
+    function closeFloatingPopup() {
+        const el = document.getElementById("floatingRecommendPopup");
+        if (el) el.classList.remove("active");
     }
 
-    const modalImg = document.getElementById("modalAiRecImg");
-    if (modalImg && aiRest.images && aiRest.images[0]) modalImg.src = aiRest.images[0];
+    function openMenuModal(id) {
+        const dataList = (typeof restaurantsData !== 'undefined' && Array.isArray(restaurantsData)) ? restaurantsData : [];
+        selectedRest = dataList.find(r => r.id === id);
+        if (!selectedRest) return;
 
-    // 4. 右下角悬浮窗：标题显眼放大 (AI 智能推荐 vs 平台顾问精选)
-    const floatBadge = document.getElementById("floatingPopupTitle");
-    if (floatBadge) {
-      if (SHOW_AI_LABEL) {
-        floatBadge.className = "floating-header-ai";
-        floatBadge.innerHTML = '<i class="fa-solid fa-wand-magic-sparkles" style="color:#fef08a;"></i> AI 智能量身推荐';
-      } else {
-        floatBadge.className = "floating-header-normal";
-        floatBadge.innerHTML = '<i class="fa-solid fa-crown" style="color:#fef08a;"></i> 平台精选推荐';
-      }
-    }
+        const restName = getI18nVal(selectedRest.name);
+        const restReg = getI18nVal(selectedRest.region_i18n || selectedRest.region);
+        const restLoc = getI18nVal(selectedRest.location);
+        const restAddr = getI18nVal(selectedRest.address);
+        const restImgUrl = (selectedRest.images && selectedRest.images[0]) ? selectedRest.images[0] : uniqueRestaurantImages[0];
 
-    // 5. 右下角悬浮窗：基本信息与绿色 Eco 认证书框
-    setTxt("floatingTitle", aiRest.name);
-    setTxt("floatingPrice", `HK$ ${aiRest.price} /位起`);
-    const floatImg = document.getElementById("floatingThumb");
-    if (floatImg && aiRest.images && aiRest.images[0]) floatImg.src = aiRest.images[0];
+        document.getElementById("modalRestTitle").innerText = restName;
+        document.getElementById("modalRestSubtitle").innerText = `${restReg} (${restLoc}) • ${restAddr}`;
 
-    const floatEcoBox = document.getElementById("floatingEcoBox");
-    const floatEcoText = document.getElementById("floatingEcoText");
-    if (aiRest.ecoAward) {
-      if (floatEcoText) floatEcoText.innerText = aiRest.ecoAward;
-      if (floatEcoBox) floatEcoBox.style.display = "flex";
-    } else {
-      if (floatEcoBox) floatEcoBox.style.display = "none";
-    }
-
-    const floatActionBtn = document.getElementById("floatingActionBtn");
-    if (floatActionBtn) {
-      floatActionBtn.innerHTML = SHOW_AI_LABEL
-              ? '<i class="fa-solid fa-bolt"></i> 立即预订 AI 推荐套餐'
-              : '<i class="fa-solid fa-bell-concierge"></i> 立即预订推荐套餐';
-    }
-
-    setTimeout(() => {
-      const entryModal = document.getElementById("entryRecommendModal");
-      const floatPopup = document.getElementById("floatingRecommendPopup");
-      if (entryModal) entryModal.classList.add("active");
-      if (floatPopup) floatPopup.classList.add("active");
-    }, 400);
-  }
-
-  function acceptRecommendation() {
-    dismissRecommendation();
-    closeFloatingPopup();
-    openMenuModal(AI_RECOMMENDED_ID);
-  }
-  function dismissRecommendation() {
-    const el = document.getElementById("entryRecommendModal");
-    if (el) el.classList.remove("active");
-  }
-  function closeFloatingPopup() {
-    const el = document.getElementById("floatingRecommendPopup");
-    if (el) el.classList.remove("active");
-  }
-
-  // 菜單選擇彈窗：左側圖片改為使用餐廳本身的圖片
-  function openMenuModal(id) {
-    const dataList = (typeof restaurantsData !== 'undefined' && Array.isArray(restaurantsData)) ? restaurantsData : [];
-    selectedRest = dataList.find(r => r.id === id);
-    if (!selectedRest) return;
-
-    document.getElementById("modalRestTitle").innerText = selectedRest.name;
-    document.getElementById("modalRestSubtitle").innerText = `${selectedRest.region} (${selectedRest.location || ''}) • ${selectedRest.address || ''}`;
-
-    // 使用餐廳本體的圖片
-    const restImgUrl = (selectedRest.images && selectedRest.images[0]) ? selectedRest.images[0] : "https://images.unsplash.com/photo-1550966871-3ed3cdb5ed0c?auto=format&fit=crop&w=800&q=80";
-
-    const menus = (selectedRest.menus && selectedRest.menus.length > 0) ? selectedRest.menus : [{
-      id: `m_${selectedRest.id}_default`,
-      name: `${selectedRest.name} 经典品鉴套餐`,
-      style: selectedRest.cuisine,
-      seating: "优选雅致席位",
-      drinks: "精选佐餐饮品",
-      price: selectedRest.price
-    }];
-
-    document.getElementById("modalMenuList").innerHTML = menus.map(m => `
-      <div style="border:1px solid #e2e8f0;border-radius:8px;display:flex;overflow:hidden;">
-        <img src="${restImgUrl}" alt="${selectedRest.name}" style="width:180px;height:140px;object-fit:cover;">
-        <div style="padding:1rem;flex:1;display:flex;flex-direction:column;justify-content:space-between;">
-          <div>
-            <h4 style="font-weight:700;">${m.name}</h4>
-            <p style="font-size:0.8rem;color:var(--text-muted);margin-top:4px;">${selectedRest.cuisine} • ${m.seating || ''} • ${m.drinks || ''}</p>
-            ${selectedRest.ecoAward ? `<p style="font-size:0.78rem;color:#15803d;margin-top:4px;"><i class="fa-solid fa-leaf"></i> ${selectedRest.ecoAward}</p>` : ''}
-          </div>
-          <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-top:10px;">
-            <span style="font-size:1.25rem;font-weight:800;color:var(--accent);">HK$ ${m.price} /位</span>
-            <button class="btn-search" style="padding:0.45rem 1rem;font-size:0.85rem;" onclick="openCheckoutModal('${m.id}')">预订此套餐</button>
+        const menus = selectedRest.menus || [];
+        document.getElementById("modalMenuList").innerHTML = menus.map(m => {
+            const menuName = getI18nVal(m.name);
+            const seating = getI18nVal(m.seating);
+            const drinks = getI18nVal(m.drinks);
+            const restEco = getI18nVal(selectedRest.ecoAward);
+            return `
+        <div style="border:1px solid #e2e8f0;border-radius:8px;display:flex;overflow:hidden;">
+          <img src="${restImgUrl}" alt="${restName}" style="width:180px;height:140px;object-fit:cover;">
+          <div style="padding:1rem;flex:1;display:flex;flex-direction:column;justify-content:space-between;">
+            <div>
+              <h4 style="font-weight:700;">${menuName}</h4>
+              <p style="font-size:0.8rem;color:var(--text-muted);margin-top:4px;">${seating} • ${drinks}</p>
+              ${restEco ? `<p style="font-size:0.78rem;color:#15803d;margin-top:4px;"><i class="fa-solid fa-leaf"></i> ${restEco}</p>` : ''}
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-top:10px;">
+              <span style="font-size:1.25rem;font-weight:800;color:var(--accent);">HK$ ${m.price} ${UI_TEXT["per_person"][currentLang]}</span>
+              <button class="btn-search" style="padding:0.45rem 1rem;font-size:0.85rem;" onclick="openCheckoutModal('${m.id}')">${UI_TEXT["btn_order_menu"][currentLang]}</button>
+            </div>
           </div>
         </div>
-      </div>
-    `).join('');
-    document.getElementById("menuModal").classList.add("active");
-  }
-  function closeMenuModal() { document.getElementById("menuModal").classList.remove("active"); }
+      `;
+        }).join('');
+        document.getElementById("menuModal").classList.add("active");
+    }
+    function closeMenuModal() { document.getElementById("menuModal").classList.remove("active"); }
 
-  function openCheckoutModal(menuId) {
-    if (!selectedRest) return;
-    const menus = selectedRest.menus || [];
-    selectedMenu = menus.find(m => m.id === menuId) || menus[0] || { name: "专属主厨套餐", price: selectedRest.price };
+    function openCheckoutModal(menuId) {
+        if (!selectedRest) return;
+        const menus = selectedRest.menus || [];
+        selectedMenu = menus.find(m => m.id === menuId) || menus[0];
 
-    closeMenuModal();
-    document.getElementById("checkoutRestName").innerText = selectedRest.name;
-    document.getElementById("checkoutMenuName").innerText = selectedMenu.name;
-    const total = selectedMenu.price * 2;
-    document.getElementById("checkoutTotalPrice").innerText = `HK$ ${(total * 1.1).toFixed(0)}`;
-    document.getElementById("checkoutModal").classList.add("active");
-  }
-  function closeCheckoutModal() { document.getElementById("checkoutModal").classList.remove("active"); }
+        closeMenuModal();
+        document.getElementById("checkoutRestName").innerText = getI18nVal(selectedRest.name);
+        document.getElementById("checkoutMenuName").innerText = getI18nVal(selectedMenu.name);
+        const total = selectedMenu.price * 2;
+        document.getElementById("checkoutTotalPrice").innerText = `HK$ ${(total * 1.1).toFixed(0)}`;
+        document.getElementById("checkoutModal").classList.add("active");
+    }
+    function closeCheckoutModal() { document.getElementById("checkoutModal").classList.remove("active"); }
 
-  async function confirmBooking() {
-    try {
-      if (!selectedRest) {
-        const dataList = (typeof restaurantsData !== 'undefined' && Array.isArray(restaurantsData)) ? restaurantsData : [];
-        selectedRest = dataList[0] || { id: 1, name: "精选餐厅", price: 1000, region: "香港岛", cuisine: "粤菜/中菜" };
-      }
+    async function confirmBooking() {
+        const isAiChosen = (selectedRest.id === AI_RECOMMENDED_ID);
+        const bookingRef = "HK-" + Math.floor(100000 + Math.random() * 900000);
+        const priceElem = document.getElementById("checkoutTotalPrice");
+        const paidTotalStr = priceElem ? priceElem.innerText : `HK$ ${(selectedRest.price * 2.2).toFixed(0)}`;
+        const menuName = getI18nVal(selectedMenu ? selectedMenu.name : selectedRest.name);
 
-      const isAiChosen = (selectedRest.id === AI_RECOMMENDED_ID);
-      const bookingRef = "HK-" + Math.floor(100000 + Math.random() * 900000);
+        const record = {
+            bookingRef: bookingRef,
+            participantID: currentPID,
+            aiRecommendedRestaurantId: AI_RECOMMENDED_ID,
+            selectedRestaurantId: selectedRest.id,
+            selectedRestaurantName: getI18nVal(selectedRest.name),
+            selectedRestaurantRegion: getI18nVal(selectedRest.region_i18n || selectedRest.region),
+            selectedRestaurantCuisine: getI18nVal(selectedRest.cuisine_i18n || selectedRest.cuisine),
+            isAiRecommendedSelected: isAiChosen,
+            menuName: menuName,
+            totalAmount: paidTotalStr,
+            bookingTime: new Date().toLocaleString()
+        };
 
-      const priceElem = document.getElementById("checkoutTotalPrice");
-      const paidTotalStr = priceElem ? priceElem.innerText : `HK$ ${(selectedRest.price * 2.2).toFixed(0)}`;
-      const currentMenuName = (selectedMenu && selectedMenu.name) ? selectedMenu.name : "经典主厨品鉴套餐";
-
-      const record = {
-        bookingRef: bookingRef,
-        participantID: currentPID,
-        aiRecommendedRestaurantId: AI_RECOMMENDED_ID,
-        selectedRestaurantId: selectedRest.id,
-        selectedRestaurantName: selectedRest.name,
-        selectedRestaurantRegion: selectedRest.region || "香港岛",
-        selectedRestaurantCuisine: selectedRest.cuisine || "粤菜/中菜",
-        isAiRecommendedSelected: isAiChosen,
-        menuName: currentMenuName,
-        totalAmount: paidTotalStr,
-        bookingTime: new Date().toLocaleString()
-      };
-
-      try {
         if (typeof db !== 'undefined' && db && db.ref) {
-          db.ref('restaurant_bookings').push(record).catch(e => console.warn(e));
+            db.ref('restaurant_bookings').push(record).catch(e => console.warn(e));
         }
-      } catch (e) {
-        console.warn("Firebase 预订记录同步已跳过:", e);
-      }
 
-      const setSafeText = (id, val) => {
-        const el = document.getElementById(id);
-        if (el) el.innerText = val;
-      };
+        document.getElementById("summaryRestName").innerText = getI18nVal(selectedRest.name);
+        document.getElementById("summaryMenuName").innerText = menuName;
+        document.getElementById("summaryBookingRef").innerText = bookingRef;
+        document.getElementById("summaryTotalPaid").innerText = paidTotalStr;
 
-      setSafeText("summaryRestName", selectedRest.name);
-      setSafeText("summaryMenuName", currentMenuName);
-      setSafeText("summaryBookingRef", bookingRef);
-      setSafeText("summaryTotalPaid", paidTotalStr);
-
-      closeCheckoutModal();
-      openExitIdDialog();
-    } catch (err) {
-      console.error("confirmBooking 执行出错:", err);
-      closeCheckoutModal();
-      openExitIdDialog();
-    }
-  }
-
-  function openExitIdDialog() {
-    const idElem = document.getElementById("exitParticipantIDText");
-    if (idElem) idElem.innerText = currentPID;
-
-    hasCopiedID = false;
-    const statusMsg = document.getElementById("copyStatusText");
-    if (statusMsg) {
-      statusMsg.className = "copy-status-msg unready";
-      statusMsg.innerText = "* 尚未复制：请先点击上方蓝色「复制ID」按钮";
+        closeCheckoutModal();
+        openExitIdDialog();
     }
 
-    const copyBtn = document.getElementById("btnCopyID");
-    if (copyBtn) {
-      copyBtn.innerHTML = '<i class="fa-regular fa-copy"></i> 复制ID';
-      copyBtn.style.background = "#2563eb";
+    function openExitIdDialog() {
+        document.getElementById("exitParticipantIDText").innerText = currentPID;
+        hasCopiedID = false;
+        document.getElementById("exitIdModal").classList.add("active");
     }
 
-    const modal = document.getElementById("exitIdModal");
-    if (modal) {
-      modal.classList.add("active");
+    function copyParticipantID() {
+        navigator.clipboard.writeText(currentPID).then(() => {
+            hasCopiedID = true;
+            document.getElementById("btnCopyID").innerHTML = '<i class="fa-solid fa-check"></i> ' + (currentLang === 'en' ? 'Copied' : '已複製');
+            document.getElementById("btnCopyID").style.background = "#16a34a";
+        });
     }
-  }
 
-  function copyParticipantID() {
-    const copySuccess = () => {
-      hasCopiedID = true;
-      const statusMsg = document.getElementById("copyStatusText");
-      if (statusMsg) {
-        statusMsg.className = "copy-status-msg ready";
-        statusMsg.innerHTML = '<i class="fa-solid fa-circle-check"></i> <strong>已成功复制到剪贴板！</strong> 请切换回问卷主页面粘贴。';
-      }
-
-      const copyBtn = document.getElementById("btnCopyID");
-      if (copyBtn) {
-        copyBtn.innerHTML = '<i class="fa-solid fa-check"></i> 已复制';
-        copyBtn.style.background = "#16a34a";
-      }
-    };
-
-    if (navigator.clipboard && navigator.clipboard.writeText) {
-      navigator.clipboard.writeText(currentPID).then(copySuccess).catch(() => fallbackCopy(copySuccess));
-    } else {
-      fallbackCopy(copySuccess);
+    function returnToHomePage() {
+        if (!hasCopiedID) {
+            alert(currentLang === 'en' ? "Please copy your Participant ID first!" : "請先複製識別碼！");
+            return;
+        }
+        window.location.href = RETURN_HOME_URL;
     }
-  }
 
-  function fallbackCopy(callback) {
-    const tempInput = document.createElement("input");
-    tempInput.value = currentPID;
-    document.body.appendChild(tempInput);
-    tempInput.select();
-    try {
-      document.execCommand("copy");
-    } catch(e) {}
-    document.body.removeChild(tempInput);
-    callback();
-  }
-
-  function returnToHomePage() {
-    if (!hasCopiedID) {
-      alert("请先点击上方蓝色「复制ID」按钮复制识别码，再返回问卷主页！");
-      return;
+    function updatePriceFilter(val) {
+        document.getElementById("priceRangeLabel").innerText = `${UI_TEXT["budget_prefix"][currentLang]} ${parseInt(val).toLocaleString()}`;
+        filterRestaurants();
     }
-    window.location.href = RETURN_HOME_URL;
-  }
 
-  function updatePriceFilter(val) {
-    const lbl = document.getElementById("priceRangeLabel");
-    if (lbl) lbl.innerText = `最高 HK$ ${parseInt(val).toLocaleString()}`;
-    filterRestaurants();
-  }
+    function filterRestaurants() {
+        const dataList = (typeof restaurantsData !== 'undefined' && Array.isArray(restaurantsData)) ? restaurantsData : [];
+        if (dataList.length === 0) return;
 
-  function filterRestaurants() {
-    const dataList = (typeof restaurantsData !== 'undefined' && Array.isArray(restaurantsData)) ? restaurantsData : [];
-    if (dataList.length === 0) return;
+        const slider = document.getElementById("priceRange");
+        const max = slider ? (parseInt(slider.value) || 2000) : 2000;
+        const keywordInput = document.getElementById("keywordInput");
+        const keyword = keywordInput ? keywordInput.value.trim().toLowerCase() : "";
 
-    const slider = document.getElementById("priceRange");
-    const max = slider ? (parseInt(slider.value) || 2000) : 2000;
-    const keywordInput = document.getElementById("keywordInput");
-    const keyword = keywordInput ? keywordInput.value.trim().toLowerCase() : "";
+        const starCbs = Array.from(document.querySelectorAll('input[name="star"]:checked')).map(c => parseInt(c.value));
+        const regCbs = Array.from(document.querySelectorAll('input[name="region"]:checked')).map(c => c.value);
+        const cuiCbs = Array.from(document.querySelectorAll('input[name="cuisine"]:checked')).map(c => c.value);
 
-    const starCbs = Array.from(document.querySelectorAll('input[name="star"]:checked')).map(c => parseInt(c.value));
-    const regCbs = Array.from(document.querySelectorAll('input[name="region"]:checked')).map(c => c.value);
-    const cuiCbs = Array.from(document.querySelectorAll('input[name="cuisine"]:checked')).map(c => c.value);
+        const getChecked = id => { const el = document.getElementById(id); return el ? el.checked : false; };
+        const pRoom = getChecked("filterPrivateRoom");
+        const wSeat = getChecked("filterWindowSeat");
+        const park = getChecked("filterParking");
+        const som = getChecked("filterSommelier");
+        const sus = getChecked("filterSustainable");
 
-    const getChecked = id => { const el = document.getElementById(id); return el ? el.checked : false; };
-    const pRoom = getChecked("filterPrivateRoom");
-    const wSeat = getChecked("filterWindowSeat");
-    const park = getChecked("filterParking");
-    const som = getChecked("filterSommelier");
-    const sus = getChecked("filterSustainable");
+        currentRestaurants = dataList.filter(r => {
+            if (r.price > max) return false;
 
-    currentRestaurants = dataList.filter(r => {
-      if (!r) return false;
-      if (r.price > max) return false;
+            if (keyword) {
+                const nameVal = (getI18nVal(r.name) + " " + JSON.stringify(r.name)).toLowerCase();
+                const locVal = (getI18nVal(r.location) + " " + JSON.stringify(r.location)).toLowerCase();
+                const cuiVal = (getI18nVal(r.cuisine_i18n) + " " + JSON.stringify(r.cuisine)).toLowerCase();
+                if (!nameVal.includes(keyword) && !locVal.includes(keyword) && !cuiVal.includes(keyword)) return false;
+            }
 
-      if (keyword) {
-        const nameMatch = r.name && r.name.toLowerCase().includes(keyword);
-        const locMatch = r.location && r.location.toLowerCase().includes(keyword);
-        const cuiMatch = r.cuisine && r.cuisine.toLowerCase().includes(keyword);
-        if (!nameMatch && !locMatch && !cuiMatch) return false;
-      }
+            if (starCbs.length && !starCbs.includes(r.stars)) return false;
+            if (regCbs.length && !regCbs.includes(r.region)) return false;
+            if (cuiCbs.length && !cuiCbs.includes(r.cuisine)) return false;
 
-      if (starCbs.length && !starCbs.includes(r.stars)) return false;
-      if (regCbs.length && !regCbs.includes(r.region)) return false;
-      if (cuiCbs.length && !cuiCbs.includes(r.cuisine)) return false;
+            if (pRoom && !r.hasPrivateRoom) return false;
+            if (wSeat && !r.hasWindowSeat) return false;
+            if (park && !r.hasParking) return false;
+            if (som && !r.hasSommelier) return false;
+            if (sus && !r.hasSustainable) return false;
+            return true;
+        });
 
-      if (pRoom && !r.hasPrivateRoom) return false;
-      if (wSeat && !r.hasWindowSeat) return false;
-      if (park && !r.hasParking) return false;
-      if (som && !r.hasSommelier) return false;
-      if (sus && !r.hasSustainable) return false;
-      return true;
+        renderRestaurantList(currentRestaurants);
+    }
+
+    function resetFilters() {
+        const slider = document.getElementById("priceRange");
+        if (slider) slider.value = 2000;
+        document.querySelectorAll('input[type="checkbox"]').forEach(c => c.checked = false);
+        const kwInput = document.getElementById("keywordInput");
+        if (kwInput) kwInput.value = "";
+        currentRestaurants = (typeof restaurantsData !== 'undefined' && Array.isArray(restaurantsData)) ? [...restaurantsData] : [];
+        renderRestaurantList(currentRestaurants);
+    }
+
+    function sortRestaurants(type, btn) {
+        document.querySelectorAll(".sort-btn").forEach(b => b.classList.remove("active"));
+        if (btn) btn.classList.add("active");
+        if (type === 'priceAsc') currentRestaurants.sort((a,b) => a.price - b.price);
+        else if (type === 'priceDesc') currentRestaurants.sort((a,b) => b.price - a.price);
+        else if (type === 'rating') currentRestaurants.sort((a,b) => b.rating - a.rating);
+        renderRestaurantList(currentRestaurants);
+    }
+
+    window.addEventListener("DOMContentLoaded", () => {
+        switchLanguage(currentLang);
     });
-
-    renderRestaurantList(currentRestaurants);
-  }
-
-  function resetFilters() {
-    const slider = document.getElementById("priceRange");
-    if (slider) slider.value = 2000;
-    const priceLbl = document.getElementById("priceRangeLabel");
-    if (priceLbl) priceLbl.innerText = "最高 HK$ 2,000";
-
-    const kwInput = document.getElementById("keywordInput");
-    if (kwInput) kwInput.value = "";
-
-    document.querySelectorAll('input[type="checkbox"]').forEach(c => c.checked = false);
-    currentRestaurants = (typeof restaurantsData !== 'undefined' && Array.isArray(restaurantsData)) ? [...restaurantsData] : [];
-    renderRestaurantList(currentRestaurants);
-  }
-
-  function sortRestaurants(type, btn) {
-    document.querySelectorAll(".sort-btn").forEach(b => b.classList.remove("active"));
-    if (btn) btn.classList.add("active");
-    if (type === 'priceAsc') currentRestaurants.sort((a,b) => a.price - b.price);
-    else if (type === 'priceDesc') currentRestaurants.sort((a,b) => b.price - a.price);
-    else if (type === 'rating') currentRestaurants.sort((a,b) => b.rating - a.rating);
-    renderRestaurantList(currentRestaurants);
-  }
-
-  window.addEventListener("DOMContentLoaded", () => {
-    if (typeof restaurantsData !== 'undefined' && Array.isArray(restaurantsData)) {
-      currentRestaurants = [...restaurantsData];
-      updateFilterCounts();
-      renderRestaurantList(currentRestaurants);
-      setupAiModals();
-    } else {
-      console.error("未能找到 restaurantsData 阵列，请确认 restaurants_data.js 是否被正确引入。");
-    }
-  });
 </script>
 </body>
 </html>

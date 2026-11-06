@@ -190,8 +190,7 @@
 
 <div class="main-card">
     <div class="header-section">
-        <h1><i class="fa-solid fa-utensils" style="color:var(--accent);"></i> DineReserve 实验数据统一导出与管理平台</h1>
-        <p>支持导出包含受试者完整问卷明细 (7题 + 7点量表)、进入时间点与耗时、AI Nudge 推荐文案及预订决策的 Master 表 (Sheet 1)，以及 2×2 实验组别统计总表 (Sheet 2)。</p>
+        <h1><i class="fa-solid fa-utensils" style="color:var(--accent);"></i> DineReserve 实验数据导出与管理平台</h1>
     </div>
 
     <!-- 实时指标卡 -->
@@ -212,7 +211,7 @@
 
     <div class="action-box">
         <button id="exportBtn" class="btn btn-export" onclick="exportMasterData()">
-            <i class="fa-solid fa-file-excel"></i> 下载完整研究数据 Excel (包含 7 题问卷明细与 Condition Summary)
+            <i class="fa-solid fa-file-excel"></i> 下载完整研究数据
         </button>
         <button class="btn btn-refresh" onclick="loadStats()">
             <i class="fa-solid fa-arrows-rotate"></i> 刷新实时统计
@@ -222,13 +221,13 @@
     <!-- 管理员高危清空区域 (短语验证保护) -->
     <div class="admin-danger-zone">
         <div class="danger-title">
-            <i class="fa-solid fa-triangle-exclamation"></i> 实验重置与数据清空 (短语验证防误触)
+            <i class="fa-solid fa-triangle-exclamation"></i> 实验重置与数据清空
         </div>
         <div class="danger-desc">
-            此操作将彻底抹除数据库中的用户登记、问卷答卷、预订记录，<strong>并将 <code>grouping</code> 变量彻底归零重置为 0</strong>。操作前需输入安全校验短语。
+            此操作将彻底抹除数据库，并将 <code>grouping</code> 变量彻底归零重置为 0。操作前需输入安全校验短语。
         </div>
         <button id="resetBtn" class="btn btn-danger" onclick="handleSecureReset()">
-            <i class="fa-solid fa-trash-can"></i> 重置清空数据库并归零 Grouping
+            <i class="fa-solid fa-trash-can"></i> 重置数据库
         </button>
     </div>
 
@@ -309,6 +308,7 @@
             const masterDataMap = {};
 
             // 定义 Sheet 1: Master_Research_Data 包含时间维度的字段
+            // 定義欄位清單
             allPIDs.forEach(pid => {
                 masterDataMap[pid] = {
                     "Participant_ID": pid,
@@ -318,13 +318,13 @@
                     "Show_AI_Label": "",
                     "Group_Counter_At_Entry": "",
 
-                    // 时间点与用时
+                    // 時間維度
                     "User_Created_Time": "",
                     "Survey_Entry_Time": "",
                     "Survey_Submitted_Time": "",
                     "Survey_Duration_Seconds": "",
 
-                    // 问卷偏好与态度作答 (7 题)
+                    // 問卷作答
                     "Q1_Budget_Tier": "",
                     "Q2_Preferred_Region": "",
                     "Q3_Preferred_Cuisine": "",
@@ -333,25 +333,38 @@
                     "Q6_Polite_Considerate": "",
                     "Q7_Difficult_Admit_Mistakes": "",
 
-                    // 推荐系统决策与 Nudge Text 记录
+                    // 推薦結果與三語 Nudge Text
                     "Recommended_Rest_ID": "",
                     "Recommended_Rest_Name": "",
                     "Recommended_Rest_Has_EcoAward": "",
                     "Recommended_Rest_EcoAward_Details": "",
-                    "Recommendation_Nudge_Text": "",
+                    "Nudge_Text_EN": "",
+                    "Nudge_Text_ZH_HK": "",
+                    "Nudge_Text_ZH_CN": "",
 
-                    // 最终餐厅预订行为
+                    // 預訂決策
                     "Has_Completed_Booking": "No",
-                    "Booking_Ref_Code": "",
                     "Booking_Confirmed_Time": "",
                     "Selected_Rest_ID": "",
                     "Selected_Rest_Name": "",
                     "Selected_Rest_Region": "",
                     "Selected_Rest_Cuisine": "",
-                    "Selected_Menu_Name": "",
                     "Booking_Total_Amount": "",
                     "Is_Recommendation_Adopted": "No"
                 };
+            });
+
+            // 填充數據
+            surveys.forEach(s => {
+                const pid = s.participantID;
+                if (masterDataMap[pid]) {
+                    const row = masterDataMap[pid];
+                    // 填入三語 Nudge
+                    row["Nudge_Text_EN"] = s.nudge_text_en || s.nudgeContent || "";
+                    row["Nudge_Text_ZH_HK"] = s.nudge_text_zh_hk || "";
+                    row["Nudge_Text_ZH_CN"] = s.nudge_text_zh_cn || "";
+                    // ...其餘欄位正常填充
+                }
             });
 
             // 填充注册时间
@@ -416,8 +429,6 @@
                     row["Recommended_Rest_Name"] = recDetails.name;
                     row["Recommended_Rest_Has_EcoAward"] = recDetails.hasEco;
                     row["Recommended_Rest_EcoAward_Details"] = recDetails.ecoAward;
-
-                    row["Recommendation_Nudge_Text"] = s.nudgeContent || s.nudge_text || s.nudgeText || "";
                 }
             });
 
@@ -427,13 +438,11 @@
                 if (masterDataMap[pid]) {
                     const row = masterDataMap[pid];
                     row["Has_Completed_Booking"] = "Yes";
-                    row["Booking_Ref_Code"] = b.bookingRef || "";
                     row["Booking_Confirmed_Time"] = b.bookingTime || "";
                     row["Selected_Rest_ID"] = b.selectedRestaurantId || "";
                     row["Selected_Rest_Name"] = b.selectedRestaurantName || getRestDetailsById(b.selectedRestaurantId).name;
                     row["Selected_Rest_Region"] = b.selectedRestaurantRegion || "";
                     row["Selected_Rest_Cuisine"] = b.selectedRestaurantCuisine || "";
-                    row["Selected_Menu_Name"] = b.menuName || "";
                     row["Booking_Total_Amount"] = b.totalAmount || "";
                     row["Is_Recommendation_Adopted"] = b.isAiRecommendedSelected ? "Yes" : "No";
                 }

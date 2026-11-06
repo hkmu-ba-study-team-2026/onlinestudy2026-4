@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>用餐偏好问卷</title>
+    <title>Dining Preferences Survey | DineReserve</title>
     <style>
         :root {
             --bg-color: #f8fafc;
@@ -16,7 +16,7 @@
         }
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans SC", sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans TC", "Noto Sans SC", sans-serif;
             background-color: var(--bg-color);
             color: var(--text-primary);
             line-height: 1.6;
@@ -28,84 +28,98 @@
         }
         .container {
             background-color: var(--card-bg);
-            max-width: 820px;
+            max-width: 860px;
             width: 100%;
             border-radius: 16px;
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.01);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
             padding: 36px 32px;
             border: 1px solid var(--border-color);
         }
-        .lead-text {
-            font-size: 1.1rem;
-            font-weight: 700;
-            color: var(--text-primary);
+        .header-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
             margin-bottom: 24px;
             padding-bottom: 12px;
             border-bottom: 2px solid var(--bg-color);
+        }
+        .lead-text { font-size: 1.15rem; font-weight: 800; color: var(--text-primary); }
+        .lang-switcher {
+            display: flex;
+            gap: 4px;
+            background: #f1f5f9;
+            padding: 3px 6px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+        }
+        .lang-btn {
+            background: none;
+            border: none;
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: #64748b;
+            padding: 4px 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .lang-btn.active {
+            background: #ffffff;
+            color: var(--accent-color);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
         }
         .form-group {
             margin-bottom: 24px;
             background: #fafbfc;
             border: 1px solid var(--border-color);
             border-radius: 10px;
-            padding: 16px 18px;
+            padding: 18px 20px;
         }
         label.question-title {
             display: block;
-            font-size: 0.96rem;
+            font-size: 0.98rem;
             font-weight: 700;
             margin-bottom: 12px;
             color: var(--text-primary);
         }
-        .required {
-            color: #e11d48;
-            margin-left: 4px;
-        }
-        .hint-text {
-            font-size: 0.8rem;
-            color: var(--text-secondary);
-            font-weight: normal;
-            margin-left: 6px;
-        }
+        .required { color: #e11d48; margin-left: 4px; }
+        .hint-text { font-size: 0.8rem; color: var(--text-secondary); font-weight: normal; margin-left: 6px; }
         .radio-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
             gap: 10px;
         }
-        /* 7 點量表專用網格排版 */
         .likert-grid {
             display: grid;
             grid-template-columns: repeat(7, 1fr);
             gap: 6px;
         }
         @media (max-width: 768px) {
-            .likert-grid {
-                grid-template-columns: 1fr;
-            }
+            .likert-grid { grid-template-columns: 1fr; }
         }
-        .option-card {
-            display: flex;
-            align-items: center;
-            padding: 10px 14px;
+        .option-card, .likert-card {
             border: 1.5px solid var(--border-color);
             border-radius: 8px;
             cursor: pointer;
             transition: all 0.2s ease;
             background: #ffffff;
-            font-size: 0.9rem;
+            font-size: 0.88rem;
             font-weight: 600;
         }
-        .option-card:hover {
+        .option-card {
+            display: flex;
+            align-items: center;
+            padding: 10px 14px;
+        }
+        .option-card:hover, .likert-card:hover {
             border-color: #cbd5e1;
             background: #f1f5f9;
         }
-        .option-card input {
+        .option-card input, .likert-card input {
             accent-color: var(--accent-color);
-            width: 16px;
-            height: 16px;
-            margin-right: 10px;
             cursor: pointer;
         }
+        .option-card input { width: 16px; height: 16px; margin-right: 10px; }
         .likert-card {
             display: flex;
             flex-direction: column;
@@ -113,26 +127,10 @@
             justify-content: center;
             text-align: center;
             padding: 12px 4px;
-            border: 1.5px solid var(--border-color);
-            border-radius: 8px;
-            cursor: pointer;
-            background: #ffffff;
-            transition: all 0.2s ease;
-            font-size: 0.78rem;
-            font-weight: 600;
+            font-size: 0.76rem;
             line-height: 1.3;
         }
-        .likert-card:hover {
-            border-color: #cbd5e1;
-            background: #f1f5f9;
-        }
-        .likert-card input {
-            accent-color: var(--accent-color);
-            width: 16px;
-            height: 16px;
-            margin-bottom: 6px;
-            cursor: pointer;
-        }
+        .likert-card input { width: 16px; height: 16px; margin-bottom: 6px; }
         .submit-btn {
             display: block;
             width: 100%;
@@ -147,13 +145,8 @@
             transition: background-color 0.2s ease;
             margin-top: 10px;
         }
-        .submit-btn:hover {
-            background-color: var(--hover-color);
-        }
-        .submit-btn:disabled {
-            background-color: #94a3b8;
-            cursor: not-allowed;
-        }
+        .submit-btn:hover { background-color: var(--hover-color); }
+        .submit-btn:disabled { background-color: #94a3b8; cursor: not-allowed; }
     </style>
 
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
@@ -178,238 +171,208 @@
 <body>
 
 <div class="container">
-    <p class="lead-text">请继续填写以下部分</p>
+    <div class="header-bar">
+        <span class="lead-text" id="t_lead_text">Please answer the questions below</span>
+        <div class="lang-switcher">
+            <button type="button" class="lang-btn active" onclick="switchLanguage('en')" id="btn-lang-en">English</button>
+            <button type="button" class="lang-btn" onclick="switchLanguage('zh-HK')" id="btn-lang-zh-HK">繁體中文</button>
+            <button type="button" class="lang-btn" onclick="switchLanguage('zh-CN')" id="btn-lang-zh-CN">简体中文</button>
+        </div>
+    </div>
 
     <form id="surveyForm" onsubmit="handleSubmit(event)">
-
-        <!-- 问题 1：对应 Panel 价格滑块 -->
+        <!-- Q1 -->
         <div class="form-group">
-            <label class="question-title">1. 这次就餐，你最契合哪种消费心境与用餐场景？<span class="required">*</span></label>
+            <label class="question-title">1. <span id="t_q1_title">What is your dining occasion and target budget for this meal?</span><span class="required">*</span></label>
             <div class="radio-grid">
-                <label class="option-card">
-                    <input type="radio" name="budget_tier" value="500" required>
-                    <span>简单便餐</span>
-                </label>
-                <label class="option-card">
-                    <input type="radio" name="budget_tier" value="1000" required>
-                    <span>地道小馆</span>
-                </label>
-                <label class="option-card">
-                    <input type="radio" name="budget_tier" value="1500" required>
-                    <span>精致体验</span>
-                </label>
-                <label class="option-card">
-                    <input type="radio" name="budget_tier" value="2000" required>
-                    <span>顶奢品鉴</span>
-                </label>
+                <label class="option-card"><input type="radio" name="budget_tier" value="500" required><span id="t_q1_o1">Casual Quick Taste</span></label>
+                <label class="option-card"><input type="radio" name="budget_tier" value="1000" required><span id="t_q1_o2">Authentic Quality Dining</span></label>
+                <label class="option-card"><input type="radio" name="budget_tier" value="1500" required><span id="t_q1_o3">Refined Gastronomy Experience</span></label>
+                <label class="option-card"><input type="radio" name="budget_tier" value="2000" required><span id="t_q1_o4">Ultimate Celebration Tasting</span></label>
             </div>
         </div>
 
-        <!-- 问题 2：对应 Panel 地区分布 -->
+        <!-- Q2 -->
         <div class="form-group">
-            <label class="question-title">2. 你希望在哪一个地理片区就餐？<span class="required">*</span></label>
+            <label class="question-title">2. <span id="t_q2_title">Which geographic district do you prefer for dining?</span><span class="required">*</span></label>
             <div class="radio-grid">
-                <label class="option-card">
-                    <input type="radio" name="preferred_region" value="香港岛" required>
-                    <span>香港岛</span>
-                </label>
-                <label class="option-card">
-                    <input type="radio" name="preferred_region" value="九龙" required>
-                    <span>九龙</span>
-                </label>
-                <label class="option-card">
-                    <input type="radio" name="preferred_region" value="新界东" required>
-                    <span>新界东</span>
-                </label>
-                <label class="option-card">
-                    <input type="radio" name="preferred_region" value="新界西" required>
-                    <span>新界西</span>
-                </label>
+                <label class="option-card"><input type="radio" name="preferred_region" value="香港岛" required><span id="t_q2_o1">Hong Kong Island</span></label>
+                <label class="option-card"><input type="radio" name="preferred_region" value="九龙" required><span id="t_q2_o2">Kowloon</span></label>
+                <label class="option-card"><input type="radio" name="preferred_region" value="新界东" required><span id="t_q2_o3">New Territories East</span></label>
+                <label class="option-card"><input type="radio" name="preferred_region" value="新界西" required><span id="t_q2_o4">New Territories West</span></label>
             </div>
         </div>
 
-        <!-- 问题 3：对应 Panel 菜系风味 -->
+        <!-- Q3 -->
         <div class="form-group">
-            <label class="question-title">3. 本次用餐你最期待体验的菜系风味是？<span class="required">*</span></label>
+            <label class="question-title">3. <span id="t_q3_title">Which cuisine flavor are you most looking forward to?</span><span class="required">*</span></label>
             <div class="radio-grid">
-                <label class="option-card">
-                    <input type="radio" name="preferred_cuisine" value="粤菜/中菜" required>
-                    <span>中式料理</span>
-                </label>
-                <label class="option-card">
-                    <input type="radio" name="preferred_cuisine" value="法式料理" required>
-                    <span>法式料理</span>
-                </label>
-                <label class="option-card">
-                    <input type="radio" name="preferred_cuisine" value="日本料理" required>
-                    <span>日本料理</span>
-                </label>
-                <label class="option-card">
-                    <input type="radio" name="preferred_cuisine" value="意式料理" required>
-                    <span>意式料理</span>
-                </label>
+                <label class="option-card"><input type="radio" name="preferred_cuisine" value="中式料理" required><span id="t_q3_o1">Chinese / Cantonese Cuisine</span></label>
+                <label class="option-card"><input type="radio" name="preferred_cuisine" value="法式料理" required><span id="t_q3_o2">French Fine Dining</span></label>
+                <label class="option-card"><input type="radio" name="preferred_cuisine" value="日本料理" required><span id="t_q3_o3">Japanese Cuisine</span></label>
+                <label class="option-card"><input type="radio" name="preferred_cuisine" value="意式料理" required><span id="t_q3_o4">Italian Cuisine</span></label>
             </div>
         </div>
 
-        <!-- 问题 4：多选题（特色设施与认证，可多选或全不选） -->
+        <!-- Q4 -->
         <div class="form-group">
             <label class="question-title">
-                4. 哪些专属设施或就餐礼遇符合你的需求？
-                <span class="hint-text">(可多选，或全部不选)</span>
+                4. <span id="t_q4_title">Which exclusive amenities or perks match your needs?</span>
+                <span class="hint-text" id="t_q4_hint">(Multiple choice, or none)</span>
             </label>
             <div class="radio-grid">
-                <label class="option-card">
-                    <input type="checkbox" name="facility_highlight" value="hasPrivateRoom">
-                    <span>独立私密包厢</span>
-                </label>
-                <label class="option-card">
-                    <input type="checkbox" name="facility_highlight" value="hasWindowSeat">
-                    <span>浪漫靠窗席位</span>
-                </label>
-                <label class="option-card">
-                    <input type="checkbox" name="facility_highlight" value="hasParking">
-                    <span>代客泊车或便利车位</span>
-                </label>
-                <label class="option-card">
-                    <input type="checkbox" name="facility_highlight" value="hasSommelier">
-                    <span>餐酒搭配佐餐</span>
-                </label>
-                <label class="option-card">
-                    <input type="checkbox" name="facility_highlight" value="hasSustainable">
-                    <span>有机食材认证</span>
-                </label>
+                <label class="option-card"><input type="checkbox" name="facility_highlight" value="hasPrivateRoom"><span id="t_q4_o1">Private Dining Room</span></label>
+                <label class="option-card"><input type="checkbox" name="facility_highlight" value="hasWindowSeat"><span id="t_q4_o2">Window / Scenery View</span></label>
+                <label class="option-card"><input type="checkbox" name="facility_highlight" value="hasParking"><span id="t_q4_o3">Valet / Free Parking</span></label>
+                <label class="option-card"><input type="checkbox" name="facility_highlight" value="hasSommelier"><span id="t_q4_o4">Sommelier Wine Pairing</span></label>
+                <label class="option-card"><input type="checkbox" name="facility_highlight" value="hasSustainable"><span id="t_q4_o5">Organic / Eco Certification</span></label>
             </div>
         </div>
 
-        <!-- 问题 5 (7 级量表): I always stay friendly and courteous with other people. -->
+        <!-- Q5 -->
         <div class="form-group">
-            <label class="question-title">5. 我对待他人始终保持友好与礼貌。<span class="required">*</span></label>
-            <div class="likert-grid">
-                <label class="likert-card">
-                    <input type="radio" name="q5_friendly" value="1" required>
-                    <span>非常不同意</span>
-                </label>
-                <label class="likert-card">
-                    <input type="radio" name="q5_friendly" value="2" required>
-                    <span>不同意</span>
-                </label>
-                <label class="likert-card">
-                    <input type="radio" name="q5_friendly" value="3" required>
-                    <span>有点不同意</span>
-                </label>
-                <label class="likert-card">
-                    <input type="radio" name="q5_friendly" value="4" required>
-                    <span>中立</span>
-                </label>
-                <label class="likert-card">
-                    <input type="radio" name="q5_friendly" value="5" required>
-                    <span>有点同意</span>
-                </label>
-                <label class="likert-card">
-                    <input type="radio" name="q5_friendly" value="6" required>
-                    <span>同意</span>
-                </label>
-                <label class="likert-card">
-                    <input type="radio" name="q5_friendly" value="7" required>
-                    <span>非常同意</span>
-                </label>
-            </div>
+            <label class="question-title">5. <span id="t_q5_title">I always stay friendly and courteous with other people.</span><span class="required">*</span></label>
+            <div class="likert-grid" id="grid_q5"></div>
         </div>
 
-        <!-- 问题 6 (7 级量表): I am always polite and considerate of others. -->
+        <!-- Q6 -->
         <div class="form-group">
-            <label class="question-title">6. 我总是对他人彬彬有礼、体贴周到。<span class="required">*</span></label>
-            <div class="likert-grid">
-                <label class="likert-card">
-                    <input type="radio" name="q6_polite" value="1" required>
-                    <span>非常不同意</span>
-                </label>
-                <label class="likert-card">
-                    <input type="radio" name="q6_polite" value="2" required>
-                    <span>不同意</span>
-                </label>
-                <label class="likert-card">
-                    <input type="radio" name="q6_polite" value="3" required>
-                    <span>有点不同意</span>
-                </label>
-                <label class="likert-card">
-                    <input type="radio" name="q6_polite" value="4" required>
-                    <span>中立</span>
-                </label>
-                <label class="likert-card">
-                    <input type="radio" name="q6_polite" value="5" required>
-                    <span>有点同意</span>
-                </label>
-                <label class="likert-card">
-                    <input type="radio" name="q6_polite" value="6" required>
-                    <span>同意</span>
-                </label>
-                <label class="likert-card">
-                    <input type="radio" name="q6_polite" value="7" required>
-                    <span>非常同意</span>
-                </label>
-            </div>
+            <label class="question-title">6. <span id="t_q6_title">I am always polite and considerate of others.</span><span class="required">*</span></label>
+            <div class="likert-grid" id="grid_q6"></div>
         </div>
 
-        <!-- 问题 7 (7 级量表): It is difficult to admit my mistakes openly to others. -->
+        <!-- Q7 -->
         <div class="form-group">
-            <label class="question-title">7. 坦诚地向他人承认自己的错误对我来说很难。<span class="required">*</span></label>
-            <div class="likert-grid">
-                <label class="likert-card">
-                    <input type="radio" name="q7_admit_mistakes" value="1" required>
-                    <span>非常不同意</span>
-                </label>
-                <label class="likert-card">
-                    <input type="radio" name="q7_admit_mistakes" value="2" required>
-                    <span>不同意</span>
-                </label>
-                <label class="likert-card">
-                    <input type="radio" name="q7_admit_mistakes" value="3" required>
-                    <span>有点不同意</span>
-                </label>
-                <label class="likert-card">
-                    <input type="radio" name="q7_admit_mistakes" value="4" required>
-                    <span>中立</span>
-                </label>
-                <label class="likert-card">
-                    <input type="radio" name="q7_admit_mistakes" value="5" required>
-                    <span>有点同意</span>
-                </label>
-                <label class="likert-card">
-                    <input type="radio" name="q7_admit_mistakes" value="6" required>
-                    <span>同意</span>
-                </label>
-                <label class="likert-card">
-                    <input type="radio" name="q7_admit_mistakes" value="7" required>
-                    <span>非常同意</span>
-                </label>
-            </div>
+            <label class="question-title">7. <span id="t_q7_title">It is difficult to admit my mistakes openly to others.</span><span class="required">*</span></label>
+            <div class="likert-grid" id="grid_q7"></div>
         </div>
 
-        <button type="submit" id="submitBtn" class="submit-btn">提交问卷并查看推荐</button>
+        <button type="submit" id="submitBtn" class="submit-btn">Submit Survey & View Recommendation</button>
     </form>
 </div>
 
 <script>
     let currentPID = "";
-    // 用戶進入問卷頁面的確切時間點 (ISO 格式)
+    let currentLang = localStorage.getItem("site_lang") || "en";
     const surveyEntryTime = new Date().toISOString();
+
+    const SURVEY_I18N = {
+        "lead_text": { "en": "Please answer the questions below", "zh-HK": "請繼續填寫以下問卷內容", "zh-CN": "请继续填写以下部分" },
+        "q1_title": { "en": "What is your dining occasion and target budget for this meal?", "zh-HK": "這次用餐，你最契合哪種消費心境與預算場景？", "zh-CN": "这次就餐，你最契合哪种消费心境与用餐场景？" },
+        "q1_o1": { "en": "Casual Quick Taste", "zh-HK": "簡單便餐", "zh-CN": "简单便餐" },
+        "q1_o2": { "en": "Authentic Quality Dining", "zh-HK": "地道小館", "zh-CN": "地道小馆" },
+        "q1_o3": { "en": "Refined Gastronomy Experience", "zh-HK": "精緻體驗", "zh-CN": "精致体验" },
+        "q1_o4": { "en": "Ultimate Celebration Tasting", "zh-HK": "頂奢品鑑", "zh-CN": "顶奢品鉴" },
+
+        "q2_title": { "en": "Which geographic district do you prefer for dining?", "zh-HK": "你希望在哪一個地理片區就餐？", "zh-CN": "你希望在哪一个地理片区就餐？" },
+        "q2_o1": { "en": "Hong Kong Island", "zh-HK": "香港島", "zh-CN": "香港岛" },
+        "q2_o2": { "en": "Kowloon", "zh-HK": "九龍", "zh-CN": "九龙" },
+        "q2_o3": { "en": "New Territories East", "zh-HK": "新界東", "zh-CN": "新界东" },
+        "q2_o4": { "en": "New Territories West", "zh-HK": "新界西", "zh-CN": "新界西" },
+
+        "q3_title": { "en": "Which cuisine flavor are you most looking forward to?", "zh-HK": "本次用餐你最期待體驗的菜系風味是？", "zh-CN": "本次用餐你最期待体验的菜系风味是？" },
+        "q3_o1": { "en": "Chinese / Cantonese Cuisine", "zh-HK": "中式料理", "zh-CN": "中式料理" },
+        "q3_o2": { "en": "French Fine Dining", "zh-HK": "法式料理", "zh-CN": "法式料理" },
+        "q3_o3": { "en": "Japanese Cuisine", "zh-HK": "日本料理", "zh-CN": "日本料理" },
+        "q3_o4": { "en": "Italian Cuisine", "zh-HK": "意式料理", "zh-CN": "意式料理" },
+
+        "q4_title": { "en": "Which exclusive amenities or perks match your needs?", "zh-HK": "哪些專屬設施或就餐禮遇符合你的需求？", "zh-CN": "哪些专属设施或就餐礼遇符合你的需求？" },
+        "q4_hint": { "en": "(Multiple choice, or none)", "zh-HK": "(可多選，或全部不選)", "zh-CN": "(可多选，或全部不选)" },
+        "q4_o1": { "en": "Private Dining Room", "zh-HK": "獨立私密包廂", "zh-CN": "独立私密包厢" },
+        "q4_o2": { "en": "Window / Scenery View", "zh-HK": "浪漫靠窗席位", "zh-CN": "浪漫靠窗席位" },
+        "q4_o3": { "en": "Valet / Free Parking", "zh-HK": "代客泊車或便利車位", "zh-CN": "代客泊车或便利车位" },
+        "q4_o4": { "en": "Sommelier Wine Pairing", "zh-HK": "餐酒搭配佐餐", "zh-CN": "餐酒搭配佐餐" },
+        "q4_o5": { "en": "Organic / Eco Certification", "zh-HK": "有機食材認證", "zh-CN": "有机食材认证" },
+
+        "q5_title": { "en": "I always stay friendly and courteous with other people.", "zh-HK": "我對待他人始終保持友好與禮貌。", "zh-CN": "我对待他人始终保持友好与礼貌。" },
+        "q6_title": { "en": "I am always polite and considerate of others.", "zh-HK": "我總是對他人彬彬有禮、體貼周到。", "zh-CN": "我总是对他人彬彬有礼、体贴周到。" },
+        "q7_title": { "en": "It is difficult to admit my mistakes openly to others.", "zh-HK": "坦誠地面對並向他人承認自己的錯誤對我來說很難。", "zh-CN": "坦诚地向他人承认自己的错误对我来说很难。" },
+        "btn_submit": { "en": "Submit Survey & View Recommendation", "zh-HK": "提交問卷並查看推薦", "zh-CN": "提交问卷并查看推荐" },
+        "btn_submitting": { "en": "Submitting, picking tailored restaurant for you...", "zh-HK": "提交中，正在為您挑選專屬餐廳...", "zh-CN": "提交中，正在为您挑选专属餐厅..." }
+    };
+
+    const LIKERT_7_OPTIONS = {
+        "en": ["Strongly Disagree", "Disagree", "Somewhat Disagree", "Neutral", "Somewhat Agree", "Agree", "Strongly Agree"],
+        "zh-HK": ["非常不同意", "不同意", "有點不同意", "中立", "有點同意", "同意", "非常同意"],
+        "zh-CN": ["非常不同意", "不同意", "有点不同意", "中立", "有点同意", "同意", "非常同意"]
+    };
+
+    function renderLikert(qName, containerId) {
+        const labels = LIKERT_7_OPTIONS[currentLang] || LIKERT_7_OPTIONS["en"];
+        const container = document.getElementById(containerId);
+        if (!container) return;
+        const currentSelected = document.querySelector(`input[name="${qName}"]:checked`)?.value;
+
+        container.innerHTML = labels.map((text, idx) => {
+            const val = idx + 1;
+            const checked = (String(val) === String(currentSelected)) ? "checked" : "";
+            return `
+                <label class="likert-card">
+                    <input type="radio" name="${qName}" value="${val}" ${checked} required>
+                    <span>${text}</span>
+                </label>
+            `;
+        }).join('');
+    }
+
+    function switchLanguage(lang) {
+        currentLang = lang;
+        localStorage.setItem("site_lang", lang);
+        document.querySelectorAll(".lang-btn").forEach(b => b.classList.remove("active"));
+        const activeBtn = document.getElementById(`btn-lang-${lang}`);
+        if (activeBtn) activeBtn.classList.add("active");
+
+        const setT = (id, key) => {
+            const el = document.getElementById(id);
+            if (el && SURVEY_I18N[key]) el.innerText = SURVEY_I18N[key][currentLang];
+        };
+
+        setT("t_lead_text", "lead_text");
+        setT("t_q1_title", "q1_title");
+        setT("t_q1_o1", "q1_o1");
+        setT("t_q1_o2", "q1_o2");
+        setT("t_q1_o3", "q1_o3");
+        setT("t_q1_o4", "q1_o4");
+
+        setT("t_q2_title", "q2_title");
+        setT("t_q2_o1", "q2_o1");
+        setT("t_q2_o2", "q2_o2");
+        setT("t_q2_o3", "q2_o3");
+        setT("t_q2_o4", "q2_o4");
+
+        setT("t_q3_title", "q3_title");
+        setT("t_q3_o1", "q3_o1");
+        setT("t_q3_o2", "q3_o2");
+        setT("t_q3_o3", "q3_o3");
+        setT("t_q3_o4", "q3_o4");
+
+        setT("t_q4_title", "q4_title");
+        setT("t_q4_hint", "q4_hint");
+        setT("t_q4_o1", "q4_o1");
+        setT("t_q4_o2", "q4_o2");
+        setT("t_q4_o3", "q4_o3");
+        setT("t_q4_o4", "q4_o4");
+        setT("t_q4_o5", "q4_o5");
+
+        setT("t_q5_title", "q5_title");
+        setT("t_q6_title", "q6_title");
+        setT("t_q7_title", "q7_title");
+
+        const submitBtn = document.getElementById("submitBtn");
+        if (submitBtn) submitBtn.innerText = SURVEY_I18N["btn_submit"][currentLang];
+
+        renderLikert("q5_friendly", "grid_q5");
+        renderLikert("q6_polite", "grid_q6");
+        renderLikert("q7_admit_mistakes", "grid_q7");
+    }
 
     function generate32DigitParticipantID() {
         const now = new Date();
-        const year = now.getFullYear();
-        const month = String(now.getMonth() + 1).padStart(2, '0');
-        const day = String(now.getDate()).padStart(2, '0');
-        const hours = String(now.getHours()).padStart(2, '0');
-        const minutes = String(now.getMinutes()).padStart(2, '0');
-        const seconds = String(now.getSeconds()).padStart(2, '0');
-        const timestampPart = `${year}${month}${day}${hours}${minutes}${seconds}`;
-
-        let randomDigits = '';
-        while (randomDigits.length < 18) {
-            randomDigits += Math.floor(Math.random() * 10).toString();
-        }
-        return timestampPart + randomDigits;
+        const pad = (n) => String(n).padStart(2, '0');
+        const ts = `${now.getFullYear()}${pad(now.getMonth() + 1)}${pad(now.getDate())}${pad(now.getHours())}${pad(now.getMinutes())}${pad(now.getSeconds())}`;
+        let rand = '';
+        while (rand.length < 18) rand += Math.floor(Math.random() * 10).toString();
+        return ts + rand;
     }
 
     async function initUserSession() {
@@ -429,7 +392,6 @@
         currentPID = participantID;
     }
 
-    // 原子递增 grouping 取得分组
     async function getAssignedGroup() {
         let assignedGroup = 0;
         let counterVal = 1;
@@ -438,13 +400,9 @@
             return { assignedGroup: Math.floor(Math.random() * 4), counterVal: 1 };
         }
 
-        const groupRef = db.ref('grouping');
-
         try {
-            const result = await groupRef.transaction((currentValue) => {
-                if (currentValue === null || currentValue === undefined || isNaN(currentValue)) {
-                    return 1;
-                }
+            const result = await db.ref('grouping').transaction((currentValue) => {
+                if (currentValue === null || currentValue === undefined || isNaN(currentValue)) return 1;
                 return Number(currentValue) + 1;
             });
 
@@ -452,157 +410,138 @@
                 counterVal = Number(result.snapshot.val());
                 assignedGroup = (counterVal - 1) % 4;
             } else {
-                throw new Error("Transaction 未能成功 commit");
+                throw new Error("Transaction fallback");
             }
         } catch (err) {
             try {
-                const snap = await groupRef.once('value');
-                const rawVal = snap.val();
-                const oldVal = (rawVal === null || isNaN(rawVal)) ? 0 : Number(rawVal);
-                counterVal = oldVal + 1;
-                await groupRef.set(counterVal);
+                const snap = await db.ref('grouping').once('value');
+                counterVal = (snap.val() || 0) + 1;
+                await db.ref('grouping').set(counterVal);
                 assignedGroup = (counterVal - 1) % 4;
-            } catch (fallbackErr) {
+            } catch (e) {
                 assignedGroup = Math.floor(Math.random() * 4);
-                counterVal = 0;
             }
         }
-
         return { assignedGroup, counterVal };
     }
 
-    // 自所有具有环保认证 (eco) 的餐厅中随机挑选一间
     function getRandomEcoRestaurant() {
         const allRests = (typeof restaurantsData !== 'undefined' && Array.isArray(restaurantsData)) ? restaurantsData : [];
         const ecoRests = allRests.filter(r => Boolean(r.ecoAward) || Boolean(r.hasSustainable));
-        if (ecoRests.length === 0) {
-            return allRests[0] || { id: 46, name: "Roganic Hong Kong" };
+        if (ecoRests.length === 0) return allRests[0] || { id: 46 };
+        return ecoRests[Math.floor(Math.random() * ecoRests.length)];
+    }
+
+    function generateTrilingualNudge(rest, isAiGroup) {
+        const nameEn = (typeof rest.name === 'object' && rest.name.en) ? rest.name.en : rest.name;
+        const nameHk = (typeof rest.name === 'object' && rest.name['zh-HK']) ? rest.name['zh-HK'] : rest.name;
+        const nameCn = (typeof rest.name === 'object' && rest.name['zh-CN']) ? rest.name['zh-CN'] : rest.name;
+
+        const awardEn = (typeof rest.ecoAward === 'object' && rest.ecoAward?.en) ? rest.ecoAward.en : "Certified Sustainable Dining";
+        const awardHk = (typeof rest.ecoAward === 'object' && rest.ecoAward?.['zh-HK']) ? rest.ecoAward['zh-HK'] : "獲香港可持續發展綠色餐飲最高級別環保認證";
+        const awardCn = (typeof rest.ecoAward === 'object' && rest.ecoAward?.['zh-CN']) ? rest.ecoAward['zh-CN'] : "获香港可持续发展绿色餐饮最高级别环保认证";
+
+        if (isAiGroup) {
+            return {
+                "en": `AI Smart Analysis\\nTailored specifically for you: ${nameEn}, recognized with ${awardEn}, prioritizing exceptional quality and eco-friendly fine dining.`,
+                "zh-HK": `AI 智能分析\\n為您量身精選：${nameHk}，榮獲${awardHk}，堅持卓越品質與可持續美食體驗。`,
+                "zh-CN": `AI 智能分析\\n为您量身精选：${nameCn}，荣获${awardCn}，坚持卓越品质与可持续美食体验。`
+            };
+        } else {
+            return {
+                "en": `Specially curated for you: ${nameEn}, recognized with ${awardEn}, prioritizing exceptional quality and eco-friendly fine dining.`,
+                "zh-HK": `為您精選：${nameHk}，榮獲${awardHk}，堅持卓越品質與可持續美食體驗。`,
+                "zh-CN": `为您精选：${nameCn}，荣获${awardCn}，坚持卓越品质与可持续美食体验。`
+            };
         }
-        const randomIndex = Math.floor(Math.random() * ecoRests.length);
-        return ecoRests[randomIndex];
     }
 
     async function handleSubmit(event) {
         event.preventDefault();
-
-        const selectedFacilities = Array.from(document.querySelectorAll('input[name="facility_highlight"]:checked')).map(cb => cb.value);
-
         const submitBtn = document.getElementById('submitBtn');
         submitBtn.disabled = true;
-        submitBtn.textContent = '提交中，正在为您挑选专属餐厅...';
+        submitBtn.textContent = SURVEY_I18N["btn_submitting"][currentLang];
 
         const formData = new FormData(event.target);
-        const budgetTier = parseInt(formData.get("budget_tier"), 10);
-        const preferredRegion = (formData.get("preferred_region") || "").trim();
-        const preferredCuisine = (formData.get("preferred_cuisine") || "").trim();
-
-        // 提取 7 级量表回答 (1~7)
-        const q5Friendly = parseInt(formData.get("q5_friendly"), 10);
-        const q6Polite = parseInt(formData.get("q6_polite"), 10);
-        const q7AdmitMistakes = parseInt(formData.get("q7_admit_mistakes"), 10);
+        const selectedFacilities = Array.from(document.querySelectorAll('input[name="facility_highlight"]:checked')).map(cb => cb.value);
 
         const surveyResponses = {
-            budget_tier: budgetTier,
-            preferred_region: preferredRegion,
-            preferred_cuisine: preferredCuisine,
+            budget_tier: parseInt(formData.get("budget_tier"), 10),
+            preferred_region: formData.get("preferred_region"),
+            preferred_cuisine: formData.get("preferred_cuisine"),
             facility_highlights: selectedFacilities,
-            q5_friendly: q5Friendly,
-            q6_polite: q6Polite,
-            q7_admit_mistakes: q7AdmitMistakes
+            q5_friendly: parseInt(formData.get("q5_friendly"), 10),
+            q6_polite: parseInt(formData.get("q6_polite"), 10),
+            q7_admit_mistakes: parseInt(formData.get("q7_admit_mistakes"), 10)
         };
 
         const { assignedGroup, counterVal } = await getAssignedGroup();
-
         const useRealAi = (assignedGroup === 0 || assignedGroup === 2);
         const showAiLabel = (assignedGroup === 0 || assignedGroup === 1);
 
         const allRests = (typeof restaurantsData !== 'undefined' && Array.isArray(restaurantsData)) ? restaurantsData : [];
-
         let finalRecId = 46;
-        let finalNudgeText = "";
+        let finalNudges = null;
 
         if (useRealAi) {
-            // === 真实 AI 组 (Group 0 & 2)：正交最佳匹配 ===
             const ecoCandidates = allRests.filter(r => Boolean(r.ecoAward) || Boolean(r.hasSustainable));
             const pool = ecoCandidates.length > 0 ? ecoCandidates : allRests;
 
             let scoredRests = pool.map(r => {
                 let score = 0;
-                if (r.region === preferredRegion) score += 40;
-                if (r.cuisine === preferredCuisine) score += 35;
-                if (r.price <= budgetTier) score += 25;
-                else score -= Math.min(30, Math.round((r.price - budgetTier) / 50));
-                selectedFacilities.forEach(fKey => {
-                    if (r[fKey]) score += 10;
-                });
+                if (r.region === surveyResponses.preferred_region) score += 40;
+                if (r.cuisine === surveyResponses.preferred_cuisine) score += 35;
+                if (r.price <= surveyResponses.budget_tier) score += 25;
+                else score -= Math.min(30, Math.round((r.price - surveyResponses.budget_tier) / 50));
+                selectedFacilities.forEach(fKey => { if (r[fKey]) score += 10; });
                 return { rest: r, score: score };
             });
 
             scoredRests.sort((a, b) => b.score - a.score);
             const bestLocalMatch = scoredRests[0] ? scoredRests[0].rest : pool[0];
+            finalRecId = bestLocalMatch.id;
+            finalNudges = generateTrilingualNudge(bestLocalMatch, showAiLabel);
 
-            if (bestLocalMatch) {
-                finalRecId = bestLocalMatch.id;
-                finalNudgeText = showAiLabel
-                    ? `AI 智能分析\n根据您对「${preferredRegion}」及「${preferredCuisine}」的偏好，为您特别推荐荣获环保认证的 ${bestLocalMatch.name}。`
-                    : `根据您对「${preferredRegion}」及「${preferredCuisine}」的偏好，为您特别推荐荣获环保认证的 ${bestLocalMatch.name}。`;
-            }
-
-            // 尝试呼叫后端 API
+            // 嘗試呼叫後端 API
             const controller = new AbortController();
-            const timeout = setTimeout(() => controller.abort(), 5000);
-
+            const timeout = setTimeout(() => controller.abort(), 6000);
             try {
                 const response = await fetch("/api/recommend", {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        restaurants: allRests.slice(0, 40),
-                        preferences: surveyResponses
-                    }),
+                    body: JSON.stringify({ restaurants: allRests.slice(0, 40), preferences: surveyResponses }),
                     signal: controller.signal
                 });
 
                 if (response.ok) {
                     const resData = await response.json();
                     if (resData.recommend_hotel_id) finalRecId = resData.recommend_hotel_id;
-                    if (resData.nudge_text) {
-                        let text = resData.nudge_text;
-                        if (!showAiLabel) {
-                            text = text.replace(/AI\s*智能(推荐|分析)?/gi, "专家精心")
-                                .replace(/AI/gi, "精选");
-                        }
-                        finalNudgeText = text;
+                    if (resData.nudge_text && typeof resData.nudge_text === 'object') {
+                        finalNudges = resData.nudge_text;
                     }
                 }
             } catch (e) {
-                console.log("使用本地正交精准匹配餐厅:", finalRecId);
+                console.log("Using local trilingual nudge fallback");
             } finally {
                 clearTimeout(timeout);
             }
         } else {
-            // === 非 AI 推荐组 (Group 1 & 3)：自所有 Eco 餐厅中随机挑选 1 间 ===
             const randomEcoRest = getRandomEcoRestaurant();
             finalRecId = randomEcoRest.id;
-            const ecoHighlight = randomEcoRest.ecoAward || "可持续环保与有机认证";
-
-            finalNudgeText = showAiLabel
-                ? `AI 智能分析\n为您精选荣获${ecoHighlight}的 ${randomEcoRest.name}，坚持品质食材与可持续美馔体验。`
-                : `为您精选荣获${ecoHighlight}的 ${randomEcoRest.name}，坚持品质食材与可持续美馔体验。`;
+            finalNudges = generateTrilingualNudge(randomEcoRest, showAiLabel);
         }
 
-        // 保存状态至本地
+        // 本地儲存多語言 Nudge
         localStorage.setItem('participantGroup', assignedGroup.toString());
         localStorage.setItem('showAiLabel', showAiLabel ? "true" : "false");
         localStorage.setItem('ai_recommended_restaurant_id', finalRecId.toString());
-        localStorage.setItem('ai_nudge_text', finalNudgeText);
+        localStorage.setItem('ai_nudge_text_json', JSON.stringify(finalNudges));
         localStorage.setItem('user_preferences', JSON.stringify(surveyResponses));
 
-        // 计算问卷作答耗时 (秒)
         const submitDate = new Date();
         const durationSec = Math.max(0, Math.round((submitDate.getTime() - new Date(surveyEntryTime).getTime()) / 1000));
 
-        // 写入 Firebase (包含 entryAt 与 submittedAt)
+        // 寫入 Firebase
         if (typeof db !== 'undefined' && db) {
             try {
                 await db.ref('survey_responses').push({
@@ -611,23 +550,30 @@
                     groupCounter: counterVal,
                     useRealAi: useRealAi,
                     showAiLabel: showAiLabel,
-                    entryAt: surveyEntryTime,                         // 记录进入问卷的时间点
-                    submittedAt: submitDate.toLocaleString(),        // 提交时间 (格式化)
-                    submittedAtISO: submitDate.toISOString(),       // 提交时间 (ISO 格式)
-                    durationSeconds: durationSec,                   // 作答总耗时 (秒)
+                    entryAt: surveyEntryTime,
+                    submittedAt: submitDate.toLocaleString(),
+                    submittedAtISO: submitDate.toISOString(),
+                    durationSeconds: durationSec,
                     aiRecommendedRestaurantId: finalRecId,
-                    nudgeContent: finalNudgeText,
+                    // 記錄三種語言全部的 Nudge Text
+                    nudgeContent: finalNudges.en || finalNudges['zh-CN'],
+                    nudge_text_en: finalNudges.en || "",
+                    nudge_text_zh_hk: finalNudges['zh-HK'] || "",
+                    nudge_text_zh_cn: finalNudges['zh-CN'] || "",
                     responses: surveyResponses
                 });
             } catch (writeErr) {
-                console.warn("写入 survey_responses 发生异常:", writeErr);
+                console.warn("Write error:", writeErr);
             }
         }
 
         window.location.href = 'restaurant_page.html';
     }
 
-    window.addEventListener("DOMContentLoaded", initUserSession);
+    window.addEventListener("DOMContentLoaded", () => {
+        initUserSession();
+        switchLanguage(currentLang);
+    });
 </script>
 </body>
 </html>

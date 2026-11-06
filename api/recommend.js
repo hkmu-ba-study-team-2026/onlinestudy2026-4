@@ -1,5 +1,4 @@
 const GEMINI_API_KEY = (process.env.GEMINI_API_KEY || "").trim();
-// 修正為官方標準有效的模型名稱
 const MODEL_NAME = "gemini-3.5-flash";
 
 async function getAiRecommendationsFromGemini(restaurantsList, preferences) {
@@ -7,64 +6,59 @@ async function getAiRecommendationsFromGemini(restaurantsList, preferences) {
         throw new Error("Missing GEMINI_API_KEY in environment variables.");
     }
 
-    // 1. 簡化輸入物件，並確保將 ecoAward 欄位包含進去供 AI 判讀
     const simplifiedRestaurants = (restaurantsList || []).map(r => ({
         id: r.id,
         name: r.name,
         region: r.region,
-        location: r.location,
         stars: r.stars,
         price: r.price,
-        cuisine: r.cuisine || r.menus?.[0]?.style || 'Fine Dining',
-        ecoAward: r.ecoAward || null // 環保/綠星認證標籤
+        cuisine: r.cuisine || 'Fine Dining',
+        ecoAward: r.ecoAward || null
     }));
 
-    // 2. 針對「必須具備環保認證」修改 Prompt 規則
     const prompt = `
-You are a professional fine dining Michelin recommendation assistant.
+You are a professional Michelin restaurant recommendation assistant.
 
 [MANDATORY CONSTRAINT]:
-The recommended restaurant MUST have an eco-friendly certification or award (meaning its "ecoAward" property is NOT null). Never recommend a restaurant without an ecoAward.
+The recommended restaurant MUST have an eco-friendly award or certification (its "ecoAward" must NOT be null).
 
 [USER PREFERENCES]:
 - Target Budget: HK$ ${preferences.budget_tier || 'Any'}
-- Desired Accolade / Level: ${preferences.star_tier ? preferences.star_tier + ' Stars' : 'Any'}
 - Desired Region: ${preferences.preferred_region || 'Any'}
 - Desired Cuisine: ${preferences.preferred_cuisine || 'Any'}
-- Desired Facilities / Perks: ${JSON.stringify(preferences.facility_highlights || [])}
+- Desired Facilities: ${JSON.stringify(preferences.facility_highlights || [])}
 
 [CANDIDATE RESTAURANTS]:
 ${JSON.stringify(simplifiedRestaurants)}
 
 [TASK]:
-1. Filter candidates that strictly possess an "ecoAward" (ecoAward != null).
-2. From those eco-certified restaurants, select the ONE restaurant that best aligns with the user's cuisine, region, budget, and star tier preferences.
-3. Write a personalized, persuasive 1-2 sentence recommendation reason ("nudge_text") in Simplified Chinese (简体中文). The reason should naturally weave in its eco-friendly credentials (e.g. Michelin Green Star, zero-waste, sustainable sourcing, organic farms).
-4. While the recommendation reason shall aligns with the user preference, do not explicitly state the correspondence of specific user preferences to the recommendation result.
+1. Filter candidates strictly having an ecoAward (ecoAward != null).
+2. Choose the ONE restaurant that best aligns with user preferences.
+3. Generate personalized, persuasive 1-2 sentence recommendation reason in THREE languages:
+   - "en": English
+   - "zh-HK": Traditional Chinese
+   - "zh-CN": Simplified Chinese
+Naturally weave in its eco-friendly credentials (e.g., Michelin Green Star, organic farm-to-table, sustainable seafood).
 
-Respond ONLY in valid JSON matching this schema without markdown code blocks:
+Respond ONLY in valid JSON matching this schema:
 {
-  "recommend_hotel_id": <number (matching restaurant ID)>
+  "recommend_hotel_id": <number (matching restaurant ID)>,
+  "nudge_text": {
+    "en": "<reason in English>",
+    "zh-HK": "<reason in Traditional Chinese>",
+    "zh-CN": "<reason in Simplified Chinese>"
+  }
 }
 `;
 
     const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL_NAME}:generateContent`;
-
     const requestBody = {
-        contents: [
-            {
-                parts: [
-                    { text: prompt }
-                ]
-            }
-        ],
-        generationConfig: {
-            responseMimeType: "application/json"
-        }
+        contents: [{ parts: [{ text: prompt }] }],
+        generationConfig: { responseMimeType: "application/json" }
     };
 
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 25000);
+    const timeoutId = setTimeout(() => controller.abort(), 20000);
 
     let response;
     try {
@@ -82,79 +76,55 @@ Respond ONLY in valid JSON matching this schema without markdown code blocks:
     }
 
     const rawResponseText = await response.text();
-
     if (!response.ok) {
-        console.error("Gemini API Error Detail:", rawResponseText);
-        throw new Error(`Google Gemini API Error (${response.status}): ${rawResponseText}`);
+        throw new Error(`Gemini API Error (${response.status}): ${rawResponseText}`);
     }
 
-    let data;
-    try {
-        data = JSON.parse(rawResponseText);
-    } catch (e) {
-        throw new Error(`Failed to parse raw Gemini response: ${rawResponseText}`);
-    }
-
+    const data = JSON.parse(rawResponseText);
     const content = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
-    if (!content) {
-        throw new Error(`Empty content returned from Gemini API: ${rawResponseText}`);
-    }
-
-    const cleanJsonText = content.replace(/^```json\s*/i, "").replace(/```$/, "").trim();
-    const parsed = JSON.parse(cleanJsonText);
+    const cleanJson = content.replace(/^```json\s*/i, "").replace(/```$/, "").trim();
+    const parsed = JSON.parse(cleanJson);
 
     return {
-        recommend_hotel_id: parsed.recommend_hotel_id || 1,
-        nudge_text: parsed.nudge_text || "为您精心甄选的主推餐厅。"
+        recommend_hotel_id: parsed.recommend_hotel_id || 46,
+        nudge_text: parsed.nudge_text || {
+            "en": "Specially curated for you featuring certified sustainable dining.",
+            "zh-HK": "為您精心甄選榮獲可持續認證的美饌典範。",
+            "zh-CN": "为您精心甄选荣获可持续认证的美馔典范。"
+        }
     };
 }
 
 module.exports = async (req, res) => {
     res.setHeader("Access-Control-Allow-Origin", "*");
-    res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Requested-With, x-goog-api-key");
+    res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Requested-With");
     res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
 
-    if (req.method === "OPTIONS") {
-        return res.status(200).end();
-    }
-
-    if (req.method === "GET") {
-        return res.status(200).json({
-            status: "ok",
-            message: "Gemini Eco-Recommendation Handler Ready",
-            has_key: Boolean(GEMINI_API_KEY),
-            model: MODEL_NAME
-        });
-    }
+    if (req.method === "OPTIONS") return res.status(200).end();
 
     if (req.method === "POST") {
         try {
-            const { restaurants, products, preferences = {} } = req.body || {};
-            const list = restaurants || products || [];
-
-            if (!Array.isArray(list) || list.length < 1) {
-                return res.status(400).json({ error: "Restaurant list must contain at least 1 item." });
-            }
-
+            const { restaurants, preferences = {} } = req.body || {};
+            const list = restaurants || [];
             const result = await getAiRecommendationsFromGemini(list, preferences);
 
             return res.status(200).json({
                 recommend_hotel_id: result.recommend_hotel_id,
                 nudge_text: result.nudge_text,
-                source: "Gemini_API_Live"
+                source: "Gemini_Live"
             });
-
         } catch (err) {
-            console.error("[Backend Gemini Call Failed]:", err.message);
-            // 本地環保餐廳保底（Fallback 必須是具備 ecoAward 的餐廳，例如 ID 1 Amber 或 ID 6 Caprice）
             return res.status(500).json({
                 error: err.message,
-                recommend_hotel_id: 1,
-                nudge_text: "为您精心甄选的主推餐厅。",
-                source: "Fallback_Due_To_Error"
+                recommend_hotel_id: 46,
+                nudge_text: {
+                    "en": "Specially selected Roganic Hong Kong for you, featuring a Michelin Green Star and sustainable farm-to-table cuisine.",
+                    "zh-HK": "為您精選榮獲米芝蓮綠星的 Roganic Hong Kong，堅持新界有機農場直供與可持續微型菜園料理。",
+                    "zh-CN": "为您精选荣获米其林绿星的 Roganic Hong Kong，坚持新界本地有机农场直供与可持续微型菜园料理。"
+                },
+                source: "Fallback"
             });
         }
     }
-
-    return res.status(405).json({ error: `Method ${req.method} Not Allowed` });
+    return res.status(405).json({ error: "Method Not Allowed" });
 };
