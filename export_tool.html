@@ -237,21 +237,27 @@
 <script>
     const REQUIRED_CONFIRM_PHRASE = "DELETE-DATABASE";
 
+    function extractLabel(val) {
+        if (!val) return "";
+        if (typeof val === "string") return val;
+        return val.en || val["zh-HK"] || val["zh-CN"] || "";
+    }
+
     // 正确定义餐厅数据匹配函数
     function getRestDetailsById(id) {
         if (typeof restaurantsData !== 'undefined' && Array.isArray(restaurantsData)) {
             const found = restaurantsData.find(r => r.id === parseInt(id, 10));
             if (found) {
                 return {
-                    name: found.name,
-                    region: found.region,
-                    cuisine: found.cuisine,
+                    name: extractLabel(found.name),
+                    region: extractLabel(found.region_i18n || found.region),
+                    cuisine: extractLabel(found.cuisine_i18n || found.cuisine),
                     hasEco: (found.ecoAward || found.hasSustainable) ? "Yes" : "No",
-                    ecoAward: found.ecoAward || "None"
+                    ecoAward: extractLabel(found.ecoAward) || "None"
                 };
             }
         }
-        return { name: `餐厅ID #${id}`, region: "", cuisine: "", hasEco: "No", ecoAward: "" };
+        return { name: `Restaurant ID #${id}`, region: "", cuisine: "", hasEco: "No", ecoAward: "" };
     }
 
     async function loadStats() {
@@ -286,23 +292,26 @@
         showStatus("<i class='fa-solid fa-spinner fa-spin'></i> 正在读取 Firebase 数据库并进行实验分组统计...", "info");
 
         try {
-            const [groupSnap, usersSnap, surveySnap, bookingsSnap] = await Promise.all([
+            const [groupSnap, usersSnap, surveySnap, bookingsSnap, filterLogsSnap] = await Promise.all([
                 db.ref('grouping').once('value'),
                 db.ref('users').once('value'),
                 db.ref('survey_responses').once('value'),
-                db.ref('restaurant_bookings').once('value')
+                db.ref('restaurant_bookings').once('value'),
+                db.ref('filter_logs').once('value')
             ]);
+            const filterLogsObj = filterLogsSnap.val() || {};
 
             const currentGroupingCounter = groupSnap.val() !== null ? groupSnap.val() : 0;
             const users = usersSnap.val() ? Object.values(usersSnap.val()) : [];
             const surveys = surveySnap.val() ? Object.values(surveySnap.val()) : [];
             const bookings = bookingsSnap.val() ? Object.values(bookingsSnap.val()) : [];
 
-            // 搜集所有不重复的 32 位 Participant ID
+            // 2. 將 filter_logs 的 participantID 也納入總名單
             const allPIDs = new Set([
                 ...users.map(u => u.participantID),
                 ...surveys.map(s => s.participantID),
-                ...bookings.map(b => b.participantID)
+                ...bookings.map(b => b.participantID),
+                ...Object.keys(filterLogsObj)
             ].filter(pid => pid && pid.trim() !== ""));
 
             const masterDataMap = {};
@@ -350,7 +359,29 @@
                     "Selected_Rest_Region": "",
                     "Selected_Rest_Cuisine": "",
                     "Booking_Total_Amount": "",
-                    "Is_Recommendation_Adopted": "No"
+                    "Is_Recommendation_Adopted": "No",
+
+                    // Filter 互動行為欄位（是否按過該 Filter 按鍵）
+                    "Any_Filter_Used": "No",
+                    "Filter_Reset_All": "No",
+                    "Filter_Price_Range": "No",
+                    "Filter_Star_5": "No",
+                    "Filter_Star_4": "No",
+                    "Filter_Star_3": "No",
+                    "Filter_Star_2": "No",
+                    "Filter_Region_HK": "No",
+                    "Filter_Region_KLN": "No",
+                    "Filter_Region_NTE": "No",
+                    "Filter_Region_NTW": "No",
+                    "Filter_Cuisine_Chinese": "No",
+                    "Filter_Cuisine_French": "No",
+                    "Filter_Cuisine_Japanese": "No",
+                    "Filter_Cuisine_Italian": "No",
+                    "Filter_Fac_PrivateRoom": "No",
+                    "Filter_Fac_WindowSeat": "No",
+                    "Filter_Fac_Parking": "No",
+                    "Filter_Fac_Sommelier": "No",
+                    "Filter_Fac_Sustainable": "No"
                 };
             });
 
@@ -432,6 +463,13 @@
                 }
             });
 
+            Object.values(filterLogsObj).forEach(fl => {
+                const pid = fl.participantID;
+                if (masterDataMap[pid] && fl.filterUsed) {
+                    applyFilterColumns(masterDataMap[pid], fl.filterUsed);
+                }
+            });
+
             // 填充预订记录数据
             bookings.forEach(b => {
                 const pid = b.participantID;
@@ -445,8 +483,35 @@
                     row["Selected_Rest_Cuisine"] = b.selectedRestaurantCuisine || "";
                     row["Booking_Total_Amount"] = b.totalAmount || "";
                     row["Is_Recommendation_Adopted"] = b.isAiRecommendedSelected ? "Yes" : "No";
+                    if (b.filterUsed) {
+                        applyFilterColumns(masterDataMap[pid], b.filterUsed);
+                    }
                 }
             });
+
+            function applyFilterColumns(row, f) {
+                const yn = (val) => val ? "Yes" : "No";
+                row["Any_Filter_Used"] = Object.values(f).some(Boolean) ? "Yes" : "No";
+                row["Filter_Reset_All"] = yn(f.resetAll);
+                row["Filter_Price_Range"] = yn(f.priceRange);
+                row["Filter_Star_5"] = yn(f.star_5);
+                row["Filter_Star_4"] = yn(f.star_4);
+                row["Filter_Star_3"] = yn(f.star_3);
+                row["Filter_Star_2"] = yn(f.star_2);
+                row["Filter_Region_HK"] = yn(f.region_hk);
+                row["Filter_Region_KLN"] = yn(f.region_kln);
+                row["Filter_Region_NTE"] = yn(f.region_nte);
+                row["Filter_Region_NTW"] = yn(f.region_ntw);
+                row["Filter_Cuisine_Chinese"] = yn(f.cuisine_chinese);
+                row["Filter_Cuisine_French"] = yn(f.cuisine_french);
+                row["Filter_Cuisine_Japanese"] = yn(f.cuisine_japanese);
+                row["Filter_Cuisine_Italian"] = yn(f.cuisine_italian);
+                row["Filter_Fac_PrivateRoom"] = yn(f.fac_privateRoom);
+                row["Filter_Fac_WindowSeat"] = yn(f.fac_windowSeat);
+                row["Filter_Fac_Parking"] = yn(f.fac_parking);
+                row["Filter_Fac_Sommelier"] = yn(f.fac_sommelier);
+                row["Filter_Fac_Sustainable"] = yn(f.fac_sustainable);
+            }
 
             const rowsArray = Object.values(masterDataMap);
 
@@ -580,6 +645,7 @@
                 db.ref('users').remove(),
                 db.ref('survey_responses').remove(),
                 db.ref('restaurant_bookings').remove(),
+                db.ref('filter_logs').remove(),
                 db.ref('visit_logs').remove(),
                 db.ref('grouping').set(0)
             ]);

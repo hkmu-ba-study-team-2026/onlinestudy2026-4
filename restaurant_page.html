@@ -603,6 +603,40 @@
     let selectedMenu = null;
     let hasCopiedID = false;
 
+    const filterInteractionLog = {
+        resetAll: false,
+        priceRange: false,
+        star_5: false,
+        star_4: false,
+        star_3: false,
+        star_2: false,
+        region_hk: false,
+        region_kln: false,
+        region_nte: false,
+        region_ntw: false,
+        cuisine_chinese: false,
+        cuisine_french: false,
+        cuisine_japanese: false,
+        cuisine_italian: false,
+        fac_privateRoom: false,
+        fac_windowSeat: false,
+        fac_parking: false,
+        fac_sommelier: false,
+        fac_sustainable: false
+    };
+
+    // 記錄各 Filter 的總點擊/操作次數
+    const filterClickCounts = {};
+    Object.keys(filterInteractionLog).forEach(k => filterClickCounts[k] = 0);
+
+    function trackFilterAction(key) {
+        if (key in filterInteractionLog) {
+            filterInteractionLog[key] = true;
+            filterClickCounts[key] = (filterClickCounts[key] || 0) + 1;
+        }
+        syncFilterLogToFirebase();
+    }
+
     function renderRestaurantList(data) {
         const container = document.getElementById("restaurantListContainer");
         if (!container) return;
@@ -851,6 +885,18 @@
     }
     function closeCheckoutModal() { document.getElementById("checkoutModal").classList.remove("active"); }
 
+    function syncFilterLogToFirebase() {
+        if (typeof db !== 'undefined' && db && db.ref && currentPID !== "Anonymous") {
+            db.ref(`filter_logs/${currentPID}`).set({
+                participantID: currentPID,
+                filterUsed: filterInteractionLog,
+                filterCounts: filterClickCounts,
+                anyFilterUsed: Object.values(filterInteractionLog).some(v => v === true),
+                updatedAt: new Date().toISOString()
+            }).catch(e => console.warn(e));
+        }
+    }
+
     async function confirmBooking() {
         const isAiChosen = (selectedRest.id === AI_RECOMMENDED_ID);
         const bookingRef = "HK-" + Math.floor(100000 + Math.random() * 900000);
@@ -869,7 +915,10 @@
             isAiRecommendedSelected: isAiChosen,
             menuName: menuName,
             totalAmount: paidTotalStr,
-            bookingTime: new Date().toLocaleString()
+            bookingTime: new Date().toLocaleString(),
+            anyFilterUsed: Object.values(filterInteractionLog).some(v => v === true),
+            filterUsed: filterInteractionLog,
+            filterCounts: filterClickCounts
         };
 
         if (typeof db !== 'undefined' && db && db.ref) {
@@ -976,8 +1025,71 @@
         renderRestaurantList(currentRestaurants);
     }
 
+    function bindFilterTracking() {
+        // 1. 追蹤「重置所有」按鈕
+        const resetBtn = document.getElementById("t_filter_reset");
+        if (resetBtn) {
+            resetBtn.addEventListener("click", () => trackFilterAction("resetAll"));
+        }
+
+        // 2. 追蹤「人均預算滑塊」
+        const priceSlider = document.getElementById("priceRange");
+        if (priceSlider) {
+            priceSlider.addEventListener("change", () => trackFilterAction("priceRange"));
+        }
+
+        // 3. 追蹤「餐廳評級」Checkboxes
+        document.querySelectorAll('input[name="star"]').forEach(cb => {
+            cb.addEventListener("change", () => trackFilterAction(`star_${cb.value}`));
+        });
+
+        // 4. 追蹤「地區分佈」Checkboxes
+        const regionMap = {
+            "香港岛": "region_hk",
+            "九龙": "region_kln",
+            "新界东": "region_nte",
+            "新界西": "region_ntw"
+        };
+        document.querySelectorAll('input[name="region"]').forEach(cb => {
+            cb.addEventListener("change", () => {
+                const key = regionMap[cb.value];
+                if (key) trackFilterAction(key);
+            });
+        });
+
+        // 5. 追蹤「菜系風味」Checkboxes
+        const cuisineMap = {
+            "中式料理": "cuisine_chinese",
+            "法式料理": "cuisine_french",
+            "日本料理": "cuisine_japanese",
+            "意式料理": "cuisine_italian"
+        };
+        document.querySelectorAll('input[name="cuisine"]').forEach(cb => {
+            cb.addEventListener("change", () => {
+                const key = cuisineMap[cb.value];
+                if (key) trackFilterAction(key);
+            });
+        });
+
+        // 6. 追蹤「特色設施與認證」Checkboxes
+        const facMap = {
+            "filterPrivateRoom": "fac_privateRoom",
+            "filterWindowSeat": "fac_windowSeat",
+            "filterParking": "fac_parking",
+            "filterSommelier": "fac_sommelier",
+            "filterSustainable": "fac_sustainable"
+        };
+        Object.entries(facMap).forEach(([id, key]) => {
+            const el = document.getElementById(id);
+            if (el) {
+                el.addEventListener("change", () => trackFilterAction(key));
+            }
+        });
+    }
+
     window.addEventListener("DOMContentLoaded", () => {
         switchLanguage(currentLang);
+        bindFilterTracking();
     });
 </script>
 </body>
